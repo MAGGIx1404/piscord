@@ -11,7 +11,9 @@ export default defineNuxtConfig({
     "@nuxt/hints",
     "@prisma/nuxt",
     "@nuxt/scripts",
-    "shadcn-nuxt"
+    "shadcn-nuxt",
+    "@pinia/nuxt",
+    "@pinia-plugin-persistedstate/nuxt"
   ],
 
   shadcn: {
