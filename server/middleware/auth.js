@@ -4,7 +4,9 @@ const ignore = [
   "/auth/login",
   "/api/auth/login",
   "/auth/register",
-  "/api/auth/register"
+  "/api/auth/register",
+  "/api/auth/username-availability",
+  "/auth/username-availability"
 ];
 
 export default defineEventHandler(async (event) => {

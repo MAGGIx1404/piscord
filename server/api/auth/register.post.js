@@ -6,22 +6,19 @@ export default defineEventHandler(async (event) => {
   const { username, email, password } = body;
 
   if (!username || !email || !password) {
-    return sendError(
-      event,
-      createError({ statusCode: 400, statusMessage: "All fields are required" })
-    );
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Username, email, and password are required"
+    });
   }
 
   // Check if user already exists
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    return sendError(
-      event,
-      createError({
-        statusCode: 409,
-        statusMessage: "Email already registered"
-      })
-    );
+    throw createError({
+      statusCode: 409,
+      statusMessage: "User with this email already exists"
+    });
   }
 
   // Hash password

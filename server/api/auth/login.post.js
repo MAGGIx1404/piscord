@@ -7,31 +7,25 @@ export default defineEventHandler(async (event) => {
   const { email, password } = body;
 
   if (!email || !password) {
-    return sendError(
-      event,
-      createError({
-        statusCode: 400,
-        statusMessage: "Email and password are required"
-      })
-    );
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Email and password are required"
+    });
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    return sendError(
-      event,
-      createError({ statusCode: 404, statusMessage: "User not found" })
-    );
+    throw createError({ statusCode: 404, statusMessage: "User not found" });
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    return sendError(
-      event,
-      createError({ statusCode: 401, statusMessage: "Invalid credentials" })
-    );
+    throw createError({
+      statusCode: 401,
+      statusMessage: "Invalid credentials"
+    });
   }
 
   const token = jwt.sign(

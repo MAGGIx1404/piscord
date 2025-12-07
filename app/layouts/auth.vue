@@ -1,14 +1,20 @@
 <template>
   <main class="w-full h-screen overflow-hidden grid grid-cols-2">
     <div
-      class="h-screen flex items-center justify-center py-8"
-      :class="route.name === 'auth-register' ? 'order-2 pr-8' : 'pl-8'"
+      class="h-screen flex items-center justify-center border-black"
+      :class="
+        route.name === 'auth-register' ? 'order-2 border-l-4' : 'border-r-4'
+      "
     >
-      <figure class="size-full border-black border-4 rounded-xl">
+      <figure class="size-full">
         <img
-          src="/images/auth.png"
+          :src="
+            route.name === 'auth-register'
+              ? '/images/register.png'
+              : '/images/login.png'
+          "
           alt="Auth Image"
-          class="size-full scale-125"
+          class="size-full"
         />
       </figure>
     </div>
