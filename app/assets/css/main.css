@@ -7,7 +7,7 @@
 :root {
   /* overall page */
   --background: #ffffff; /* soft peach/pink background from art */
-  --foreground: #1f2546; /* deep navy/purple for text/icons */
+  --foreground: #000000; /* deep navy/purple for text/icons */
 
   /* cards / popovers */
   --card: #fff6f7; /* warm off-white for surfaces */
