@@ -3,13 +3,12 @@ import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   modules: [
     "@nuxt/eslint",
     "@nuxt/fonts",
     "@nuxt/hints",
-    "@nuxt/image",
     "@prisma/nuxt",
     "@nuxt/scripts",
     "shadcn-nuxt"
