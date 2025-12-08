@@ -66,31 +66,6 @@ const servers = ref([
     id: 5,
     name: "FastConnect 🔗",
     poster: "/images/servers/1.png"
-  },
-  {
-    id: 6,
-    name: "Freedom hosters",
-    poster: "/images/servers/5.png"
-  },
-  {
-    id: 7,
-    name: "Liberty servers",
-    poster: "/images/servers/2.png"
-  },
-  {
-    id: 8,
-    name: "OpenNet",
-    poster: "/images/servers/3.png"
-  },
-  {
-    id: 9,
-    name: "SecureHost",
-    poster: "/images/servers/4.png"
-  },
-  {
-    id: 10,
-    name: "FastConnect",
-    poster: "/images/servers/1.png"
   }
 ]);
 </script>

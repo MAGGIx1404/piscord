@@ -1,7 +1,7 @@
 <template>
-  <header class="w-28 sticky top-0 h-screen p-4">
+  <header class="w-30 sticky top-0 h-screen p-4">
     <div
-      class="size-full bg-white border-2 border-black shadow-xl rounded-xl flex flex-col items-start justify-between gap-2 p-2"
+      class="size-full bg-white border-2 border-black shadow-xl rounded-xl flex flex-col items-start justify-between gap-2 p-4"
     >
       <!-- top panel -->
       <div class="w-full flex flex-col gap-2">
@@ -17,20 +17,15 @@
       </div>
 
       <!-- servers list -->
-      <div class="size-full relative overflow-hidden">
-        <div class="size-full flex flex-col items-center gap-2 pt-2 pb-10 overflow-y-scroll">
-          <NuxtLink
-            to="/"
-            class="size-10 bg-accent p-2 rounded-lg border-2 border-black shadow-xl"
-            v-for="n in 20"
-            :key="n"
-          >
-            <icons-logo />
+      <div class="size-full flex flex-col items-center gap-2">
+        <Button size="icon" v-for="n in 5" :key="n" as-child>
+          <NuxtLink :to="`/servers/${n}`">
+            <Avatar>
+              <AvatarImage :src="`/images/servers/${n}.png`" alt="@Server" />
+              <AvatarFallback>US</AvatarFallback>
+            </Avatar>
           </NuxtLink>
-        </div>
-
-        <!-- overlay -->
-        <FadeOverlay />
+        </Button>
       </div>
 
       <!-- Account  -->

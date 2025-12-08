@@ -1,7 +1,7 @@
 <template>
   <div class="w-full min-h-screen flex items-start justify-between bg-primary">
     <Sidebar />
-    <InfoPanel />
+    <Infopanel />
 
     <div class="w-full p-4">
       <slot />
