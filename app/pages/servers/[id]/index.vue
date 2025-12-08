@@ -1,5 +1,6 @@
 <template>
-  <Card>
-    <h1>Server Details Page</h1>
+  <Card class="h-[calc(100vh-32px)] relative">
+    <ChannelHeader />
+    <ChannelChatPanel />
   </Card>
 </template>

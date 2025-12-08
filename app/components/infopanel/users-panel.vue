@@ -34,13 +34,20 @@
     <TabsContent value="friends">
       <!-- Friends List -->
       <div class="w-full space-y-6">
-        <h1>hiiiiii</h1>
+        <form class="w-full grid grid-cols-1 gap-3">
+          <Input type="text" placeholder="Search User..." class="w-full" />
+          <Button type="submit"> <SearchIcon /> Search </Button>
+        </form>
+
+        <h1>No users</h1>
       </div>
     </TabsContent>
   </Tabs>
 </template>
 
 <script setup>
+import { SearchIcon } from "lucide-vue-next";
+
 const route = useRoute();
 
 const users = [
