@@ -2,14 +2,10 @@
   <main class="w-full h-[calc(100vh-32px)] grid place-items-center">
     <!-- Welcome Screen -->
     <div
-      class="w-1/2 flex flex-col items-center justify-center text-center -space-y-2 rounded-xl overflow-hidden border-4 border-black shadow-2xl"
+      class="w-1/2 flex flex-col items-center justify-center text-center -space-y-2 rounded-xl bg-white overflow-hidden border-4 border-black shadow-2xl"
     >
       <figure class="w-full h-[550px] bg-accent border-b-4 border-black">
-        <img
-          src="/images/welcome.gif"
-          alt="Welcome Screen Image"
-          class="w-full scale-140 mix-blend-multiply"
-        />
+        <img src="/images/welcome.png" alt="Welcome Screen Image" class="w-full" />
       </figure>
 
       <div class="w-full p-8 flex flex-col items-center gap-4">

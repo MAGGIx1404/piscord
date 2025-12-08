@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full min-h-screen flex items-start justify-between">
+  <div class="w-full min-h-screen flex items-start justify-between bg-primary">
     <Sidebar />
     <InfoPanel />
 
