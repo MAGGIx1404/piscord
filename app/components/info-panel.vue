@@ -1,5 +1,5 @@
 <template>
-  <div class="w-60 sticky top-0 h-screen py-4">
+  <div class="w-80 sticky top-0 h-screen py-4">
     <div
       class="size-full bg-white border-2 border-black shadow-lg rounded-lg p-2"
     >
