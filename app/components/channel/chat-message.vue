@@ -21,7 +21,7 @@
         <!-- reply to message -->
         <div
           v-if="replyToMessage"
-          class="w-full p-4 mb-2 border-l-4 border-black bg-white text-black rounded-lg"
+          class="w-full p-4 mb-2 border-l-4 border-2 border-black bg-white text-black rounded-lg"
         >
           <p class="text-sm">
             Replying to

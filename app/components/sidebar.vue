@@ -26,6 +26,21 @@
             </Avatar>
           </NuxtLink>
         </Button>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button size="icon" as-child>
+                <NuxtLink to="/create">
+                  <HousePlus />
+                </NuxtLink>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create Server</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <!-- Account  -->
@@ -34,11 +49,13 @@
         <Button size="icon" variant="destructive">
           <LogOut />
         </Button>
-        <Button size="icon">
-          <Avatar>
-            <AvatarImage src="/images/avatar/1.png" alt="@User" />
-            <AvatarFallback>US</AvatarFallback>
-          </Avatar>
+        <Button size="icon" as-child>
+          <NuxtLink to="/me">
+            <Avatar>
+              <AvatarImage src="/images/avatar/1.png" alt="@User" />
+              <AvatarFallback>US</AvatarFallback>
+            </Avatar>
+          </NuxtLink>
         </Button>
       </div>
     </div>
@@ -46,5 +63,5 @@
 </template>
 
 <script setup>
-import { Search, LogOut } from "lucide-vue-next";
+import { Search, LogOut, HousePlus } from "lucide-vue-next";
 </script>

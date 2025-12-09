@@ -10,7 +10,7 @@
       <div class="size-full flex flex-col gap-3">
         <NuxtLink
           :to="`/chat/${user.id}`"
-          class="w-full flex items-center gap-2.5 p-2.5 border-2 border-dotted border-black rounded-lg relative"
+          class="w-full flex items-center gap-2.5 p-2.5 border-2 border-solid border-black rounded-lg relative"
           :class="{
             'border-solid bg-accent shadow-xl':
               route.name === 'chat-id' && route.params.id == user.id
