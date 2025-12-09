@@ -13,7 +13,8 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "shadcn-nuxt",
     "@pinia/nuxt",
-    "@pinia-plugin-persistedstate/nuxt"
+    "@pinia-plugin-persistedstate/nuxt",
+    "motion-v/nuxt"
   ],
 
   shadcn: {

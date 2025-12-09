@@ -18,6 +18,24 @@
             : 'rounded-bl-none bg-accent'
         "
       >
+        <!-- reply to message -->
+        <div
+          v-if="replyToMessage"
+          class="w-full p-4 mb-2 border-l-4 border-black bg-white text-black rounded-lg"
+        >
+          <p class="text-sm">
+            Replying to
+            <span class="font-semibold">
+              @{{ replyToMessage.author.id === userId ? "You" : replyToMessage.author.name }}</span
+            >
+            : "{{
+              replyToMessage.message.length > 100
+                ? replyToMessage.message.slice(0, 100) + "..."
+                : replyToMessage.message
+            }}"
+          </p>
+        </div>
+
         <p class="text-base">
           {{ chat.message }}
         </p>
