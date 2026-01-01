@@ -14,7 +14,8 @@ export default defineNuxtConfig({
     "shadcn-nuxt",
     "@pinia/nuxt",
     "@pinia-plugin-persistedstate/nuxt",
-    "motion-v/nuxt"
+    "motion-v/nuxt",
+    "@nuxt/image"
   ],
 
   shadcn: {

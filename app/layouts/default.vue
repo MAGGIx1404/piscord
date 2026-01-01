@@ -1,9 +1,7 @@
 <template>
-  <div class="w-full min-h-screen flex items-start justify-between bg-primary">
+  <div class="w-full h-screen grid grid-cols-14 p-4 gap-4 bg-background">
     <Sidebar />
-    <Infopanel />
-
-    <div class="w-full p-4">
+    <div class="w-full col-span-11">
       <slot />
     </div>
   </div>

@@ -1,11 +1,11 @@
 <template>
-  <div class="w-1/2 flex flex-col gap-6">
-    <h1 class="text-5xl font-semibold">Login</h1>
-    <p class="text-base">
-      Welcome back! Please enter your credentials to access your account.
-    </p>
+  <div class="w-1/2 flex flex-col gap-10">
+    <div class="w-full space-y-4">
+      <h1 class="text-5xl font-semibold">Login</h1>
+      <p class="text-base">Welcome back! Please enter your credentials to access your account.</p>
+    </div>
 
-    <form class="w-full space-y-8">
+    <form class="w-full space-y-6">
       <div class="w-full space-y-2">
         <Label for="email" :class="errors.email ? 'text-destructive' : ''"
           >Email :
@@ -16,11 +16,8 @@
           type="email"
           placeholder="Enter your email"
           v-model="email"
-          v-bind="emailAttrs"
           :class="
-            errors.email
-              ? 'text-destructive border-destructive placeholder:text-destructive'
-              : ''
+            errors.email ? 'text-destructive border-destructive placeholder:text-destructive' : ''
           "
         />
       </div>
@@ -34,7 +31,6 @@
           type="password"
           placeholder="Create a password"
           v-model="password"
-          v-bind="passwordAttrs"
           :class="
             errors.password
               ? 'text-destructive border-destructive placeholder:text-destructive'
@@ -43,25 +39,15 @@
         />
       </div>
 
-      <div class="w-full grid grid-cols-2 gap-2">
-        <Button
-          type="submit"
-          size="lg"
-          :disabled="isPending"
-          @click.prevent="onSubmit"
-        >
-          {{ isPending ? "Logging in..." : "Login" }}
-        </Button>
-        <Button variant="destructive" as-child>
-          <NuxtLink to="/"> Forgot Password? </NuxtLink>
-        </Button>
-      </div>
+      <Button type="submit" :disabled="isPending" @click.prevent="onSubmit" class="w-full">
+        {{ isPending ? "Logging in..." : "Login" }}
+      </Button>
 
       <Separator />
 
-      <p class="text-base -mt-2">
-        Don't have an account?
-        <Button variant="link" size="link" as-child>
+      <p class="text-sm -mt-2">
+        Don't have an account ?
+        <Button variant="link" size="link" as-child class="text-sm">
           <NuxtLink to="/auth/register"> Sign Up </NuxtLink>
         </Button>
       </p>

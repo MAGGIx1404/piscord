@@ -1,19 +1,17 @@
 <template>
-  <div class="w-1/2 flex flex-col gap-6">
-    <h1 class="text-5xl font-semibold">Create an Account</h1>
-    <p class="text-base">
-      Join us today! Please fill in the details below to create your account.
-    </p>
+  <div class="w-1/2 flex flex-col gap-10">
+    <div class="w-full space-y-4">
+      <h1 class="text-5xl font-semibold">Create an Account</h1>
+      <p class="text-base">
+        Join us today! Please fill in the details below to create your account.
+      </p>
+    </div>
 
-    <form class="w-full space-y-8">
+    <form class="w-full space-y-6">
       <div class="w-full space-y-2 relative">
         <Label
           for="username"
-          :class="
-            errors.username || usernameAvailable === false
-              ? 'text-destructive'
-              : ''
-          "
+          :class="errors.username || usernameAvailable === false ? 'text-destructive' : ''"
           >Username : {{ errors.username }}
           {{ usernameAvailable === false ? " - Username is taken" : "" }}
         </Label>
@@ -22,22 +20,21 @@
           type="text"
           placeholder="Choose a username"
           v-model="username"
-          v-bind="usernameAttrs"
           :class="
             errors.username || usernameAvailable === false
               ? 'text-destructive border-destructive placeholder:text-destructive'
               : ''
           "
         />
-        <div class="absolute right-2 bottom-4 size-6">
+        <div class="absolute right-3 bottom-4.5 size-5">
           <template v-if="checking">
-            <Loader2Icon class="size-6 animate-spin" />
+            <Loader2Icon class="size-full animate-spin" />
           </template>
           <template v-else-if="usernameAvailable === true">
-            <CircleCheckIcon class="size-6 text-green-600" />
+            <CircleCheckIcon class="size-full text-green-600" />
           </template>
           <template v-else-if="usernameAvailable === false">
-            <OctagonXIcon class="size-6 text-red-600" />
+            <OctagonXIcon class="size-full text-red-600" />
           </template>
         </div>
       </div>
@@ -51,11 +48,8 @@
           type="email"
           placeholder="Enter your email"
           v-model="email"
-          v-bind="emailAttrs"
           :class="
-            errors.email
-              ? 'text-destructive border-destructive placeholder:text-destructive'
-              : ''
+            errors.email ? 'text-destructive border-destructive placeholder:text-destructive' : ''
           "
         />
       </div>
@@ -69,7 +63,6 @@
           type="password"
           placeholder="Create a password"
           v-model="password"
-          v-bind="passwordAttrs"
           :class="
             errors.password
               ? 'text-destructive border-destructive placeholder:text-destructive'
@@ -77,25 +70,16 @@
           "
         />
       </div>
-      <div class="w-full grid grid-cols-2 gap-2">
-        <Button
-          type="submit"
-          size="lg"
-          :disabled="isPending"
-          @click.prevent="onSubmit"
-        >
-          {{ isPending ? "Creating Account..." : "Register" }}
-        </Button>
-        <Button variant="secondary" as-child>
-          <NuxtLink to="/"> Need Help? </NuxtLink>
-        </Button>
-      </div>
+
+      <Button type="submit" :disabled="isPending" @click.prevent="onSubmit" class="w-full">
+        {{ isPending ? "Creating Account..." : "Register" }}
+      </Button>
 
       <Separator />
 
-      <p class="text-base -mt-2">
-        Already have an account?
-        <Button variant="link" size="link" as-child>
+      <p class="text-sm -mt-2">
+        Already have an account ?
+        <Button variant="link" size="link" as-child class="text-sm">
           <NuxtLink to="/auth/login"> Sign In </NuxtLink>
         </Button>
       </p>
