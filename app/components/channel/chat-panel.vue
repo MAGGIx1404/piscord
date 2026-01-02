@@ -60,7 +60,7 @@
           <!-- Reply -->
           <div
             v-if="message.isReply"
-            class="mt-4 border-l-4 border-primary pl-4 bg-secondary p-2 rounded-md space-y-1"
+            class="mt-4 border-l-4 border-primary pl-4 bg-secondary/50 p-2 rounded-md space-y-1"
           >
             <span class="text-sm text-muted-foreground">
               Replying to {{ message.author.name }}'s message :

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SidebarProps } from "@/components/ui/sidebar";
 
-import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-vue-next";
+import { AudioWaveform, Command, GalleryVerticalEnd, LayoutDashboard } from "lucide-vue-next";
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "offcanvas"
@@ -164,6 +164,19 @@ const data = {
       <NavTeamSwitcher :teams="data.teams" />
     </SidebarHeader>
     <SidebarContent>
+      <SidebarGroup class="group-data-[collapsible=icon]:hidden">
+        <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton class="text-sidebar-foreground" as-child>
+              <NuxtLink to="/teams/orions">
+                <LayoutDashboard class="text-sidebar-foreground" />
+                <span> Overview </span>
+              </NuxtLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
       <NavChannels :channels="data.channels" />
       <NavWorkspaces :workspaces="data.workspaces" />
     </SidebarContent>
