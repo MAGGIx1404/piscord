@@ -61,9 +61,11 @@ const { isMobile } = useSidebar();
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <BadgeCheck />
-              Account
+            <DropdownMenuItem as-child>
+              <NuxtLink to="/me">
+                <BadgeCheck />
+                Account
+              </NuxtLink>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <CreditCard />
