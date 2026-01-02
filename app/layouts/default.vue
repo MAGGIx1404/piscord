@@ -2,7 +2,7 @@
   <SidebarProvider>
     <AppSidebar />
     <SidebarInset>
-      <div class="flex flex-1 flex-col gap-4 p-4">
+      <div class="flex flex-1 flex-col gap-4 p-4 pt-0">
         <AppHeader />
         <slot />
       </div>

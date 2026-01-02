@@ -1,3 +1,5 @@
 <template>
-  <h1>hi</h1>
+  <main class="w-full">
+    <ChannelChatPanel />
+  </main>
 </template>

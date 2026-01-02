@@ -1,6 +1,6 @@
 <template>
   <header
-    class="flex h-auto shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear"
+    class="bg-background sticky top-0 flex h-auto shrink-0 items-center justify-between gap-2 py-4 transition-[width,height] ease-linear z-3"
   >
     <div class="flex items-center gap-2">
       <SidebarTrigger />
