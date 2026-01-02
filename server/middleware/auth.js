@@ -13,14 +13,10 @@ export default defineEventHandler(async (event) => {
   const token = getCookie(event, "token");
   const path = getRequestURL(event).pathname;
 
-  const isInIgnoreList = ignore.some((ignorePath) =>
-    path.startsWith(ignorePath)
-  );
+  const isInIgnoreList = ignore.some((ignorePath) => path.startsWith(ignorePath));
 
   if (!token && isInIgnoreList) {
-    console.log(
-      "No token found, but path is in ignore list. Proceeding without auth."
-    );
+    console.log("No token found, but path is in ignore list. Proceeding without auth.");
     return;
   }
 

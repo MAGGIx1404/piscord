@@ -46,5 +46,24 @@ export default defineNuxtConfig({
   runtimeConfig: {
     JWT_SECRET: process.env.JWT_SECRET,
     MINIO_HOST: process.env.MINIO_HOST
+  },
+
+  app: {
+    head: {
+      script: [
+        {
+          innerHTML: `
+                    if (localStorage.theme === "dark" || (!('theme' in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+                        document.documentElement.setAttribute("data-theme", "dark")
+                        document.documentElement.classList.add("dark")
+                    } else {
+                        document.documentElement.removeAttribute("data-theme")
+                        document.documentElement.classList.remove("dark")
+                    }
+                `,
+          type: "text/javascript"
+        }
+      ]
+    }
   }
 });

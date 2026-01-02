@@ -4,6 +4,7 @@
     <NuxtPage />
   </NuxtLayout>
   <Toaster position="top-center" />
+  <ThemeChanger />
 </template>
 
 <script setup>
