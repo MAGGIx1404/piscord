@@ -1,10 +1,13 @@
 <template>
-  <div class="w-full h-screen grid grid-cols-16 p-4 gap-4 bg-background">
-    <Sidebar />
-    <div class="w-full col-span-13">
-      <slot />
-    </div>
-  </div>
+  <SidebarProvider>
+    <AppSidebar />
+    <SidebarInset>
+      <div class="flex flex-1 flex-col gap-4 p-4">
+        <AppHeader />
+        <slot />
+      </div>
+    </SidebarInset>
+  </SidebarProvider>
 </template>
 
 <script setup>
