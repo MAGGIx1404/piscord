@@ -8,7 +8,7 @@
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem class="hidden md:block">
-            <BreadcrumbLink href="#"> Server One </BreadcrumbLink>
+            <BreadcrumbLink href="#"> Orion Group </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator class="hidden md:block" />
           <BreadcrumbItem>

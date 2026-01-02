@@ -34,17 +34,17 @@ const data = {
   channels: [
     {
       name: "General",
-      url: "#",
+      url: "/teams/orion/channels/general",
       icon: Command
     },
     {
       name: "Development",
-      url: "#",
+      url: "/teams/orion/channels/development",
       icon: AudioWaveform
     },
     {
       name: "Design",
-      url: "#",
+      url: "/teams/orion/channels/design",
       icon: GalleryVerticalEnd
     }
   ],
