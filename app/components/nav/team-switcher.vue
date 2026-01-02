@@ -63,7 +63,7 @@ const activeTeam = ref(props.teams[0]);
             <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
               <Plus class="size-4" />
             </div>
-            <div class="font-medium text-muted-foreground">Add team</div>
+            <div class="font-medium text-muted-foreground">Add/Join team</div>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

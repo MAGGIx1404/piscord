@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { LucideIcon } from "lucide-vue-next";
-import { Folder, Forward, MoreHorizontal, Trash2 } from "lucide-vue-next";
+import { Forward, MoreHorizontal, Trash2, SlidersHorizontal } from "lucide-vue-next";
 import { useSidebar } from "@/components/ui/sidebar";
 
 defineProps<{
@@ -38,17 +38,17 @@ const { isMobile } = useSidebar();
             :align="isMobile ? 'end' : 'start'"
           >
             <DropdownMenuItem>
-              <Folder class="text-muted-foreground" />
-              <span>View Project</span>
+              <SlidersHorizontal class="text-muted-foreground" />
+              <span> Customize Channel </span>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Forward class="text-muted-foreground" />
-              <span>Share Project</span>
+              <span>Share Channel</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <Trash2 class="text-muted-foreground" />
-              <span>Delete Project</span>
+              <span>Delete Channel</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

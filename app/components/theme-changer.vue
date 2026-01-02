@@ -1,9 +1,5 @@
 <template>
-  <Button
-    variant="outline"
-    class="rounded-full size-9 fixed top-4 right-4 z-10"
-    @click="toggleTheme"
-  >
+  <Button variant="ghost" class="rounded-md size-8" @click="toggleTheme">
     <Moon v-if="enabled" />
     <Sun v-else />
   </Button>

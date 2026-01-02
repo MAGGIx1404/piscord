@@ -1,5 +1,7 @@
 <template>
-  <header class="flex h-auto shrink-0 items-center gap-2 transition-[width,height] ease-linear">
+  <header
+    class="flex h-auto shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear"
+  >
     <div class="flex items-center gap-2">
       <SidebarTrigger />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
@@ -15,5 +17,7 @@
         </BreadcrumbList>
       </Breadcrumb>
     </div>
+
+    <ThemeChanger />
   </header>
 </template>
