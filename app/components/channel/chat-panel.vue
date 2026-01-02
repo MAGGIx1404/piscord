@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex flex-col">
+  <div class="w-full flex flex-col pb-4">
     <template v-for="group in groups" :key="group.key">
       <!-- date separator -->
       <div class="flex items-center text-xs text-muted-foreground my-1">
