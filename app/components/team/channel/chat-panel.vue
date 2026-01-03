@@ -2,7 +2,9 @@
   <div class="w-full flex flex-col pb-4">
     <template v-for="group in groups" :key="group.key">
       <!-- date separator -->
-      <div class="flex items-center text-xs text-muted-foreground my-1">
+      <div
+        class="flex items-center text-xs text-muted-foreground bg-background p-1 sticky top-15 z-2"
+      >
         <span class="flex-1 h-px bg-border"></span>
         <span class="px-3">{{ group.label }}</span>
         <span class="flex-1 h-px bg-border"></span>

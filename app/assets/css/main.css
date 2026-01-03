@@ -167,6 +167,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    scroll-behavior: smooth;
   }
   figure {
     @apply relative overflow-hidden;

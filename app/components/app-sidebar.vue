@@ -34,17 +34,17 @@ const data = {
   channels: [
     {
       name: "General",
-      url: "/teams/orion/channels/general",
+      url: "/teams/orion_group/channels/general",
       icon: Command
     },
     {
       name: "Development",
-      url: "/teams/orion/channels/development",
+      url: "/teams/orion_group/channels/development",
       icon: AudioWaveform
     },
     {
       name: "Design",
-      url: "/teams/orion/channels/design",
+      url: "/teams/orion_group/channels/design",
       icon: GalleryVerticalEnd
     }
   ],
@@ -169,7 +169,7 @@ const data = {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton class="text-sidebar-foreground" as-child>
-              <NuxtLink to="/teams/orions">
+              <NuxtLink to="/teams/orion_group">
                 <LayoutDashboard class="text-sidebar-foreground" />
                 <span> Overview </span>
               </NuxtLink>

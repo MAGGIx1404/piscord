@@ -6,7 +6,7 @@
       <SidebarTrigger />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
       <Breadcrumb>
-        <BreadcrumbList>
+        <!-- <BreadcrumbList>
           <BreadcrumbItem class="hidden md:block">
             <BreadcrumbLink href="#"> Orion Group </BreadcrumbLink>
           </BreadcrumbItem>
@@ -14,10 +14,48 @@
           <BreadcrumbItem>
             <BreadcrumbPage> Dashboard </BreadcrumbPage>
           </BreadcrumbItem>
+        </BreadcrumbList> -->
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/" class="capitalize">
+              {{ teamId.replaceAll("_", " ") }}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <template v-if="channelId">
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/"> Channels </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage class="capitalize"> {{ channelId }} </BreadcrumbPage>
+            </BreadcrumbItem>
+          </template>
         </BreadcrumbList>
       </Breadcrumb>
     </div>
 
-    <ThemeChanger />
+    <div class="flex items-center">
+      <ThemeChanger />
+      <TeamInfoSheet />
+    </div>
   </header>
 </template>
+
+<script setup>
+const route = useRoute();
+const channelId = ref("");
+const teamId = ref("");
+
+const { teamId: team_id, channelId: channel_id } = route.params;
+
+watch(
+  route,
+  (newRoute) => {
+    const { team_id, channel_id } = newRoute.params;
+    teamId.value = team_id;
+    channelId.value = channel_id;
+  },
+  { immediate: true }
+);
+</script>
