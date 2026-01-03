@@ -55,17 +55,17 @@ const data = {
       pages: [
         {
           name: "Daily Journal & Reflection",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "📔"
         },
         {
           name: "Health & Wellness Tracker",
-          url: "#",
+          url: "/teams/orion_group/workspaces/2",
           emoji: "🍏"
         },
         {
           name: "Personal Growth & Learning Goals",
-          url: "#",
+          url: "/teams/orion_group/workspaces/3",
           emoji: "🌟"
         }
       ]
@@ -76,17 +76,17 @@ const data = {
       pages: [
         {
           name: "Career Objectives & Milestones",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "🎯"
         },
         {
           name: "Skill Acquisition & Training Log",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "🧠"
         },
         {
           name: "Networking Contacts & Events",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "🤝"
         }
       ]
@@ -97,60 +97,18 @@ const data = {
       pages: [
         {
           name: "Writing Ideas & Story Outlines",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "✍️"
         },
         {
           name: "Art & Design Portfolio",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "🖼️"
         },
         {
           name: "Music Composition & Practice Log",
-          url: "#",
+          url: "/teams/orion_group/workspaces/1",
           emoji: "🎵"
-        }
-      ]
-    },
-    {
-      name: "Home Management",
-      emoji: "🏡",
-      pages: [
-        {
-          name: "Household Budget & Expense Tracking",
-          url: "#",
-          emoji: "💰"
-        },
-        {
-          name: "Home Maintenance Schedule & Tasks",
-          url: "#",
-          emoji: "🔧"
-        },
-        {
-          name: "Family Calendar & Event Planning",
-          url: "#",
-          emoji: "📅"
-        }
-      ]
-    },
-    {
-      name: "Travel & Adventure",
-      emoji: "🧳",
-      pages: [
-        {
-          name: "Trip Planning & Itineraries",
-          url: "#",
-          emoji: "🗺️"
-        },
-        {
-          name: "Travel Bucket List & Inspiration",
-          url: "#",
-          emoji: "🌎"
-        },
-        {
-          name: "Travel Journal & Photo Gallery",
-          url: "#",
-          emoji: "📸"
         }
       ]
     }

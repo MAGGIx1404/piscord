@@ -8,6 +8,7 @@ defineProps<{
     pages: {
       name: string;
       emoji: string;
+      url: string;
     }[];
   }[];
 }>();
@@ -20,11 +21,9 @@ defineProps<{
       <SidebarMenu>
         <Collapsible v-for="workspace in workspaces" :key="workspace.name">
           <SidebarMenuItem>
-            <SidebarMenuButton as-child>
-              <a href="#">
-                <span>{{ workspace.emoji }}</span>
-                <span>{{ workspace.name }}</span>
-              </a>
+            <SidebarMenuButton>
+              <span>{{ workspace.emoji }}</span>
+              <span>{{ workspace.name }}</span>
             </SidebarMenuButton>
             <CollapsibleTrigger as-child>
               <SidebarMenuAction
@@ -41,10 +40,10 @@ defineProps<{
               <SidebarMenuSub>
                 <SidebarMenuSubItem v-for="page in workspace.pages" :key="page.name">
                   <SidebarMenuSubButton as-child>
-                    <a href="#">
+                    <NuxtLink :to="page.url">
                       <span>{{ page.emoji }}</span>
                       <span>{{ page.name }}</span>
-                    </a>
+                    </NuxtLink>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>
               </SidebarMenuSub>

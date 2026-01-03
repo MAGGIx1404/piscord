@@ -1,7 +1,7 @@
 <template>
   <Sheet>
     <SheetTrigger as-child>
-      <Button variant="ghost" class="rounded-md size-8"> <ClipboardList /> </Button>
+      <Button variant="ghost" class="rounded-md size-8"> <TextAlignJustify /> </Button>
     </SheetTrigger>
     <SheetContent class="sm:max-w-lg overflow-y-auto gap-2">
       <SheetHeader class="text-left space-y-4">
@@ -89,8 +89,8 @@
       </div>
 
       <SheetFooter class="flex-row gap-2 mt-auto">
-        <Button variant="outline" class="flex-1"> <BellOff class="size-4 mr-2" /> Mute </Button>
-        <Button class="flex-1"> <Settings class="size-4 mr-2" /> Settings </Button>
+        <Button variant="outline" class="flex-1"> <BellOff /> Mute </Button>
+        <Button class="flex-1"> <Settings /> Settings </Button>
       </SheetFooter>
     </SheetContent>
   </Sheet>
@@ -99,7 +99,7 @@
 <script setup>
 import { ref } from "vue";
 import {
-  ClipboardList,
+  TextAlignJustify,
   Hash,
   Info,
   Users,
