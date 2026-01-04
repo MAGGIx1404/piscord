@@ -179,17 +179,7 @@
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger as-child>
-            <Button
-              size="icon"
-              variant="ghost"
-              @click.prevent="
-                editorInstance
-                  ?.chain()
-                  .focus()
-                  .setImage({ src: 'https://placekitten.com/800/400' })
-                  .run()
-              "
-            >
+            <Button size="icon" variant="ghost">
               <Image class="size-4" />
             </Button>
           </TooltipTrigger>
@@ -338,6 +328,12 @@ const toolbarButtons: ToolbarButton[][] = [
       label: "orderedList",
       event: () => props.editorInstance?.chain().focus().toggleOrderedList().run(),
       isActive: () => props.editorInstance?.isActive("orderedList")
+    },
+    {
+      icon: Quote,
+      label: "blockquote",
+      event: () => props.editorInstance?.chain().focus().toggleBlockquote().run(),
+      isActive: () => props.editorInstance?.isActive("blockquote")
     }
   ]
 ];
