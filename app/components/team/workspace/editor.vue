@@ -1,8 +1,8 @@
 <template>
-  <div class="w-full border rounded-md" id="tiptap">
-    <TeamWorkspaceEditorToolbar />
+  <div class="w-full rounded-md" id="tiptap">
+    <TeamWorkspaceEditorToolbar :editor-instance="editorInstance" />
 
-    <div class="w-full h-full">
+    <div class="w-full h-full border-x border-b rounded-b-md">
       <div class="w-full">
         <EditorContent :editor="editorInstance" />
       </div>
@@ -12,7 +12,6 @@
 
 <script setup lang="ts">
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { tiptapExtensions } from "#imports";
 
 const model = defineModel<String>({
   required: true,
