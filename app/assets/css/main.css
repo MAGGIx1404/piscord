@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -37,6 +38,7 @@
   --sidebar-border: oklch(0.94 0 0);
   --sidebar-ring: oklch(0 0 0);
   --font-sans: DM Sans, ui-sans-serif, sans-serif, system-ui;
+  --font-inter: Inter, ui-sans-serif, sans-serif, system-ui;
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 1px;
@@ -144,6 +146,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-sans);
   --font-serif: var(--font-sans);
+  --font-inter: var(--font-inter);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -185,4 +188,257 @@
 
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* prose-headings:font-inter
+    prose-p:font-inter
+    prose-table:font-inter
+    prose-code:font-inter
+    prose-pre:font-inter
+    prose-li:font-inter
+    prose-strong:font-inter
+    prose-blockquote:font-inter
+    prose-a:font-inter; */
+
+/* ======================================================
+   TipTap + Tailwind Typography
+   SHADCN COLOR SYSTEM (Light + Dark)
+   ====================================================== */
+
+/* -------------------------------
+   Typography wrapper
+-------------------------------- */
+
+.tiptap-prose {
+  @apply prose
+    max-w-none
+    prose-p:leading-7
+    prose-p:my-2
+    prose-headings:font-semibold
+    prose-headings:tracking-tight
+    prose-headings:text-foreground
+    prose-h1:text-3xl
+    prose-h1:mt-6
+    prose-h1:mb-3
+    prose-h2:text-2xl
+    prose-h2:mt-5
+    prose-h2:mb-2
+    prose-h3:text-xl
+    prose-h3:mt-4
+    prose-h3:mb-2
+    prose-strong:text-foreground
+    prose-img:rounded-lg
+    prose-a:underline-offset-4
+    prose-headings:font-inter
+    prose-p:font-inter
+    prose-table:font-inter
+    prose-code:font-inter
+    prose-pre:font-inter
+    prose-li:font-inter
+    prose-strong:font-inter
+    prose-blockquote:font-inter
+    prose-a:font-inter
+    prose-blockquote:rounded-md
+    prose-blockquote:border-muted
+    prose-blockquote:bg-muted
+    prose-pre:bg-accent
+    prose-pre:text-foreground;
+}
+
+/* Base text colors */
+.tiptap-prose {
+  color: hsl(var(--foreground));
+}
+
+/* Links */
+.tiptap-prose a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+/* -------------------------------
+   Blockquotes
+-------------------------------- */
+
+.tiptap-prose blockquote {
+  border-left: 4px solid;
+  padding: 0.75rem 1rem 0.75rem 2rem;
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+}
+
+/* -------------------------------
+   Inline code
+-------------------------------- */
+
+.tiptap-prose :not(pre) > code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.375rem;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+/* -------------------------------
+   Code blocks
+-------------------------------- */
+
+.tiptap-prose pre {
+  margin: 1rem 0;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* Remove prose interference */
+.tiptap-prose pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  white-space: pre;
+}
+
+/* -------------------------------
+   Tables
+-------------------------------- */
+
+.tiptap-prose table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tiptap-prose th,
+.tiptap-prose td {
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.tiptap-prose th {
+  background-color: var(--muted);
+  font-weight: 600;
+}
+
+/* Fix paragraphs inside table cells */
+.tiptap-prose th > p,
+.tiptap-prose td > p {
+  margin: 0;
+}
+
+/* -------------------------------
+   Lists
+-------------------------------- */
+
+.tiptap-prose ul,
+.tiptap-prose ol {
+  padding-left: 1rem;
+}
+
+.tiptap-prose ul {
+  list-style-type: disc;
+}
+
+.tiptap-prose li {
+  margin: 0.25rem 0;
+
+  &::marker {
+    color: var(--color-black);
+  }
+}
+
+/* -------------------------------
+   Horizontal rule
+-------------------------------- */
+
+.tiptap-prose hr {
+  border-color: var(--border);
+}
+
+/* -------------------------------
+   ProseMirror root (editor surface)
+-------------------------------- */
+
+.ProseMirror {
+  position: relative;
+  padding: 1.25rem 1.5rem;
+  min-height: 220px;
+  outline: none;
+  background-color: var(--background);
+  color: var(--foreground);
+  caret-color: var(--foreground);
+}
+
+/* Selection */
+.ProseMirror ::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* -------------------------------
+   Images & embeds
+-------------------------------- */
+
+.ProseMirror img,
+.ProseMirror iframe {
+  display: block;
+  margin: 1rem 0;
+  border-radius: 0.75rem;
+  max-width: 100%;
+}
+
+/* Selected media */
+.ProseMirror img.ProseMirror-selectednode,
+.ProseMirror iframe.ProseMirror-selectednode {
+  outline: 2px solid var(--primary);
+}
+
+/* -------------------------------
+   Table selection helpers
+-------------------------------- */
+
+.ProseMirror .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--primary) / 0.15;
+  pointer-events: none;
+}
+
+.ProseMirror .column-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -2px;
+  width: 4px;
+  background-color: hsl(var(--primary) / 0.4);
+}
+
+/* -------------------------------
+   Gap cursor (Notion-like)
+-------------------------------- */
+
+.ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+}
+
+.ProseMirror-focused .ProseMirror-gapcursor {
+  display: block;
+}
+
+.ProseMirror-gapcursor::after {
+  content: "";
+  display: block;
+  height: 1.25rem;
+  border-left: 2px solid var(--foreground);
+  animation: tiptap-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes tiptap-blink {
+  to {
+    visibility: hidden;
+  }
 }

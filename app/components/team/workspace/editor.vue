@@ -1,31 +1,34 @@
 <template>
-  <editor-content :editor="editor" />
+  <div class="w-full border rounded-md" id="tiptap">
+    <TeamWorkspaceEditorToolbar />
+
+    <div class="w-full h-full">
+      <div class="w-full">
+        <EditorContent :editor="editorInstance" />
+      </div>
+    </div>
+  </div>
 </template>
 
-<script>
-import { Editor, EditorContent } from "@tiptap/vue-3";
-import StarterKit from "@tiptap/starter-kit";
+<script setup lang="ts">
+import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { tiptapExtensions } from "#imports";
 
-export default {
-  components: {
-    EditorContent
+const model = defineModel<String>({
+  required: true,
+  default: ""
+});
+
+const editorInstance = useEditor({
+  content: model.value,
+  editorProps: {
+    attributes: {
+      class: "tiptap-prose"
+    }
   },
-
-  data() {
-    return {
-      editor: null
-    };
+  onUpdate: ({ editor }) => {
+    model.value = editor.getHTML();
   },
-
-  mounted() {
-    this.editor = new Editor({
-      content: "<p>I'm running Tiptap with Vue.js. 🎉</p>",
-      extensions: [StarterKit]
-    });
-  },
-
-  beforeUnmount() {
-    this.editor.destroy();
-  }
-};
+  extensions: tiptapExtensions()
+});
 </script>

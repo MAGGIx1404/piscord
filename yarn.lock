@@ -2475,6 +2475,13 @@
     "@tailwindcss/oxide-win32-arm64-msvc" "4.1.17"
     "@tailwindcss/oxide-win32-x64-msvc" "4.1.17"
 
+"@tailwindcss/typography@^0.5.19":
+  version "0.5.19"
+  resolved "https://registry.yarnpkg.com/@tailwindcss/typography/-/typography-0.5.19.tgz#ecb734af2569681eb40932f09f60c2848b909456"
+  integrity sha512-w31dd8HOx3k9vPtcQh5QHP9GwKcgbMp87j58qi6xgiBnFFtKEAgCWnDw4qUT8aHwkCp8bKvb/KGKWWHedP0AAg==
+  dependencies:
+    postcss-selector-parser "6.0.10"
+
 "@tailwindcss/vite@^4.1.17":
   version "4.1.17"
   resolved "https://registry.yarnpkg.com/@tailwindcss/vite/-/vite-4.1.17.tgz#c316b3817b21e175c37261249550790b1b909f93"
@@ -2535,11 +2542,6 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-bullet-list/-/extension-bullet-list-3.14.0.tgz#109e7e9c360176689b46504625467815a1a3ad79"
   integrity sha512-luqPX4u52hiOAHJ95mYsNE+x+9dZxsM461Xny9d/eTXLjAcnwS7MghjrnpljvyYsSXNiwQtxUyEr4uEZZJ5gIQ==
 
-"@tiptap/extension-character-count@^3.14.0":
-  version "3.14.0"
-  resolved "https://registry.yarnpkg.com/@tiptap/extension-character-count/-/extension-character-count-3.14.0.tgz#e82c13aabcdbaf0c347797d54d3eb53051750c27"
-  integrity sha512-zFsY68XMAngRh4D5ILhV4Y1WSW4Fv4ZdfYspf4XgG6HjUm9LhzndkYHQ7aSLoUAmjz0CA+Pwox7PuP2WnV+BMA==
-
 "@tiptap/extension-code-block@^3.14.0":
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-code-block/-/extension-code-block-3.14.0.tgz#abcdd414924574807a75759402d721b9d1a00261"
@@ -2579,6 +2581,11 @@
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-heading/-/extension-heading-3.14.0.tgz#1c6bb3e099b049ee8024380e73dd7fa6e4491167"
   integrity sha512-4xpahSo3b1dN2nwA0XKXLQVz9nZ/vE443a/Y5QLWeXiu3v9wkcMs/5kQ5ysFeDZRBTfVUWBqhngI7zhvDUx2zQ==
+
+"@tiptap/extension-highlight@^3.14.0":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-highlight/-/extension-highlight-3.14.0.tgz#332fb27868c93ac706efe4bede8a6be481723ae5"
+  integrity sha512-D4SsD4karzlRIIHarZ9C0+gCQ0CPtp2LFyG93RE8GQzi+RgV+B2AaAiWPizXfRs9AN93neLBQ33EkuR9CbDzUw==
 
 "@tiptap/extension-horizontal-rule@^3.14.0":
   version "3.14.0"
@@ -2632,6 +2639,16 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-strike/-/extension-strike-3.14.0.tgz#650487246bb5ae8f3d33b45065f577d759fedbbd"
   integrity sha512-R8BbAhnWpisBml6okMKl98hY4tJjedTTgyTkx8tPabIJ92nS9IURKEk3foWB9uHxdTOBUqTvVT+2ScDf9r6QHg==
 
+"@tiptap/extension-table@^3.14.0":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-table/-/extension-table-3.14.0.tgz#aaf8d735efd92abd57111916899219c2aa6a7f68"
+  integrity sha512-tt1OlzqlsRsTazARGpvwPJmKEu+jiMFuaueNM28V+AADtaIPyE160V6w2bkdeWQeaBWqZjOUGZaMjpsKqWXR+g==
+
+"@tiptap/extension-text-align@^3.14.0":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-text-align/-/extension-text-align-3.14.0.tgz#9b8344666d8b7ea19848d559827bd1abb4acda95"
+  integrity sha512-CaxxlbAvfofZZ7KPL28Kg8xuMv8t4rvt5GPwZAqE+jd3rwrucpovpX/SdgclYDc75xs0t8qeoxDFe9HQmG5XZA==
+
 "@tiptap/extension-text@^3.14.0":
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-text/-/extension-text-3.14.0.tgz#bce76b90dc98c41a19d8ddeceb725904aeeca42b"
@@ -2641,6 +2658,11 @@
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-underline/-/extension-underline-3.14.0.tgz#7d9ac55419f353cdd3817b8f5d56a11e909b1251"
   integrity sha512-zmnWlsi2g/tMlThHby0Je9O+v24j4d+qcXF3nuzLUUaDsGCEtOyC9RzwITft59ViK+Nc2PD2W/J14rsB0j+qoQ==
+
+"@tiptap/extension-youtube@^3.14.0":
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-youtube/-/extension-youtube-3.14.0.tgz#cc42f69c72d0e970a72ea6c1d8431c92f161fd10"
+  integrity sha512-scXwDYrjivhNyPkGYPAmU4FGqXF+1QPJkJ6uoEgVGd9FYujQIYyjcLGjsgyYirIo/KLagk3gKeqT6oTTc3TH1w==
 
 "@tiptap/extensions@^3.14.0":
   version "3.14.0"
@@ -6983,6 +7005,14 @@ postcss-reduce-transforms@^7.0.1:
   integrity sha512-MhyEbfrm+Mlp/36hvZ9mT9DaO7dbncU0CvWI8V93LRkY6IYlu38OPg3FObnuKTUxJ4qA8HpurdQOo5CyqqO76g==
   dependencies:
     postcss-value-parser "^4.2.0"
+
+postcss-selector-parser@6.0.10:
+  version "6.0.10"
+  resolved "https://registry.yarnpkg.com/postcss-selector-parser/-/postcss-selector-parser-6.0.10.tgz#79b61e2c0d1bfc2602d549e11d0876256f8df88d"
+  integrity sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==
+  dependencies:
+    cssesc "^3.0.0"
+    util-deprecate "^1.0.2"
 
 postcss-selector-parser@^7.0.0, postcss-selector-parser@^7.1.0:
   version "7.1.1"
