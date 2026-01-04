@@ -71,7 +71,13 @@
         />
       </div>
 
-      <Button type="submit" :disabled="isPending" @click.prevent="onSubmit" class="w-full">
+      <Button
+        type="submit"
+        size="lg"
+        :disabled="isPending"
+        @click.prevent="onSubmit"
+        class="w-full"
+      >
         {{ isPending ? "Creating Account..." : "Register" }}
       </Button>
 

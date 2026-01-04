@@ -229,6 +229,7 @@
     prose-strong:text-foreground
     prose-img:rounded-lg
     prose-a:underline-offset-4
+    prose-a:cursor-pointer
     prose-headings:font-inter
     prose-p:font-inter
     prose-table:font-inter
@@ -247,12 +248,12 @@
 
 /* Base text colors */
 .tiptap-prose {
-  color: hsl(var(--foreground));
+  color: var(--foreground);
 }
 
 /* Links */
 .tiptap-prose a {
-  color: hsl(var(--primary));
+  color: var(--color-blue-500);
   text-decoration: underline;
 }
 

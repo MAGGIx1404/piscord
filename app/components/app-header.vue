@@ -5,16 +5,7 @@
     <div class="flex items-center gap-2">
       <SidebarTrigger />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
-      <Breadcrumb>
-        <!-- <BreadcrumbList>
-          <BreadcrumbItem class="hidden md:block">
-            <BreadcrumbLink href="#"> Orion Group </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator class="hidden md:block" />
-          <BreadcrumbItem>
-            <BreadcrumbPage> Dashboard </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList> -->
+      <Breadcrumb v-if="teamId">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/" class="capitalize">
