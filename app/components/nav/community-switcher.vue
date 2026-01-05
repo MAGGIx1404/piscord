@@ -60,7 +60,7 @@ const activeTeam = ref(props.teams[0]);
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem class="gap-2 p-2" as-child>
-            <NuxtLink to="/teams/create">
+            <NuxtLink to="/community/create">
               <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <Plus class="size-4" />
               </div>

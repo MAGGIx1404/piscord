@@ -33,7 +33,7 @@
       <!-- Left Column - Main Form -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Basic Info -->
-        <Card>
+        <Card class="p-6">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Info class="size-5" />
@@ -116,37 +116,38 @@
               <p class="text-xs text-muted-foreground">Max file size: 4MB</p>
             </div>
 
-            <!-- Community Name -->
-            <div class="space-y-2">
-              <Label for="name">Community Name <span class="text-destructive">*</span></Label>
-              <Input
-                id="name"
-                v-model="form.name"
-                placeholder="Enter community name"
-                maxlength="50"
-              />
-              <p class="text-xs text-muted-foreground">{{ form.name.length }}/50 characters</p>
-            </div>
-
-            <!-- Community URL -->
-            <div class="space-y-2">
-              <Label for="slug">Community URL</Label>
-              <div class="flex items-center">
-                <span
-                  class="px-3 py-2 bg-muted rounded-l-md border border-r-0 border-input text-sm text-muted-foreground"
-                >
-                  piscord.com/c/
-                </span>
+            <div class="w-full grid grid-cols-2 gap-6">
+              <!-- Community Name -->
+              <div class="space-y-2">
+                <Label for="name">Community Name <span class="text-destructive">*</span></Label>
                 <Input
-                  id="slug"
-                  v-model="form.slug"
-                  placeholder="your-community"
-                  class="rounded-l-none"
+                  id="name"
+                  v-model="form.name"
+                  placeholder="Enter community name"
+                  maxlength="50"
                 />
+                <p class="text-xs text-muted-foreground">{{ form.name.length }}/50 characters</p>
               </div>
-              <p class="text-xs text-muted-foreground">
-                Only lowercase letters, numbers, and hyphens allowed.
-              </p>
+
+              <!-- Community URL -->
+              <div class="space-y-2">
+                <Label for="slug">Community URL</Label>
+
+                <ButtonGroup class="gap-0! w-full h-10.5">
+                  <ButtonGroupText as-child>
+                    <Label for="url">piscord.com/c/</Label>
+                  </ButtonGroupText>
+                  <InputGroup class="h-full">
+                    <InputGroupInput id="slug" v-model="form.slug" placeholder="your-community" />
+                    <InputGroupAddon align="inline-end">
+                      <Link2Icon />
+                    </InputGroupAddon>
+                  </InputGroup>
+                </ButtonGroup>
+                <p class="text-xs text-muted-foreground">
+                  Only lowercase letters, numbers, and hyphens allowed.
+                </p>
+              </div>
             </div>
 
             <!-- Description -->
@@ -171,6 +172,7 @@
                   placeholder="Tell people what your community is about..."
                   rows="4"
                   maxlength="500"
+                  class="min-h-20"
                   :disabled="isGenerating"
                 />
                 <div
@@ -209,7 +211,7 @@
         </Card>
 
         <!-- Category & Tags -->
-        <Card>
+        <Card class="p-6">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Tag class="size-5" />
@@ -219,12 +221,12 @@
               Help people discover your community by choosing relevant categories and tags.
             </CardDescription>
           </CardHeader>
-          <CardContent class="space-y-6">
+          <CardContent class="grid grid-cols-2 gap-6">
             <!-- Category -->
             <div class="space-y-2">
               <Label>Category <span class="text-destructive">*</span></Label>
               <Select v-model="form.category">
-                <SelectTrigger>
+                <SelectTrigger class="w-full">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -240,45 +242,50 @@
                   </SelectItem>
                 </SelectContent>
               </Select>
+              <p class="text-xs text-muted-foreground">
+                Choose the category that best fits your community.
+              </p>
             </div>
 
             <!-- Tags -->
             <div class="space-y-2">
               <Label>Tags</Label>
-              <div class="flex flex-wrap gap-2 mb-2">
+              <ButtonGroup class="gap-0! w-full">
+                <InputGroup class="h-full">
+                  <InputGroupInput
+                    v-model="tagInput"
+                    placeholder="Add a tag..."
+                    @keydown.enter.prevent="addTag"
+                    :disabled="form.tags.length >= 5"
+                  />
+                </InputGroup>
+                <ButtonGroupText
+                  @click="addTag"
+                  :disabled="!tagInput.trim() || form.tags.length >= 5"
+                >
+                  <Plus class="size-4" />
+                </ButtonGroupText>
+              </ButtonGroup>
+
+              <div v-if="form.tags.length !== 0" class="flex flex-wrap gap-2 mb-2">
                 <Badge
                   v-for="tag in form.tags"
                   :key="tag"
-                  variant="secondary"
-                  class="gap-1 cursor-pointer hover:bg-destructive/20"
+                  class="cursor-pointer"
                   @click="removeTag(tag)"
                 >
                   {{ tag }}
                   <X class="size-3" />
                 </Badge>
               </div>
-              <div class="flex gap-2">
-                <Input
-                  v-model="tagInput"
-                  placeholder="Add a tag..."
-                  @keydown.enter.prevent="addTag"
-                  :disabled="form.tags.length >= 5"
-                />
-                <Button
-                  variant="outline"
-                  @click="addTag"
-                  :disabled="!tagInput.trim() || form.tags.length >= 5"
-                >
-                  <Plus class="size-4" />
-                </Button>
-              </div>
+
               <p class="text-xs text-muted-foreground">Add up to 5 tags. Press Enter to add.</p>
             </div>
           </CardContent>
         </Card>
 
         <!-- Privacy & Settings -->
-        <Card>
+        <Card class="p-6">
           <CardHeader>
             <CardTitle class="flex items-center gap-2">
               <Shield class="size-5" />
@@ -286,42 +293,88 @@
             </CardTitle>
             <CardDescription> Control who can see and join your community. </CardDescription>
           </CardHeader>
+
           <CardContent class="space-y-6">
             <!-- Visibility -->
             <div class="space-y-3">
               <Label>Community Visibility</Label>
-              <RadioGroup v-model="form.visibility" class="space-y-3">
+              <div class="grid grid-cols-2 gap-4">
+                <!-- Public Option -->
                 <div
-                  class="flex items-start gap-3 p-4 rounded-lg border border-input hover:border-primary transition-colors cursor-pointer"
+                  class="relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 group"
+                  :class="[
+                    form.visibility === 'public'
+                      ? 'border-green-500 bg-green-500/10'
+                      : 'border-input hover:border-green-500/50 hover:bg-green-500/5'
+                  ]"
                   @click="form.visibility = 'public'"
                 >
-                  <RadioGroupItem value="public" id="public" />
-                  <div class="flex-1">
-                    <Label for="public" class="font-medium cursor-pointer flex items-center gap-2">
-                      <Globe class="size-4 text-green-500" />
-                      Public
-                    </Label>
-                    <p class="text-sm text-muted-foreground">
-                      Anyone can find and join this community.
-                    </p>
+                  <div v-if="form.visibility === 'public'" class="absolute top-3 right-3">
+                    <div class="size-5 rounded-full bg-green-500 flex items-center justify-center">
+                      <Check class="size-3 text-white" />
+                    </div>
                   </div>
+                  <div
+                    class="size-12 rounded-xl flex items-center justify-center mb-3 transition-colors"
+                    :class="
+                      form.visibility === 'public'
+                        ? 'bg-green-500/20'
+                        : 'bg-muted group-hover:bg-green-500/10'
+                    "
+                  >
+                    <Globe
+                      class="size-6 transition-colors"
+                      :class="
+                        form.visibility === 'public'
+                          ? 'text-green-500'
+                          : 'text-muted-foreground group-hover:text-green-500'
+                      "
+                    />
+                  </div>
+                  <h4 class="font-semibold mb-1">Public</h4>
+                  <p class="text-xs text-muted-foreground">
+                    Anyone can discover and join your community freely.
+                  </p>
                 </div>
+
+                <!-- Private Option -->
                 <div
-                  class="flex items-start gap-3 p-4 rounded-lg border border-input hover:border-primary transition-colors cursor-pointer"
+                  class="relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 group"
+                  :class="[
+                    form.visibility === 'private'
+                      ? 'border-amber-500 bg-amber-500/10'
+                      : 'border-input hover:border-amber-500/50 hover:bg-amber-500/5'
+                  ]"
                   @click="form.visibility = 'private'"
                 >
-                  <RadioGroupItem value="private" id="private" />
-                  <div class="flex-1">
-                    <Label for="private" class="font-medium cursor-pointer flex items-center gap-2">
-                      <Lock class="size-4 text-amber-500" />
-                      Private
-                    </Label>
-                    <p class="text-sm text-muted-foreground">
-                      Only people with an invite link can join.
-                    </p>
+                  <div v-if="form.visibility === 'private'" class="absolute top-3 right-3">
+                    <div class="size-5 rounded-full bg-amber-500 flex items-center justify-center">
+                      <Check class="size-3 text-white" />
+                    </div>
                   </div>
+                  <div
+                    class="size-12 rounded-xl flex items-center justify-center mb-3 transition-colors"
+                    :class="
+                      form.visibility === 'private'
+                        ? 'bg-amber-500/20'
+                        : 'bg-muted group-hover:bg-amber-500/10'
+                    "
+                  >
+                    <Lock
+                      class="size-6 transition-colors"
+                      :class="
+                        form.visibility === 'private'
+                          ? 'text-amber-500'
+                          : 'text-muted-foreground group-hover:text-amber-500'
+                      "
+                    />
+                  </div>
+                  <h4 class="font-semibold mb-1">Private</h4>
+                  <p class="text-xs text-muted-foreground">
+                    Only invited members can access your community.
+                  </p>
                 </div>
-              </RadioGroup>
+              </div>
             </div>
 
             <!-- Additional Settings -->
@@ -511,7 +564,9 @@ import {
   Film,
   Heart,
   Loader2,
-  Wand2
+  Wand2,
+  Link2Icon,
+  Check
 } from "lucide-vue-next";
 
 const router = useRouter();
