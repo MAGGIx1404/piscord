@@ -450,7 +450,9 @@
               </div>
               <!-- Preview Content -->
               <div class="p-4 -mt-8">
-                <div class="size-16 rounded-xl bg-card border-4 border-card overflow-hidden">
+                <div
+                  class="size-16 rounded-xl bg-card border-4 border-card overflow-hidden relative z-3"
+                >
                   <img
                     v-if="form.iconPreview"
                     :src="form.iconPreview"
