@@ -284,6 +284,125 @@
           </CardContent>
         </Card>
 
+        <!-- Community Rules -->
+        <Card class="p-6">
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2">
+              <Gavel class="size-5" />
+              Community Rules
+            </CardTitle>
+            <CardDescription>
+              Set clear guidelines for your community members to follow.
+            </CardDescription>
+          </CardHeader>
+          <CardContent class="space-y-4">
+            <!-- Add Rule Input -->
+            <div class="space-y-2">
+              <ButtonGroup class="gap-0! w-full">
+                <InputGroup class="h-full">
+                  <InputGroupInput
+                    v-model="ruleInput"
+                    placeholder="Enter a rule (e.g., Be respectful to all members)"
+                    @keydown.enter.prevent="addRule"
+                    :disabled="form.rules.length >= 10"
+                  />
+                </InputGroup>
+                <ButtonGroupText
+                  @click="addRule"
+                  :disabled="!ruleInput.trim() || form.rules.length >= 10"
+                >
+                  <Plus class="size-4" />
+                </ButtonGroupText>
+              </ButtonGroup>
+              <p class="text-xs text-muted-foreground">Add up to 10 rules. Press Enter to add.</p>
+            </div>
+
+            <!-- Rules List -->
+            <div v-if="form.rules.length > 0" class="space-y-2">
+              <TransitionGroup name="rule">
+                <div
+                  v-for="(rule, index) in form.rules"
+                  :key="rule.id"
+                  class="group flex items-center gap-3 p-3 rounded-lg border border-input bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div
+                    class="size-6 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary"
+                  >
+                    {{ index + 1 }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm wrap-break-word">{{ rule.text }}</p>
+                  </div>
+                  <div
+                    class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="size-7"
+                      @click="moveRule(index, -1)"
+                      :disabled="index === 0"
+                    >
+                      <ChevronUp class="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="size-7"
+                      @click="moveRule(index, 1)"
+                      :disabled="index === form.rules.length - 1"
+                    >
+                      <ChevronDown class="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      @click="removeRule(rule.id)"
+                    >
+                      <Trash2 class="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              </TransitionGroup>
+            </div>
+
+            <!-- Empty State -->
+            <div
+              v-else
+              class="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-input rounded-xl"
+            >
+              <div class="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                <ScrollText class="size-6 text-muted-foreground" />
+              </div>
+              <p class="text-sm font-medium">No rules added yet</p>
+              <p class="text-xs text-muted-foreground mt-1">
+                Add rules to help maintain a positive community environment.
+              </p>
+            </div>
+
+            <!-- Quick Add Suggestions -->
+            <div v-if="form.rules.length < 10" class="space-y-2">
+              <Label class="text-xs text-muted-foreground">Quick add suggestions:</Label>
+              <div class="flex flex-wrap gap-2">
+                <Button
+                  v-for="suggestion in ruleSuggestions.filter(
+                    (s) => !form.rules.some((r) => r.text === s)
+                  )"
+                  :key="suggestion"
+                  variant="outline"
+                  size="sm"
+                  class="h-7 text-xs"
+                  @click="addSuggestedRule(suggestion)"
+                >
+                  <Plus class="size-3 mr-1" />
+                  {{ suggestion }}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <!-- Privacy & Settings -->
         <Card class="p-6">
           <CardHeader>
@@ -342,13 +461,13 @@
                   class="relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 group"
                   :class="[
                     form.visibility === 'private'
-                      ? 'border-amber-500 bg-amber-500/10'
-                      : 'border-input hover:border-amber-500/50 hover:bg-amber-500/5'
+                      ? 'border-red-500 bg-red-500/10'
+                      : 'border-input hover:border-red-500/50 hover:bg-red-500/5'
                   ]"
                   @click="form.visibility = 'private'"
                 >
                   <div v-if="form.visibility === 'private'" class="absolute top-3 right-3">
-                    <div class="size-5 rounded-full bg-amber-500 flex items-center justify-center">
+                    <div class="size-5 rounded-full bg-red-500 flex items-center justify-center">
                       <Check class="size-3 text-white" />
                     </div>
                   </div>
@@ -356,16 +475,16 @@
                     class="size-12 rounded-xl flex items-center justify-center mb-3 transition-colors"
                     :class="
                       form.visibility === 'private'
-                        ? 'bg-amber-500/20'
-                        : 'bg-muted group-hover:bg-amber-500/10'
+                        ? 'bg-red-500/20'
+                        : 'bg-muted group-hover:bg-red-500/10'
                     "
                   >
                     <Lock
                       class="size-6 transition-colors"
                       :class="
                         form.visibility === 'private'
-                          ? 'text-amber-500'
-                          : 'text-muted-foreground group-hover:text-amber-500'
+                          ? 'text-red-500'
+                          : 'text-muted-foreground group-hover:text-red-500'
                       "
                     />
                   </div>
@@ -437,17 +556,16 @@
           <CardContent>
             <div class="border rounded-xl overflow-hidden">
               <!-- Preview Banner -->
-              <div class="h-20 relative overflow-hidden">
-                <img
-                  v-if="form.bannerPreview"
-                  :src="form.bannerPreview"
-                  class="w-full h-full object-cover"
-                />
-                <div
-                  v-else
-                  class="w-full h-full bg-linear-to-r from-primary/30 via-purple-500/30 to-pink-500/30"
-                />
-              </div>
+              <WidgetsImagePoster
+                v-if="form.bannerPreview"
+                :src="form.bannerPreview"
+                class="w-full h-20 object-cover"
+                size="md"
+              />
+              <div
+                v-else
+                class="w-full h-40 bg-linear-to-r from-primary/30 via-purple-500/30 to-pink-500/30"
+              />
               <!-- Preview Content -->
               <div class="p-4 -mt-8">
                 <div
@@ -568,7 +686,11 @@ import {
   Loader2,
   Wand2,
   Link2Icon,
-  Check
+  Check,
+  Gavel,
+  ChevronUp,
+  ChevronDown,
+  Trash2
 } from "lucide-vue-next";
 
 const router = useRouter();
@@ -576,6 +698,7 @@ const router = useRouter();
 const iconInput = ref(null);
 const bannerInput = ref(null);
 const tagInput = ref("");
+const ruleInput = ref("");
 const isGenerating = ref(false);
 
 const form = reactive({
@@ -584,6 +707,7 @@ const form = reactive({
   description: "",
   category: "",
   tags: [],
+  rules: [],
   visibility: "public",
   requireApproval: false,
   enableWelcome: true,
@@ -593,6 +717,14 @@ const form = reactive({
   bannerPreview: null,
   bannerFile: null
 });
+
+const ruleSuggestions = [
+  "Be respectful to all members",
+  "No spam or self-promotion",
+  "No hate speech or harassment",
+  "Keep discussions on topic",
+  "No NSFW content"
+];
 
 const categories = [
   { value: "gaming", label: "Gaming", icon: Gamepad2 },
@@ -709,6 +841,33 @@ const addTag = () => {
 
 const removeTag = (tag) => {
   form.tags = form.tags.filter((t) => t !== tag);
+};
+
+const addRule = () => {
+  const text = ruleInput.value.trim();
+  if (text && form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
+    form.rules.push({ id: Date.now(), text });
+    ruleInput.value = "";
+  }
+};
+
+const addSuggestedRule = (text) => {
+  if (form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
+    form.rules.push({ id: Date.now(), text });
+  }
+};
+
+const removeRule = (id) => {
+  form.rules = form.rules.filter((r) => r.id !== id);
+};
+
+const moveRule = (index, direction) => {
+  const newIndex = index + direction;
+  if (newIndex >= 0 && newIndex < form.rules.length) {
+    const temp = form.rules[index];
+    form.rules[index] = form.rules[newIndex];
+    form.rules[newIndex] = temp;
+  }
 };
 
 const handleCreate = () => {

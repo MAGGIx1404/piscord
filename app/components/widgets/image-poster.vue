@@ -1,6 +1,6 @@
 <template>
   <figure
-    class="rounded-lg relative overflow-hidden"
+    class="rounded-t-lg relative overflow-hidden"
     :class="{
       'h-40': size === 'md',
       'h-60': size === 'lg',
