@@ -178,11 +178,67 @@
       <!-- Image Button -->
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger as-child>
-            <Button size="icon" variant="ghost">
-              <Image class="size-4" />
-            </Button>
-          </TooltipTrigger>
+          <Dialog>
+            <DialogTrigger as-child>
+              <TooltipTrigger as-child>
+                <Button size="icon" variant="ghost">
+                  <Image class="size-4" />
+                </Button>
+              </TooltipTrigger>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle> Insert Image </DialogTitle>
+                <DialogDescription> Add an image by specifying its URL. </DialogDescription>
+              </DialogHeader>
+
+              <!-- File Input -->
+              <div
+                class="w-full h-40 border-2 border-dotted rounded-md relative overflow-hidden my-2"
+              >
+                <Input
+                  type="file"
+                  accept="image/*"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  @change.prevent="handleOnFileChange($event)"
+                />
+
+                <div
+                  class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none gap-2"
+                  v-if="!imageUrl"
+                >
+                  <ImagePlus class="size-6 text-muted-foreground" />
+                  <p class="text-xs text-muted-foreground">
+                    Drag and drop an image here, or click to select a file
+                  </p>
+                </div>
+
+                <!-- Display image preview -->
+                <div v-if="imageUrl" class="absolute inset-0 pointer-events-none">
+                  <img
+                    :src="imageUrl"
+                    alt="Image Preview"
+                    class="w-full h-full object-contain rounded-md"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <DialogClose as-child>
+                  <Button variant="outline" @click="imageUrl = null"> Cancel </Button>
+                </DialogClose>
+                <DialogClose as-child>
+                  <Button
+                    type="submit"
+                    @click.prevent="handleInsertImage(imageUrl!)"
+                    :disabled="!imageUrl"
+                  >
+                    Add Image
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <TooltipContent>
             <p>Insert Image</p>
           </TooltipContent>
@@ -209,6 +265,7 @@ import {
   ListOrdered,
   Link,
   Image,
+  ImagePlus,
   Quote,
   Table,
   Film,
@@ -366,5 +423,24 @@ const handleInsertTable = (rows: number, cols: number) => {
   props.editorInstance?.chain().focus().insertTable({ rows, cols, withHeaderRow: true }).run();
   tableRows.value = 2;
   tableColumns.value = 2;
+};
+
+const imageUrl = ref<string | null>(null);
+
+const handleOnFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files ? target.files[0] : null;
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imageUrl.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+const handleInsertImage = (url: string) => {
+  props.editorInstance?.chain().focus().setImage({ src: url }).run();
+  imageUrl.value = null;
 };
 </script>
