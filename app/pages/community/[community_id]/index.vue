@@ -2,7 +2,7 @@
   <main class="w-full rounded-md">
     <div class="w-full flex flex-col -space-y-10">
       <!-- Poster -->
-      <WidgetsImagePoster src="/images/servers/poster.jpg" />
+      <WidgetsImagePoster src="/images/servers/p-1.jpg" />
 
       <!-- Team card -->
       <Card class="w-md bg-card/10 relative z-2 ml-8 backdrop-blur-md">
