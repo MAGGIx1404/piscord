@@ -178,7 +178,7 @@ const filterRange = computed(() => {
 
 <template>
   <Card class="pt-0">
-    <CardHeader class="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+    <CardHeader class="flex items-center gap-2 space-y-0 border-b pt-6 px-2 sm:flex-row">
       <div class="grid flex-1 gap-1">
         <CardTitle> Activity </CardTitle>
         <CardDescription>
