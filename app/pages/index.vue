@@ -3,5 +3,5 @@
 </template>
 
 <script setup>
-navigateTo("/teams/orion_group", { replace: true });
+navigateTo("/community/orion_group", { replace: true });
 </script>
