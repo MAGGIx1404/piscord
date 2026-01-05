@@ -1,7 +1,7 @@
 <template>
   <main class="w-full">
     <ClientOnly>
-      <TeamWorkspaceEditor v-model="content" />
+      <CommunityWorkspaceEditor v-model="content" />
     </ClientOnly>
   </main>
 </template>

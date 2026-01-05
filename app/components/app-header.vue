@@ -5,11 +5,11 @@
     <div class="flex items-center gap-2">
       <SidebarTrigger />
       <Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
-      <Breadcrumb v-if="teamId">
+      <Breadcrumb v-if="communityId">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink href="/" class="capitalize">
-              {{ teamId.replaceAll("_", " ") }}
+              {{ communityId.replaceAll("_", " ") }}
             </BreadcrumbLink>
           </BreadcrumbItem>
           <template v-if="channelId">
@@ -28,7 +28,7 @@
 
     <div class="flex items-center">
       <ThemeChanger />
-      <TeamInfoSheet />
+      <!-- <TeamInfoSheet /> -->
     </div>
   </header>
 </template>
@@ -36,15 +36,15 @@
 <script setup>
 const route = useRoute();
 const channelId = ref("");
-const teamId = ref("");
+const communityId = ref("");
 
-const { teamId: team_id, channelId: channel_id } = route.params;
+const { communityId: community_id, channelId: channel_id } = route.params;
 
 watch(
   route,
   (newRoute) => {
-    const { team_id, channel_id } = newRoute.params;
-    teamId.value = team_id;
+    const { community_id, channel_id } = newRoute.params;
+    communityId.value = community_id;
     channelId.value = channel_id;
   },
   { immediate: true }

@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import type { SidebarProps } from "@/components/ui/sidebar";
 
-import { AudioWaveform, Command, GalleryVerticalEnd, LayoutDashboard } from "lucide-vue-next";
+import {
+  AudioWaveform,
+  Command,
+  GalleryVerticalEnd,
+  LayoutDashboard,
+  Compass
+} from "lucide-vue-next";
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "offcanvas"
@@ -10,9 +16,9 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
+    name: "maggix1404",
     email: "m@example.com",
-    avatar: "/images/avatar/1.png"
+    avatar: "/images/avatar/3.png"
   },
   teams: [
     {
@@ -34,17 +40,17 @@ const data = {
   channels: [
     {
       name: "General",
-      url: "/teams/orion_group/channels/general",
+      url: "/community/orion_group/channels/general",
       icon: Command
     },
     {
       name: "Development",
-      url: "/teams/orion_group/channels/development",
+      url: "/community/orion_group/channels/development",
       icon: AudioWaveform
     },
     {
       name: "Design",
-      url: "/teams/orion_group/channels/design",
+      url: "/community/orion_group/channels/design",
       icon: GalleryVerticalEnd
     }
   ],
@@ -55,17 +61,17 @@ const data = {
       pages: [
         {
           name: "Daily Journal & Reflection",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "📔"
         },
         {
           name: "Health & Wellness Tracker",
-          url: "/teams/orion_group/workspaces/2",
+          url: "/community/orion_group/workspaces/2",
           emoji: "🍏"
         },
         {
           name: "Personal Growth & Learning Goals",
-          url: "/teams/orion_group/workspaces/3",
+          url: "/community/orion_group/workspaces/3",
           emoji: "🌟"
         }
       ]
@@ -76,17 +82,17 @@ const data = {
       pages: [
         {
           name: "Career Objectives & Milestones",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "🎯"
         },
         {
           name: "Skill Acquisition & Training Log",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "🧠"
         },
         {
           name: "Networking Contacts & Events",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "🤝"
         }
       ]
@@ -97,17 +103,17 @@ const data = {
       pages: [
         {
           name: "Writing Ideas & Story Outlines",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "✍️"
         },
         {
           name: "Art & Design Portfolio",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "🖼️"
         },
         {
           name: "Music Composition & Practice Log",
-          url: "/teams/orion_group/workspaces/1",
+          url: "/community/orion_group/workspaces/1",
           emoji: "🎵"
         }
       ]
@@ -119,7 +125,7 @@ const data = {
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <NavTeamSwitcher :teams="data.teams" />
+      <NavCommunitySwitcher :teams="data.teams" />
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup class="group-data-[collapsible=icon]:hidden">
@@ -127,9 +133,17 @@ const data = {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton class="text-sidebar-foreground" as-child>
-              <NuxtLink to="/teams/orion_group">
+              <NuxtLink to="/community/orion_group">
                 <LayoutDashboard class="text-sidebar-foreground" />
                 <span> Overview </span>
+              </NuxtLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton class="text-sidebar-foreground" as-child>
+              <NuxtLink to="/discover">
+                <Compass class="text-sidebar-foreground" />
+                <span> Discover </span>
               </NuxtLink>
             </SidebarMenuButton>
           </SidebarMenuItem>

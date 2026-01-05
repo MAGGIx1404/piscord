@@ -1,6 +1,6 @@
 <template>
   <div class="w-full rounded-md" id="tiptap">
-    <TeamWorkspaceToolbar :editor-instance="editorInstance" />
+    <CommunityWorkspaceToolbar :editor-instance="editorInstance" />
 
     <div class="w-full h-full border-x border-b rounded-b-md">
       <div class="w-full">

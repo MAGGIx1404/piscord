@@ -28,13 +28,13 @@ const activeTeam = ref(props.teams[0]);
             <div
               class="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
             >
-              <component :is="activeTeam.logo" class="size-4" />
+              <component :is="activeTeam?.logo" class="size-4" />
             </div>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate text-base font-medium">
-                {{ activeTeam.name }}
+                {{ activeTeam?.name }}
               </span>
-              <span class="truncate text-xs">{{ activeTeam.plan }}</span>
+              <span class="truncate text-xs">{{ activeTeam?.plan }}</span>
             </div>
             <ChevronsUpDown class="ml-auto" />
           </SidebarMenuButton>
@@ -45,7 +45,7 @@ const activeTeam = ref(props.teams[0]);
           :side="isMobile ? 'bottom' : 'right'"
           :side-offset="4"
         >
-          <DropdownMenuLabel class="text-xs text-muted-foreground"> Teams </DropdownMenuLabel>
+          <DropdownMenuLabel class="text-xs text-muted-foreground"> Communities </DropdownMenuLabel>
           <DropdownMenuItem
             v-for="(team, index) in teams"
             :key="team.name"
@@ -59,11 +59,13 @@ const activeTeam = ref(props.teams[0]);
             <DropdownMenuShortcut>⌘{{ index + 1 }}</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem class="gap-2 p-2">
-            <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
-              <Plus class="size-4" />
-            </div>
-            <div class="font-medium text-muted-foreground">Add/Join team</div>
+          <DropdownMenuItem class="gap-2 p-2" as-child>
+            <NuxtLink to="/teams/create">
+              <div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                <Plus class="size-4" />
+              </div>
+              <div class="font-medium text-muted-foreground">Add/Join Community</div>
+            </NuxtLink>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
