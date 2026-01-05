@@ -17,7 +17,7 @@
     <h1 class="text-3xl font-medium">Featured Communities</h1>
 
     <!-- Community list -->
-    <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <WidgetsCommunityCard
         v-for="community in communities"
         :key="community.id"

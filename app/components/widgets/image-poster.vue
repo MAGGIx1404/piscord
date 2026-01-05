@@ -1,6 +1,6 @@
 <template>
   <figure
-    class="rounded-lg"
+    class="rounded-lg relative overflow-hidden"
     :class="{
       'h-40': size === 'md',
       'h-60': size === 'lg',
@@ -12,6 +12,8 @@
       :alt="alt"
       class="size-full group-hover:scale-105 transition-transform duration-300"
     />
+
+    <div class="absolute inset-0 bg-linear-to-t from-background via-background/30 to-transparent" />
   </figure>
 </template>
 
