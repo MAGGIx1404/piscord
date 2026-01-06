@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full rounded-md px-4 pb-10" id="tiptap">
+  <div class="w-full" id="tiptap">
     <!-- Bubble Menu (appears on text selection) -->
     <CommunityWorkspaceEditorMenusBubbleMenu v-if="editorInstance" :editor="editorInstance" />
 
@@ -13,7 +13,7 @@
     />
 
     <!-- Editor -->
-    <Card class="w-full h-full border-x border-b rounded-b-md p-0">
+    <Card class="w-full h-full border-x border-b p-0 overflow-hidden">
       <div class="w-full" @contextmenu.prevent="handleContextMenu">
         <EditorContent :editor="editorInstance" />
       </div>

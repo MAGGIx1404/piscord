@@ -22,6 +22,16 @@
               <BreadcrumbPage class="capitalize"> {{ channelId }} </BreadcrumbPage>
             </BreadcrumbItem>
           </template>
+          <template v-else-if="workspaceId">
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/"> Workspaces </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage class="capitalize"> {{ workspaceId }} </BreadcrumbPage>
+            </BreadcrumbItem>
+          </template>
         </BreadcrumbList>
       </Breadcrumb>
     </div>
@@ -37,15 +47,21 @@
 const route = useRoute();
 const channelId = ref("");
 const communityId = ref("");
+const workspaceId = ref("");
 
-const { communityId: community_id, channelId: channel_id } = route.params;
+const {
+  communityId: community_id,
+  channelId: channel_id,
+  workspaceId: workspace_id
+} = route.params;
 
 watch(
   route,
   (newRoute) => {
-    const { community_id, channel_id } = newRoute.params;
+    const { community_id, channel_id, workspace_id } = newRoute.params;
     communityId.value = community_id;
     channelId.value = channel_id;
+    workspaceId.value = workspace_id;
   },
   { immediate: true }
 );
