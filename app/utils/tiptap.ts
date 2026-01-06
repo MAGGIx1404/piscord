@@ -16,12 +16,21 @@ import { HorizontalRule } from "@tiptap/extension-horizontal-rule";
 import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table";
 import Image from "@tiptap/extension-image";
 import Code from "@tiptap/extension-code";
-import CodeBlock from "@tiptap/extension-code-block";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { Color } from "@tiptap/extension-color";
 import { TextStyle } from "@tiptap/extension-text-style";
+import { VueNodeViewRenderer } from "@tiptap/vue-3";
+import { common, createLowlight } from "lowlight";
 import type { TiptapExtensionOptions } from "./tiptap-types";
+import type { Component } from "vue";
 
-export const tiptapExtensions = (options?: Partial<TiptapExtensionOptions>) => {
+// Create lowlight instance with common languages
+const lowlight = createLowlight(common);
+
+export const tiptapExtensions = (
+  options?: Partial<TiptapExtensionOptions>,
+  codeBlockComponent?: Component
+) => {
   const tiptapExtension: TiptapExtensionOptions = {
     heading: {
       level: [1, 2, 3, 4, 5, 6]
@@ -32,6 +41,21 @@ export const tiptapExtensions = (options?: Partial<TiptapExtensionOptions>) => {
 
     ...options
   };
+
+  // Configure CodeBlockLowlight with optional Vue NodeView
+  const codeBlockExtension = codeBlockComponent
+    ? CodeBlockLowlight.extend({
+        addNodeView() {
+          return VueNodeViewRenderer(codeBlockComponent);
+        }
+      }).configure({
+        lowlight,
+        defaultLanguage: "plaintext"
+      })
+    : CodeBlockLowlight.configure({
+        lowlight,
+        defaultLanguage: "plaintext"
+      });
 
   return [
     Paragraph,
@@ -70,7 +94,7 @@ export const tiptapExtensions = (options?: Partial<TiptapExtensionOptions>) => {
     Gapcursor,
     Image,
     Code,
-    CodeBlock,
+    codeBlockExtension,
     TextStyle,
     Color
   ];

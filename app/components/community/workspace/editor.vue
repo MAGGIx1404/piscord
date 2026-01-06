@@ -126,6 +126,7 @@
 <script setup lang="ts">
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ImagePlus } from "lucide-vue-next";
+import CodeBlock from "./code-block.vue";
 
 const model = defineModel<String>({
   required: true,
@@ -170,7 +171,7 @@ const editorInstance = useEditor({
   onUpdate: ({ editor }) => {
     model.value = editor.getHTML();
   },
-  extensions: tiptapExtensions()
+  extensions: tiptapExtensions(undefined, CodeBlock)
 });
 
 // Context menu handler

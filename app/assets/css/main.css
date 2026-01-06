@@ -270,6 +270,7 @@
   font-size: 16px;
   line-height: 1.6;
   overflow-x: auto;
+  position: relative;
 }
 
 /* Remove prose interference */
@@ -278,6 +279,86 @@
   padding: 0;
   color: inherit;
   white-space: pre;
+}
+
+/* Code block with language selector */
+.tiptap-prose pre .code-block-language {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* -------------------------------
+   Syntax Highlighting (lowlight)
+-------------------------------- */
+
+.tiptap-prose pre code .hljs-comment,
+.tiptap-prose pre code .hljs-quote {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.tiptap-prose pre code .hljs-keyword,
+.tiptap-prose pre code .hljs-selector-tag,
+.tiptap-prose pre code .hljs-built_in,
+.tiptap-prose pre code .hljs-name,
+.tiptap-prose pre code .hljs-tag {
+  color: #c678dd;
+}
+
+.tiptap-prose pre code .hljs-string,
+.tiptap-prose pre code .hljs-title,
+.tiptap-prose pre code .hljs-section,
+.tiptap-prose pre code .hljs-attribute,
+.tiptap-prose pre code .hljs-literal,
+.tiptap-prose pre code .hljs-template-tag,
+.tiptap-prose pre code .hljs-template-variable,
+.tiptap-prose pre code .hljs-type,
+.tiptap-prose pre code .hljs-addition {
+  color: #98c379;
+}
+
+.tiptap-prose pre code .hljs-deletion,
+.tiptap-prose pre code .hljs-selector-attr,
+.tiptap-prose pre code .hljs-selector-pseudo,
+.tiptap-prose pre code .hljs-meta {
+  color: #e06c75;
+}
+
+.tiptap-prose pre code .hljs-doctag,
+.tiptap-prose pre code .hljs-attr {
+  color: #d19a66;
+}
+
+.tiptap-prose pre code .hljs-symbol,
+.tiptap-prose pre code .hljs-bullet,
+.tiptap-prose pre code .hljs-link {
+  color: #61aeee;
+}
+
+.tiptap-prose pre code .hljs-emphasis {
+  font-style: italic;
+}
+
+.tiptap-prose pre code .hljs-strong {
+  font-weight: bold;
+}
+
+.tiptap-prose pre code .hljs-number {
+  color: #d19a66;
+}
+
+.tiptap-prose pre code .hljs-variable,
+.tiptap-prose pre code .hljs-template-variable,
+.tiptap-prose pre code .hljs-class .hljs-title,
+.tiptap-prose pre code .hljs-title\.class_,
+.tiptap-prose pre code .hljs-title\.function_ {
+  color: #e5c07b;
+}
+
+.tiptap-prose pre code .hljs-function,
+.tiptap-prose pre code .hljs-params {
+  color: #61afef;
 }
 
 /* -------------------------------
