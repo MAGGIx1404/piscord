@@ -1,6 +1,6 @@
 <template>
   <main class="w-full">
-    <ChannelIntro />
+    <ChannelIntro name="Jatcomapany" />
     <ChannelChatPanel />
     <ChannelChatInput />
   </main>

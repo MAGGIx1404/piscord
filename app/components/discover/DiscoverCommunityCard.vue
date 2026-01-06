@@ -182,7 +182,8 @@ import {
   UserCheck,
   Users,
   Send,
-  Check
+  Check,
+  Music
 } from "lucide-vue-next";
 
 interface Community {
@@ -200,20 +201,23 @@ const props = defineProps<{
   community: Community;
 }>();
 
+const emit = defineEmits<{
+  join: [community: Community];
+  requestJoin: [payload: { community: Community; reason: string }];
+}>();
+
 const joinDialogOpen = ref(false);
 const joinReason = ref("");
 const agreedToRules = ref(false);
 
 const handleJoin = () => {
   if (props.community.requiresApproval) {
-    // Send join request logic
-    console.log("Join request sent:", {
-      communityId: props.community.id,
+    emit("requestJoin", {
+      community: props.community,
       reason: joinReason.value
     });
   } else {
-    // Direct join logic
-    console.log("Joined community:", props.community.id);
+    emit("join", props.community);
   }
   joinDialogOpen.value = false;
   joinReason.value = "";
@@ -238,7 +242,9 @@ type CategoryType =
   | "business"
   | "design"
   | "discussion"
-  | "finance";
+  | "finance"
+  | "art"
+  | "music";
 
 const getCategoryIcon = (type: string) => {
   const icons: Record<CategoryType, typeof Gamepad2> = {
@@ -249,7 +255,9 @@ const getCategoryIcon = (type: string) => {
     business: Briefcase,
     design: Palette,
     discussion: MessageCircle,
-    finance: Coins
+    finance: Coins,
+    art: Palette,
+    music: Music
   };
   return icons[type as CategoryType] || MessageCircle;
 };
@@ -263,7 +271,9 @@ const getCategoryBadgeClass = (type: string) => {
     business: "bg-emerald-500 text-emerald-100",
     design: "bg-rose-500 text-rose-100",
     discussion: "bg-cyan-500 text-cyan-100",
-    finance: "bg-yellow-500 text-yellow-100"
+    finance: "bg-yellow-500 text-yellow-100",
+    art: "bg-rose-500 text-rose-100",
+    music: "bg-indigo-500 text-indigo-100"
   };
   return classes[type as CategoryType] || "bg-gray-500/20 text-gray-300";
 };

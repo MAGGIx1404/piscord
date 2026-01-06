@@ -1,177 +1,31 @@
 <template>
   <main class="w-full pb-10">
     <!-- Hero Section with Banner & Community Info -->
-    <div class="w-full relative">
-      <WidgetsImagePoster src="/images/servers/p-1.jpg" size="lg" />
-
-      <!-- Community Card Overlay -->
-      <div class="w-full -mt-24 relative z-10 px-6">
-        <Card class="p-6 backdrop-blur-xl bg-card/90 shadow-2xl">
-          <div class="flex flex-col md:flex-row gap-6">
-            <!-- Community Icon Section -->
-            <div class="relative shrink-0">
-              <div class="relative group">
-                <div
-                  class="absolute -inset-1 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-500"
-                />
-                <div
-                  class="relative flex aspect-square size-32 items-center justify-center rounded-xl bg-card ring-4 ring-card"
-                >
-                  <AudioWaveform class="size-16 text-primary" />
-                </div>
-                <!-- Verified badge -->
-                <span class="absolute -top-2 -right-2 p-1.5 bg-blue-500 rounded-full">
-                  <BadgeCheck class="size-5 text-white" />
-                </span>
-              </div>
-            </div>
-
-            <!-- Community Info -->
-            <div class="flex-1 space-y-4">
-              <div class="flex items-start justify-between flex-wrap gap-4">
-                <div class="w-auto">
-                  <div class="flex items-center gap-2">
-                    <h1 class="text-2xl font-bold">{{ community.name }}</h1>
-                    <Badge class="bg-blue-500 text-white">
-                      <Shield class="size-4" />
-                      Verified
-                    </Badge>
-                    <Badge variant="outline">
-                      {{ community.type }}
-                    </Badge>
-                  </div>
-                  <p class="text-sm text-muted-foreground">
-                    Created {{ community.createdAt }} • {{ community.memberCount }} members
-                  </p>
-                </div>
-                <div class="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Settings class="size-4" />
-                    Settings
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Bell class="size-4" />
-                    Notifications
-                  </Button>
-                  <Button size="sm">
-                    <UserPlus class="size-4" />
-                    Invite
-                  </Button>
-                </div>
-              </div>
-
-              <!-- Description -->
-              <p class="text-sm max-w-xl">
-                {{ community.description }}
-              </p>
-
-              <!-- Quick Stats -->
-              <div class="flex flex-wrap gap-5">
-                <Button v-for="stat in quickStats" :key="stat.label" variant="link" size="link">
-                  <component :is="stat.icon" class="size-4 text-blue-500" />
-                  {{ stat.value }} {{ stat.label }}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
-    </div>
+    <CommunityHero
+      :name="community.name"
+      :type="community.type"
+      :description="community.description"
+      :created-at="community.createdAt"
+      :member-count="community.memberCount"
+      :stats="quickStats"
+    />
 
     <!-- Main Content Grid -->
     <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
       <!-- Left Column -->
       <div class="space-y-6">
         <!-- About Card -->
-        <Card class="gap-4">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold flex items-center gap-2">
-              <Info class="size-4" />
-              About
-            </h3>
-            <Button variant="ghost" size="icon" class="size-7">
-              <Pencil class="size-3" />
-            </Button>
-          </div>
-          <div class="space-y-3 text-sm">
-            <div class="flex items-center gap-3">
-              <Globe class="size-4 text-muted-foreground" />
-              <span>Public Community</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <Calendar class="size-4 text-muted-foreground" />
-              <span>Created Jan 15, 2024</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <MapPin class="size-4 text-muted-foreground" />
-              <span>Global</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <LinkIcon class="size-4 text-muted-foreground" />
-              <a href="#" class="text-primary hover:underline">oriongroup.gg</a>
-            </div>
-          </div>
-          <!-- Tags -->
-          <div class="flex flex-wrap gap-2 pt-2">
-            <Badge v-for="tag in community.tags" :key="tag" variant="secondary" class="text-xs">
-              {{ tag }}
-            </Badge>
-          </div>
-        </Card>
+        <CommunityAbout
+          :created-at="'Jan 15, 2024'"
+          :website="'https://oriongroup.gg'"
+          :tags="community.tags"
+        />
 
         <!-- Community Rules -->
-        <Card class="gap-4">
-          <h3 class="font-semibold flex items-center gap-2">
-            <ScrollText class="size-4" />
-            Community Rules
-          </h3>
-          <div class="space-y-2">
-            <div
-              v-for="(rule, index) in communityRules"
-              :key="index"
-              class="flex gap-3 text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              <span
-                class="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium shrink-0"
-              >
-                {{ index + 1 }}
-              </span>
-              <span class="text-muted-foreground">{{ rule }}</span>
-            </div>
-          </div>
-        </Card>
+        <CommunityRules :rules="communityRules" />
 
         <!-- Workspaces -->
-        <Card class="gap-4">
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold flex items-center gap-2">
-              <Layers class="size-4" />
-              Workspaces
-            </h3>
-            <Badge variant="secondary">{{ workspaces.length }}</Badge>
-          </div>
-          <div class="space-y-2">
-            <div
-              v-for="workspace in workspaces"
-              :key="workspace.id"
-              class="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
-            >
-              <div
-                class="size-8 rounded-lg flex items-center justify-center"
-                :class="workspace.color"
-              >
-                <component :is="workspace.icon" class="size-4" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate">{{ workspace.name }}</p>
-                <p class="text-xs text-muted-foreground">{{ workspace.channelCount }} channels</p>
-              </div>
-              <ChevronRight
-                class="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-              />
-            </div>
-          </div>
-        </Card>
+        <CommunityWorkspaces :workspaces="workspaces" />
       </div>
 
       <!-- Middle Column -->
@@ -183,130 +37,17 @@
         />
 
         <!-- Members by Role -->
-        <Card>
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold flex items-center gap-2">
-              <Users class="size-4" />
-              Members
-            </h3>
-            <Button variant="ghost" size="sm">View All</Button>
-          </div>
-
-          <!-- Role Tabs -->
-          <Tabs v-model="selectedRole" class="w-full">
-            <TabsList>
-              <TabsTrigger
-                v-for="role in memberRoles"
-                :key="role.id"
-                :value="role.id"
-                class="max-w-max px-4"
-              >
-                <span class="size-2 rounded-full" :class="role.dotColor" />
-                {{ role.label }}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent :value="selectedRole" class="mt-4">
-              <!-- Members Grid -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div
-                  v-for="member in filteredMembers"
-                  :key="member.id"
-                  class="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer"
-                >
-                  <div class="relative">
-                    <Avatar class="size-10">
-                      <AvatarImage :src="member.avatar" />
-                      <AvatarFallback>{{ member.name.charAt(0) }}</AvatarFallback>
-                    </Avatar>
-                    <span
-                      v-if="member.online"
-                      class="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full border-2 border-card"
-                    />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <p class="font-medium text-sm truncate">{{ member.name }}</p>
-                      <Crown v-if="member.role === 'owner'" class="size-3 text-yellow-500" />
-                      <Shield v-else-if="member.role === 'admin'" class="size-3 text-red-500" />
-                      <Wrench v-else-if="member.role === 'mod'" class="size-3 text-blue-500" />
-                    </div>
-                    <p class="text-xs text-muted-foreground">{{ member.status }}</p>
-                  </div>
-                  <Badge :class="getRoleBadgeClass(member.role)" class="text-xs">
-                    {{ member.role }}
-                  </Badge>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </Card>
+        <CommunityMembers
+          v-model:selected-role="selectedRole"
+          :roles="memberRoles"
+          :members="members"
+        />
 
         <!-- Channels -->
-        <Card>
-          <div class="flex items-center justify-between">
-            <h3 class="font-semibold flex items-center gap-2">
-              <Hash class="size-4" />
-              Channels
-            </h3>
-            <Button variant="ghost" size="sm">
-              <Plus class="size-4" />
-              New Channel
-            </Button>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div
-              v-for="channel in channels"
-              :key="channel.id"
-              class="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer group"
-            >
-              <div
-                class="size-10 rounded-lg flex items-center justify-center"
-                :class="channel.iconBg"
-              >
-                <component :is="channel.icon" class="size-5" :class="channel.iconColor" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm truncate"># {{ channel.name }}</p>
-                <p class="text-xs text-muted-foreground">{{ channel.lastActivity }}</p>
-              </div>
-              <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                <MessageSquare class="size-3" />
-                {{ channel.messageCount }}
-              </div>
-            </div>
-          </div>
-        </Card>
+        <CommunityChannels :channels="channels" />
 
         <!-- Recent Activity -->
-        <Card>
-          <h3 class="font-semibold flex items-center gap-2">
-            <Clock class="size-4" />
-            Recent Activity
-          </h3>
-          <div class="space-y-1">
-            <div
-              v-for="activity in recentActivity"
-              :key="activity.id"
-              class="flex gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
-            >
-              <Avatar class="size-10 shrink-0">
-                <AvatarImage :src="activity.userAvatar" />
-                <AvatarFallback>{{ activity.userName.charAt(0) }}</AvatarFallback>
-              </Avatar>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm">
-                  <span class="font-medium">{{ activity.userName }}</span>
-                  <span class="text-muted-foreground"> {{ activity.action }}</span>
-                </p>
-                <p class="text-xs text-muted-foreground">{{ activity.time }}</p>
-              </div>
-              <ChevronRight
-                class="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center"
-              />
-            </div>
-          </div>
-        </Card>
+        <CommunityActivity :activities="recentActivity" />
       </div>
     </div>
   </main>
@@ -314,35 +55,17 @@
 
 <script setup>
 import {
-  AudioWaveform,
-  Settings,
-  Bell,
-  UserPlus,
-  Shield,
-  BadgeCheck,
   Users,
   MessageSquare,
   Hash,
   Layers,
-  Info,
-  Pencil,
-  Globe,
-  Calendar,
-  MapPin,
-  LinkIcon,
-  ScrollText,
-  ChevronRight,
-  Clock,
-  Crown,
-  Wrench,
-  Plus,
-  Mic,
-  Video,
-  Megaphone,
-  BookOpen,
   Code,
   Gamepad2,
-  Music
+  Music,
+  BookOpen,
+  Mic,
+  Video,
+  Megaphone
 } from "lucide-vue-next";
 
 const community = {
@@ -479,21 +202,6 @@ const members = [
     online: true
   }
 ];
-
-const filteredMembers = computed(() => {
-  if (selectedRole.value === "all") return members;
-  return members.filter((m) => m.role === selectedRole.value);
-});
-
-const getRoleBadgeClass = (role) => {
-  const classes = {
-    owner: "bg-yellow-500 text-white",
-    admin: "bg-red-500 text-white",
-    mod: "bg-blue-500 text-white",
-    member: "bg-green-500/20 text-green-500"
-  };
-  return classes[role] || "bg-muted";
-};
 
 const channels = [
   {

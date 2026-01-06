@@ -1,103 +1,25 @@
 <template>
   <main class="w-full space-y-10 pb-10 px-4">
-    <div class="w-full relative overflow-hidden">
-      <WidgetsImagePoster src="/images/servers/p-4.jpg" />
-      <div class="max-w-3xl absolute bottom-0 left-0 p-10 text-white space-y-3">
-        <h1 class="text-5xl font-bold">Discover Communities</h1>
-        <p class="text-lg">
-          Explore a variety of communities and join the ones that interest you. Connect, share, and
-          grow with like-minded individuals.
-        </p>
-        <Button variant="secondary" as-child>
-          <NuxtLink to="/community/create"> <BadgePlus /> Create Community </NuxtLink>
-        </Button>
-      </div>
-    </div>
+    <!-- Hero Section -->
+    <DiscoverHero />
 
     <!-- Search and Filter Section -->
-    <div class="w-full space-y-4">
-      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <h1 class="text-3xl font-medium">Featured Communities</h1>
-
-        <!-- Search and Sort -->
-        <div class="flex items-center gap-2 w-full md:w-auto">
-          <!-- Search Input -->
-          <div class="relative flex-1 md:w-80">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input v-model="searchQuery" placeholder="Search communities..." class="pl-10 pr-4" />
-            <button
-              v-if="searchQuery"
-              @click="searchQuery = ''"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X class="size-4" />
-            </button>
-          </div>
-
-          <!-- Sort Dropdown -->
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild class="h-auto">
-              <Button variant="outline" size="default" class="shrink-0">
-                <ArrowUpDown class="size-4" />
-                <span class="hidden sm:inline">{{
-                  sortOptions.find((s) => s.value === sortBy)?.label
-                }}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                v-for="option in sortOptions"
-                :key="option.value"
-                @click="sortBy = option.value"
-                :class="{ 'bg-accent': sortBy === option.value }"
-              >
-                <component :is="option.icon" class="size-4" />
-                {{ option.label }}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <!-- Filter Tabs -->
-      <div class="flex items-center gap-2 flex-wrap">
-        <Button
-          v-for="filter in communityFilters"
-          :key="filter.value"
-          :variant="activeFilter === filter.value ? 'default' : 'outline'"
-          size="sm"
-          @click="activeFilter = filter.value"
-          class="gap-1.5"
-        >
-          <component :is="filter.icon" class="size-4" />
-          {{ filter.label }}
-          <Badge v-if="filter.count" variant="secondary" class="ml-1 text-xs px-1.5">
-            {{ filter.count }}
-          </Badge>
-        </Button>
-      </div>
-
-      <!-- Active Filters & Results Count -->
-      <div class="flex items-center">
-        <p class="text-sm text-muted-foreground">
-          Showing <span class="font-medium text-foreground">{{ filteredCommunities.length }}</span>
-          {{ filteredCommunities.length === 1 ? "community" : "communities" }}
-          <template v-if="activeFilter !== 'all' || searchQuery">
-            <span class="mx-1">•</span>
-            <button @click="clearFilters" class="text-primary hover:underline">
-              Clear filters
-            </button>
-          </template>
-        </p>
-      </div>
-    </div>
+    <DiscoverSearch
+      v-model:searchQuery="searchQuery"
+      v-model:activeFilter="activeFilter"
+      v-model:sortBy="sortBy"
+      :filters="communityFilters"
+      :sort-options="sortOptions"
+      :results-count="filteredCommunities.length"
+      @clear-filters="clearFilters"
+    />
 
     <!-- Community list -->
     <div
       v-if="filteredCommunities.length"
       class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
     >
-      <WidgetsCommunityCard
+      <DiscoverCommunityCard
         v-for="community in filteredCommunities"
         :key="community.id"
         :community="community"
@@ -105,33 +27,12 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="w-full flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="size-20 rounded-full bg-muted flex items-center justify-center">
-        <SearchX class="size-10 text-muted-foreground" />
-      </div>
-      <div class="text-center space-y-2">
-        <h3 class="text-lg font-semibold">No communities found</h3>
-        <p class="text-sm text-muted-foreground max-w-md">
-          We couldn't find any communities matching your search. Try adjusting your filters or
-          search term.
-        </p>
-      </div>
-      <Button variant="outline" @click="clearFilters">
-        <RotateCcw class="size-4" />
-        Reset filters
-      </Button>
-    </div>
+    <DiscoverEmptyState v-else @reset="clearFilters" />
   </main>
 </template>
 
 <script setup lang="ts">
 import {
-  BadgePlus,
-  Search,
-  X,
-  ArrowUpDown,
-  SearchX,
-  RotateCcw,
   Sparkles,
   Gamepad2,
   Code,
@@ -139,7 +40,8 @@ import {
   Palette,
   Music,
   Users,
-  TrendingUp
+  TrendingUp,
+  ArrowUpDown
 } from "lucide-vue-next";
 
 const searchQuery = ref("");
