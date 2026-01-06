@@ -190,21 +190,6 @@
   display: none;
 }
 
-/* prose-headings:font-inter
-    prose-p:font-inter
-    prose-table:font-inter
-    prose-code:font-inter
-    prose-pre:font-inter
-    prose-li:font-inter
-    prose-strong:font-inter
-    prose-blockquote:font-inter
-    prose-a:font-inter; */
-
-/* ======================================================
-   TipTap + Tailwind Typography
-   SHADCN COLOR SYSTEM (Light + Dark)
-   ====================================================== */
-
 /* -------------------------------
    Typography wrapper
 -------------------------------- */
@@ -212,20 +197,12 @@
 .tiptap-prose {
   @apply prose
     max-w-none
-    prose-p:leading-7
-    prose-p:my-2
     prose-headings:font-semibold
     prose-headings:tracking-tight
     prose-headings:text-foreground
     prose-h1:text-3xl
-    prose-h1:mt-6
-    prose-h1:mb-3
     prose-h2:text-2xl
-    prose-h2:mt-5
-    prose-h2:mb-2
     prose-h3:text-xl
-    prose-h3:mt-4
-    prose-h3:mb-2
     prose-strong:text-foreground
     prose-img:rounded-lg
     prose-a:underline-offset-4
@@ -249,6 +226,7 @@
 /* Base text colors */
 .tiptap-prose {
   color: var(--foreground);
+  background-color: transparent;
 }
 
 /* Links */
@@ -346,7 +324,7 @@
   margin: 0.25rem 0;
 
   &::marker {
-    color: var(--color-black);
+    color: currentColor;
   }
 }
 
@@ -364,12 +342,123 @@
 
 .ProseMirror {
   position: relative;
-  padding: 1.25rem 1.5rem;
+  padding: 1.5rem 2rem;
   min-height: 220px;
   outline: none;
-  background-color: var(--background);
   color: var(--foreground);
   caret-color: var(--foreground);
+}
+
+/* Base spacing for all block elements */
+.ProseMirror > * + * {
+  margin-top: 0.5em;
+}
+
+/* Paragraphs */
+.ProseMirror p {
+  margin: 0;
+  line-height: 1.75;
+}
+
+.ProseMirror > p + p {
+  margin-top: 0.75em;
+}
+
+/* Headings - more space before, less after */
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  margin: 0;
+  line-height: 1.3;
+}
+
+.ProseMirror > * + h1 {
+  margin-top: 2em;
+}
+
+.ProseMirror > * + h2 {
+  margin-top: 1.75em;
+}
+
+.ProseMirror > * + h3 {
+  margin-top: 1.5em;
+}
+
+.ProseMirror > h1 + *,
+.ProseMirror > h2 + *,
+.ProseMirror > h3 + * {
+  margin-top: 0.5em;
+}
+
+/* Lists */
+.ProseMirror ul,
+.ProseMirror ol {
+  margin: 0;
+  padding-left: 1.5em;
+}
+
+.ProseMirror > * + ul,
+.ProseMirror > * + ol {
+  margin-top: 0.75em;
+}
+
+.ProseMirror li {
+  margin: 0.25em 0;
+}
+
+.ProseMirror li p {
+  margin: 0;
+}
+
+/* Blockquotes */
+.ProseMirror > * + blockquote {
+  margin-top: 1em;
+}
+
+.ProseMirror blockquote + * {
+  margin-top: 1em;
+}
+
+/* Code blocks */
+.ProseMirror > * + pre {
+  margin-top: 1em;
+}
+
+.ProseMirror pre + * {
+  margin-top: 1em;
+}
+
+/* Tables */
+.ProseMirror > * + table {
+  margin-top: 1.25em;
+}
+
+.ProseMirror table + * {
+  margin-top: 1.25em;
+}
+
+/* Images & embeds */
+.ProseMirror > * + .image,
+.ProseMirror > * + img,
+.ProseMirror > * + iframe {
+  margin-top: 1.25em;
+}
+
+.ProseMirror img + *,
+.ProseMirror iframe + * {
+  margin-top: 1.25em;
+}
+
+/* Horizontal rules */
+.ProseMirror > * + hr {
+  margin-top: 1.5em;
+}
+
+.ProseMirror hr + * {
+  margin-top: 1.5em;
 }
 
 /* Selection */
@@ -385,7 +474,6 @@
 .ProseMirror img,
 .ProseMirror iframe {
   display: block;
-  margin: 1rem 0;
   border-radius: 0.75rem;
   max-width: 100%;
 }

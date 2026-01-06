@@ -212,7 +212,7 @@
                 <div
                   v-for="member in filteredMembers"
                   :key="member.id"
-                  class="flex items-center gap-3 p-3 rounded-lg border border-input hover:bg-accent/50 transition-colors cursor-pointer"
+                  class="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer"
                 >
                   <div class="relative">
                     <Avatar class="size-10">
@@ -258,7 +258,7 @@
             <div
               v-for="channel in channels"
               :key="channel.id"
-              class="flex items-center gap-3 p-3 rounded-lg border border-input hover:bg-accent/50 transition-colors cursor-pointer group"
+              class="flex items-center gap-3 p-3 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer group"
             >
               <div
                 class="size-10 rounded-lg flex items-center justify-center"

@@ -2672,6 +2672,13 @@
   dependencies:
     "@floating-ui/dom" "^1.0.0"
 
+"@tiptap/extension-bubble-menu@^3.15.0":
+  version "3.15.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-bubble-menu/-/extension-bubble-menu-3.15.0.tgz#a0bcc41aa49556c5b7abe5f608403aa3428dde73"
+  integrity sha512-i22c+MT3LscjO8M9uDp5XBUmYn6zL8eZF4wLUSvEhO+q6gdZLgEGdP5K+zniSHAEIKfwIHkVWsR5uGJKBMCnHA==
+  dependencies:
+    "@floating-ui/dom" "^1.0.0"
+
 "@tiptap/extension-bullet-list@^3.14.0":
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-bullet-list/-/extension-bullet-list-3.14.0.tgz#109e7e9c360176689b46504625467815a1a3ad79"
@@ -2686,6 +2693,11 @@
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-code/-/extension-code-3.14.0.tgz#452ca88d58e769133f08e1827928fba7a7088755"
   integrity sha512-Sx9yLorzS+oqNmXID4jt0G5tDnsEgU0HtEXPLD3KNt/ltVxWJU0AXwCsp1/Dg0HIDL868vWpJ2jC1t/4oaf9kA==
+
+"@tiptap/extension-color@^3.15.0":
+  version "3.15.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-color/-/extension-color-3.15.0.tgz#2269b84f9df5f0fb48fdd76e142c3b56b6ca73ae"
+  integrity sha512-jXvzx0CAh34Hj+5wNBd4H7pA+KaruQSZf4eiPKl2ZdhE8Rny8e2IyzJ/n9cVAainQcVYr9AGf1vc41gDY2/M2w==
 
 "@tiptap/extension-document@^3.14.0":
   version "3.14.0"
@@ -2783,6 +2795,11 @@
   version "3.14.0"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-text-align/-/extension-text-align-3.14.0.tgz#9b8344666d8b7ea19848d559827bd1abb4acda95"
   integrity sha512-CaxxlbAvfofZZ7KPL28Kg8xuMv8t4rvt5GPwZAqE+jd3rwrucpovpX/SdgclYDc75xs0t8qeoxDFe9HQmG5XZA==
+
+"@tiptap/extension-text-style@^3.15.0":
+  version "3.15.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-text-style/-/extension-text-style-3.15.0.tgz#4ceea1119709fec66015444e552864cd12c93815"
+  integrity sha512-w5pIzASOrtXUxOmkNgmfBg7LGkrnlxtWVQOMqnzgedi/uFPGRrmXy9dvtD1BiSkVVO+K10W68wJ+A+Ifk22RpQ==
 
 "@tiptap/extension-text@^3.14.0":
   version "3.14.0"

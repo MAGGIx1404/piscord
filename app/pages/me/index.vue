@@ -195,7 +195,7 @@
             <div
               v-for="community in communities"
               :key="community.id"
-              class="flex items-center gap-4 p-4 border border-input rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+              class="flex items-center gap-4 p-4 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors cursor-pointer"
             >
               <Avatar class="size-12 bg-foreground rounded-md">
                 <AvatarImage :src="community.icon" />

@@ -17,6 +17,8 @@ import { Table, TableRow, TableCell, TableHeader } from "@tiptap/extension-table
 import Image from "@tiptap/extension-image";
 import Code from "@tiptap/extension-code";
 import CodeBlock from "@tiptap/extension-code-block";
+import { Color } from "@tiptap/extension-color";
+import { TextStyle } from "@tiptap/extension-text-style";
 import type { TiptapExtensionOptions } from "./tiptap-types";
 
 export const tiptapExtensions = (options?: Partial<TiptapExtensionOptions>) => {
@@ -68,6 +70,8 @@ export const tiptapExtensions = (options?: Partial<TiptapExtensionOptions>) => {
     Gapcursor,
     Image,
     Code,
-    CodeBlock
+    CodeBlock,
+    TextStyle,
+    Color
   ];
 };
