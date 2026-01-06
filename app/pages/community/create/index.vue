@@ -1,697 +1,99 @@
 <template>
   <main class="w-full pb-10">
     <!-- Header -->
-    <div class="w-full relative">
-      <div
-        class="relative h-60 overflow-hidden rounded-lg bg-linear-to-r from-primary/20 via-purple-500/20 to-pink-500/20"
-      >
-        <div
-          class="absolute inset-0 bg-linear-to-t from-background via-background/30 to-transparent"
-        />
-      </div>
-
-      <!-- Page Header -->
-      <div class="w-full -mt-24 relative z-10 px-6">
-        <Card class="p-6 backdrop-blur-xl bg-card/90 shadow-2xl">
-          <div class="flex items-center gap-4">
-            <div class="size-16 rounded-xl bg-primary/20 flex items-center justify-center">
-              <Sparkles class="size-8 text-primary" />
-            </div>
-            <div>
-              <h1 class="text-2xl font-bold">Create Your Community</h1>
-              <p class="text-muted-foreground">
-                Build a space for your community to connect, share, and grow together.
-              </p>
-            </div>
-          </div>
-        </Card>
-      </div>
-    </div>
+    <CommunityCreateHeader />
 
     <!-- Form Content -->
     <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
       <!-- Left Column - Main Form -->
       <div class="lg:col-span-2 space-y-6">
         <!-- Basic Info -->
-        <Card class="p-6">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Info class="size-5" />
-              Basic Information
-            </CardTitle>
-            <CardDescription>
-              Give your community a unique identity that members will recognize.
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-6">
-            <!-- Community Icon Upload -->
-            <div class="space-y-2">
-              <Label>Community Icon</Label>
-              <div class="flex items-center gap-4">
-                <div
-                  class="size-24 rounded-xl border-2 border-dashed border-input flex items-center justify-center cursor-pointer hover:border-primary transition-colors relative overflow-hidden group"
-                  @click="triggerIconUpload"
-                >
-                  <img
-                    v-if="form.iconPreview"
-                    :src="form.iconPreview"
-                    class="w-full h-full object-cover"
-                  />
-                  <div v-else class="flex flex-col items-center gap-1 text-muted-foreground">
-                    <ImagePlus class="size-6" />
-                    <span class="text-xs">Upload</span>
-                  </div>
-                  <div
-                    v-if="form.iconPreview"
-                    class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Camera class="size-6 text-white" />
-                  </div>
-                </div>
-                <input
-                  ref="iconInput"
-                  type="file"
-                  accept="image/*"
-                  class="hidden"
-                  @change="handleIconUpload"
-                />
-                <div class="text-sm text-muted-foreground">
-                  <p>Recommended: 256x256px</p>
-                  <p>Max file size: 2MB</p>
-                </div>
-              </div>
-            </div>
+        <CommunityCreateBasicInfo
+          v-model:name="form.name"
+          v-model:slug="form.slug"
+          v-model:description="form.description"
+          :icon-preview="form.iconPreview"
+          :banner-preview="form.bannerPreview"
+          :is-generating="isGenerating"
+          @trigger-icon-upload="triggerIconUpload"
+          @trigger-banner-upload="triggerBannerUpload"
+          @generate-description="generateAIDescription"
+        />
 
-            <!-- Community Banner/Poster -->
-            <div class="space-y-2">
-              <Label>Community Banner</Label>
-              <div
-                class="w-full h-32 rounded-xl border-2 border-dashed border-input flex items-center justify-center cursor-pointer hover:border-primary transition-colors relative overflow-hidden group"
-                @click="triggerBannerUpload"
-              >
-                <img
-                  v-if="form.bannerPreview"
-                  :src="form.bannerPreview"
-                  class="w-full h-full object-cover"
-                />
-                <div v-else class="flex flex-col items-center gap-2 text-muted-foreground">
-                  <ImagePlus class="size-8" />
-                  <span class="text-sm">Upload banner image</span>
-                  <span class="text-xs">Recommended: 1200x400px</span>
-                </div>
-                <div
-                  v-if="form.bannerPreview"
-                  class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Camera class="size-8 text-white" />
-                </div>
-              </div>
-              <input
-                ref="bannerInput"
-                type="file"
-                accept="image/*"
-                class="hidden"
-                @change="handleBannerUpload"
-              />
-              <p class="text-xs text-muted-foreground">Max file size: 4MB</p>
-            </div>
-
-            <div class="w-full grid grid-cols-2 gap-6">
-              <!-- Community Name -->
-              <div class="space-y-2">
-                <Label for="name">Community Name <span class="text-destructive">*</span></Label>
-                <Input
-                  id="name"
-                  v-model="form.name"
-                  placeholder="Enter community name"
-                  maxlength="50"
-                />
-                <p class="text-xs text-muted-foreground">{{ form.name.length }}/50 characters</p>
-              </div>
-
-              <!-- Community URL -->
-              <div class="space-y-2">
-                <Label for="slug">Community URL</Label>
-
-                <ButtonGroup class="gap-0! w-full h-10.5">
-                  <ButtonGroupText as-child>
-                    <Label for="url">piscord.com/c/</Label>
-                  </ButtonGroupText>
-                  <InputGroup class="h-full">
-                    <InputGroupInput id="slug" v-model="form.slug" placeholder="your-community" />
-                    <InputGroupAddon align="inline-end">
-                      <Link2Icon />
-                    </InputGroupAddon>
-                  </InputGroup>
-                </ButtonGroup>
-                <p class="text-xs text-muted-foreground">
-                  Only lowercase letters, numbers, and hyphens allowed.
-                </p>
-              </div>
-            </div>
-
-            <!-- Description -->
-            <div class="space-y-2">
-              <div class="flex items-center justify-between">
-                <Label for="description">Description <span class="text-destructive">*</span></Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  class="h-7 gap-1.5 text-primary hover:text-primary"
-                  @click="generateAIDescription"
-                  :disabled="isGenerating || !form.name.trim()"
-                >
-                  <Sparkles class="size-3.5" :class="{ 'animate-pulse': isGenerating }" />
-                  {{ isGenerating ? "Generating..." : "AI Generate" }}
-                </Button>
-              </div>
-              <div class="relative">
-                <Textarea
-                  id="description"
-                  v-model="form.description"
-                  placeholder="Tell people what your community is about..."
-                  rows="4"
-                  maxlength="500"
-                  class="min-h-20"
-                  :disabled="isGenerating"
-                />
-                <div
-                  v-if="isGenerating"
-                  class="absolute inset-0 bg-background/50 rounded-md flex items-center justify-center"
-                >
-                  <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 class="size-4 animate-spin" />
-                    <span>AI is writing...</span>
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-center justify-between">
-                <p class="text-xs text-muted-foreground">
-                  {{ form.description.length }}/500 characters
-                </p>
-                <Tooltip v-if="form.name.trim()">
-                  <TooltipTrigger asChild>
-                    <button
-                      class="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
-                    >
-                      <Wand2 class="size-3" />
-                      AI tips
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" class="max-w-xs">
-                    <p>
-                      Click "AI Generate" to create a description based on your community name and
-                      category.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <!-- Hidden file inputs -->
+        <input
+          ref="iconInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleIconUpload"
+        />
+        <input
+          ref="bannerInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleBannerUpload"
+        />
 
         <!-- Category & Tags -->
-        <Card class="p-6">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Tag class="size-5" />
-              Category & Tags
-            </CardTitle>
-            <CardDescription>
-              Help people discover your community by choosing relevant categories and tags.
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="grid grid-cols-2 gap-6">
-            <!-- Category -->
-            <div class="space-y-2">
-              <Label>Category <span class="text-destructive">*</span></Label>
-              <Select v-model="form.category">
-                <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="category in categories"
-                    :key="category.value"
-                    :value="category.value"
-                  >
-                    <div class="flex items-center gap-2">
-                      <component :is="category.icon" class="size-4" />
-                      {{ category.label }}
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p class="text-xs text-muted-foreground">
-                Choose the category that best fits your community.
-              </p>
-            </div>
-
-            <!-- Tags -->
-            <div class="space-y-2">
-              <Label>Tags</Label>
-              <ButtonGroup class="gap-0! w-full">
-                <InputGroup class="h-full">
-                  <InputGroupInput
-                    v-model="tagInput"
-                    placeholder="Add a tag..."
-                    @keydown.enter.prevent="addTag"
-                    :disabled="form.tags.length >= 5"
-                  />
-                </InputGroup>
-                <ButtonGroupText
-                  @click="addTag"
-                  :disabled="!tagInput.trim() || form.tags.length >= 5"
-                >
-                  <Plus class="size-4" />
-                </ButtonGroupText>
-              </ButtonGroup>
-
-              <div v-if="form.tags.length !== 0" class="flex flex-wrap gap-2 mb-2">
-                <Badge
-                  v-for="tag in form.tags"
-                  :key="tag"
-                  class="cursor-pointer"
-                  @click="removeTag(tag)"
-                >
-                  {{ tag }}
-                  <X class="size-3" />
-                </Badge>
-              </div>
-
-              <p class="text-xs text-muted-foreground">Add up to 5 tags. Press Enter to add.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <CommunityCreateCategoryTags
+          v-model:category="form.category"
+          v-model:tag-input="tagInput"
+          :tags="form.tags"
+          :categories="categories"
+          @add-tag="addTag"
+          @remove-tag="removeTag"
+        />
 
         <!-- Community Rules -->
-        <Card class="p-6">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Gavel class="size-5" />
-              Community Rules
-            </CardTitle>
-            <CardDescription>
-              Set clear guidelines for your community members to follow.
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-4">
-            <!-- Add Rule Input -->
-            <div class="space-y-2">
-              <ButtonGroup class="gap-0! w-full">
-                <InputGroup class="h-full">
-                  <InputGroupInput
-                    v-model="ruleInput"
-                    placeholder="Enter a rule (e.g., Be respectful to all members)"
-                    @keydown.enter.prevent="addRule"
-                    :disabled="form.rules.length >= 10"
-                  />
-                </InputGroup>
-                <ButtonGroupText
-                  @click="addRule"
-                  :disabled="!ruleInput.trim() || form.rules.length >= 10"
-                >
-                  <Plus class="size-4" />
-                </ButtonGroupText>
-              </ButtonGroup>
-              <p class="text-xs text-muted-foreground">Add up to 10 rules. Press Enter to add.</p>
-            </div>
-
-            <!-- Rules List -->
-            <div v-if="form.rules.length > 0" class="space-y-2">
-              <TransitionGroup name="rule">
-                <div
-                  v-for="(rule, index) in form.rules"
-                  :key="rule.id"
-                  class="group flex items-center gap-3 p-3 rounded-lg border border-input bg-muted/30 hover:bg-muted/50 transition-colors"
-                >
-                  <div
-                    class="size-6 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary"
-                  >
-                    {{ index + 1 }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm wrap-break-word">{{ rule.text }}</p>
-                  </div>
-                  <div
-                    class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="size-7"
-                      @click="moveRule(index, -1)"
-                      :disabled="index === 0"
-                    >
-                      <ChevronUp class="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="size-7"
-                      @click="moveRule(index, 1)"
-                      :disabled="index === form.rules.length - 1"
-                    >
-                      <ChevronDown class="size-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="size-7 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      @click="removeRule(rule.id)"
-                    >
-                      <Trash2 class="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              </TransitionGroup>
-            </div>
-
-            <!-- Empty State -->
-            <div
-              v-else
-              class="flex flex-col items-center justify-center py-8 text-center border-2 border-dashed border-input rounded-xl"
-            >
-              <div class="size-12 rounded-full bg-muted flex items-center justify-center mb-3">
-                <ScrollText class="size-6 text-muted-foreground" />
-              </div>
-              <p class="text-sm font-medium">No rules added yet</p>
-              <p class="text-xs text-muted-foreground mt-1">
-                Add rules to help maintain a positive community environment.
-              </p>
-            </div>
-
-            <!-- Quick Add Suggestions -->
-            <div v-if="form.rules.length < 10" class="space-y-2">
-              <Label class="text-xs text-muted-foreground">Quick add suggestions:</Label>
-              <div class="flex flex-wrap gap-2">
-                <Button
-                  v-for="suggestion in ruleSuggestions.filter(
-                    (s) => !form.rules.some((r) => r.text === s)
-                  )"
-                  :key="suggestion"
-                  variant="outline"
-                  size="sm"
-                  class="h-7 text-xs"
-                  @click="addSuggestedRule(suggestion)"
-                >
-                  <Plus class="size-3 mr-1" />
-                  {{ suggestion }}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <CommunityCreateRules
+          v-model:rule-input="ruleInput"
+          :rules="form.rules"
+          :suggestions="ruleSuggestions"
+          @add-rule="addRule"
+          @remove-rule="removeRule"
+          @move-rule="moveRule"
+          @add-suggested-rule="addSuggestedRule"
+        />
 
         <!-- Privacy & Settings -->
-        <Card class="p-6">
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Shield class="size-5" />
-              Privacy & Settings
-            </CardTitle>
-            <CardDescription> Control who can see and join your community. </CardDescription>
-          </CardHeader>
-
-          <CardContent class="space-y-6">
-            <!-- Visibility -->
-            <div class="space-y-3">
-              <Label>Community Visibility</Label>
-              <div class="grid grid-cols-2 gap-4">
-                <!-- Public Option -->
-                <div
-                  class="relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 group"
-                  :class="[
-                    form.visibility === 'public'
-                      ? 'border-green-500 bg-green-500/10'
-                      : 'border-input hover:border-green-500/50 hover:bg-green-500/5'
-                  ]"
-                  @click="form.visibility = 'public'"
-                >
-                  <div v-if="form.visibility === 'public'" class="absolute top-3 right-3">
-                    <div class="size-5 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check class="size-3 text-white" />
-                    </div>
-                  </div>
-                  <div
-                    class="size-12 rounded-xl flex items-center justify-center mb-3 transition-colors"
-                    :class="
-                      form.visibility === 'public'
-                        ? 'bg-green-500/20'
-                        : 'bg-muted group-hover:bg-green-500/10'
-                    "
-                  >
-                    <Globe
-                      class="size-6 transition-colors"
-                      :class="
-                        form.visibility === 'public'
-                          ? 'text-green-500'
-                          : 'text-muted-foreground group-hover:text-green-500'
-                      "
-                    />
-                  </div>
-                  <h4 class="font-semibold mb-1">Public</h4>
-                  <p class="text-xs text-muted-foreground">
-                    Anyone can discover and join your community freely.
-                  </p>
-                </div>
-
-                <!-- Private Option -->
-                <div
-                  class="relative p-5 rounded-xl border-2 cursor-pointer transition-all duration-300 group"
-                  :class="[
-                    form.visibility === 'private'
-                      ? 'border-red-500 bg-red-500/10'
-                      : 'border-input hover:border-red-500/50 hover:bg-red-500/5'
-                  ]"
-                  @click="form.visibility = 'private'"
-                >
-                  <div v-if="form.visibility === 'private'" class="absolute top-3 right-3">
-                    <div class="size-5 rounded-full bg-red-500 flex items-center justify-center">
-                      <Check class="size-3 text-white" />
-                    </div>
-                  </div>
-                  <div
-                    class="size-12 rounded-xl flex items-center justify-center mb-3 transition-colors"
-                    :class="
-                      form.visibility === 'private'
-                        ? 'bg-red-500/20'
-                        : 'bg-muted group-hover:bg-red-500/10'
-                    "
-                  >
-                    <Lock
-                      class="size-6 transition-colors"
-                      :class="
-                        form.visibility === 'private'
-                          ? 'text-red-500'
-                          : 'text-muted-foreground group-hover:text-red-500'
-                      "
-                    />
-                  </div>
-                  <h4 class="font-semibold mb-1">Private</h4>
-                  <p class="text-xs text-muted-foreground">
-                    Only invited members can access your community.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Additional Settings -->
-            <Separator />
-
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="space-y-0.5">
-                  <Label class="flex items-center gap-2">
-                    <UserCheck class="size-4" />
-                    Require Approval
-                  </Label>
-                  <p class="text-sm text-muted-foreground">
-                    New members need admin approval to join.
-                  </p>
-                </div>
-                <Switch v-model:checked="form.requireApproval" />
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="space-y-0.5">
-                  <Label class="flex items-center gap-2">
-                    <MessageSquare class="size-4" />
-                    Enable Welcome Message
-                  </Label>
-                  <p class="text-sm text-muted-foreground">
-                    Send a welcome message to new members.
-                  </p>
-                </div>
-                <Switch v-model:checked="form.enableWelcome" />
-              </div>
-
-              <div class="flex items-center justify-between">
-                <div class="space-y-0.5">
-                  <Label class="flex items-center gap-2">
-                    <Bell class="size-4" />
-                    Discoverable
-                  </Label>
-                  <p class="text-sm text-muted-foreground">
-                    Show community in search results and discovery.
-                  </p>
-                </div>
-                <Switch v-model:checked="form.discoverable" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <CommunityCreatePrivacy
+          v-model:visibility="form.visibility"
+          v-model:require-approval="form.requireApproval"
+          v-model:enable-welcome="form.enableWelcome"
+          v-model:discoverable="form.discoverable"
+        />
       </div>
 
       <!-- Right Column - Preview & Actions -->
       <div class="space-y-6 lg:sticky lg:top-20 lg:self-start">
         <!-- Preview Card -->
-        <Card>
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2">
-              <Eye class="size-5" />
-              Preview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="border rounded-xl overflow-hidden">
-              <!-- Preview Banner -->
-              <WidgetsImagePoster
-                v-if="form.bannerPreview"
-                :src="form.bannerPreview"
-                class="w-full h-20 object-cover"
-                size="md"
-              />
-              <div
-                v-else
-                class="w-full h-40 bg-linear-to-r from-primary/30 via-purple-500/30 to-pink-500/30"
-              />
-              <!-- Preview Content -->
-              <div class="p-4 -mt-8">
-                <div
-                  class="size-16 rounded-xl bg-card border-4 border-card overflow-hidden relative z-3"
-                >
-                  <img
-                    v-if="form.iconPreview"
-                    :src="form.iconPreview"
-                    class="w-full h-full object-cover"
-                  />
-                  <div v-else class="w-full h-full bg-muted flex items-center justify-center">
-                    <Users class="size-6 text-muted-foreground" />
-                  </div>
-                </div>
-                <h3 class="font-semibold mt-2">{{ form.name || "Community Name" }}</h3>
-                <p class="text-sm text-muted-foreground line-clamp-2 mt-1">
-                  {{ form.description || "Your community description will appear here..." }}
-                </p>
-                <div class="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                  <span class="flex items-center gap-1">
-                    <Users class="size-3" />
-                    0 members
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <component :is="form.visibility === 'public' ? Globe : Lock" class="size-3" />
-                    {{ form.visibility === "public" ? "Public" : "Private" }}
-                  </span>
-                </div>
-                <div class="flex flex-wrap gap-1 mt-3" v-if="form.tags.length > 0">
-                  <Badge v-for="tag in form.tags" :key="tag" variant="secondary" class="text-xs">
-                    {{ tag }}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <CommunityCreatePreview
+          :name="form.name"
+          :description="form.description"
+          :visibility="form.visibility"
+          :tags="form.tags"
+          :icon-preview="form.iconPreview"
+          :banner-preview="form.bannerPreview"
+        />
 
         <!-- Guidelines -->
-        <Card>
-          <CardHeader>
-            <CardTitle class="flex items-center gap-2 text-base">
-              <ScrollText class="size-5" />
-              Community Guidelines
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="space-y-3 text-sm text-muted-foreground">
-            <div class="flex gap-2">
-              <CheckCircle class="size-4 text-green-500 shrink-0 mt-0.5" />
-              <span>Choose a unique and appropriate name</span>
-            </div>
-            <div class="flex gap-2">
-              <CheckCircle class="size-4 text-green-500 shrink-0 mt-0.5" />
-              <span>Write a clear description of your community</span>
-            </div>
-            <div class="flex gap-2">
-              <CheckCircle class="size-4 text-green-500 shrink-0 mt-0.5" />
-              <span>Select relevant category and tags</span>
-            </div>
-            <div class="flex gap-2">
-              <CheckCircle class="size-4 text-green-500 shrink-0 mt-0.5" />
-              <span>No hate speech or harmful content</span>
-            </div>
-            <div class="flex gap-2">
-              <CheckCircle class="size-4 text-green-500 shrink-0 mt-0.5" />
-              <span>Respect intellectual property rights</span>
-            </div>
-          </CardContent>
-        </Card>
+        <CommunityCreateGuidelines />
 
         <!-- Action Buttons -->
-        <div class="space-y-3">
-          <Button class="w-full" size="lg" :disabled="!isFormValid" @click="handleCreate">
-            <Rocket class="size-5 mr-2" />
-            Create Community
-          </Button>
-          <Button variant="outline" class="w-full" @click="handleCancel"> Cancel </Button>
-          <p class="text-xs text-center text-muted-foreground">
-            By creating a community, you agree to our
-            <a href="#" class="text-primary hover:underline">Terms of Service</a>
-            and
-            <a href="#" class="text-primary hover:underline">Community Guidelines</a>.
-          </p>
-        </div>
+        <CommunityCreateActions
+          :is-valid="isFormValid"
+          @create="handleCreate"
+          @cancel="handleCancel"
+        />
       </div>
     </div>
   </main>
 </template>
 
 <script setup>
-import {
-  Sparkles,
-  Info,
-  ImagePlus,
-  Camera,
-  Tag,
-  X,
-  Plus,
-  Shield,
-  Globe,
-  Lock,
-  UserCheck,
-  MessageSquare,
-  Bell,
-  Eye,
-  Users,
-  ScrollText,
-  CheckCircle,
-  Rocket,
-  Gamepad2,
-  Code,
-  Music,
-  Palette,
-  BookOpen,
-  Briefcase,
-  Film,
-  Heart,
-  Loader2,
-  Wand2,
-  Link2Icon,
-  Check,
-  Gavel,
-  ChevronUp,
-  ChevronDown,
-  Trash2
-} from "lucide-vue-next";
+import { Gamepad2, Code, Music, Palette, BookOpen, Briefcase, Film, Heart } from "lucide-vue-next";
 
 const router = useRouter();
 
@@ -799,7 +201,6 @@ const generateAIDescription = async () => {
 
   isGenerating.value = true;
 
-  // Simulate AI generation (replace with actual API call)
   const categoryLabel = categories.find((c) => c.value === form.category)?.label || "";
   const prompts = [
     `Welcome to ${
@@ -817,11 +218,9 @@ const generateAIDescription = async () => {
     }share your knowledge, and make lasting connections with people who share your interests.`
   ];
 
-  // Simulate typing effect
   await new Promise((resolve) => setTimeout(resolve, 500));
   const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
-  // Typewriter effect
   form.description = "";
   for (let i = 0; i < selectedPrompt.length; i++) {
     form.description += selectedPrompt[i];
@@ -873,10 +272,7 @@ const moveRule = (index, direction) => {
 const handleCreate = () => {
   if (!isFormValid.value) return;
 
-  // TODO: API call to create community
   console.log("Creating community:", form);
-
-  // Navigate to the new community
   router.push(`/community/${form.slug}`);
 };
 
