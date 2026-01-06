@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full sticky bottom-0 left-0 bg-background z-3 -mb-4 p-4 flex flex-col gap-2">
+  <div class="w-full sticky bottom-0 left-0 bg-background z-10 -mb-4 p-4 flex flex-col gap-2">
     <Textarea
       ref="textarea"
       v-model="text"
