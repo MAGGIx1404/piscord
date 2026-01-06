@@ -1,6 +1,7 @@
 <template>
   <main class="w-full">
-    <CommunityChannelChatPanel />
-    <CommunityChannelChatInput />
+    <ChannelIntro />
+    <ChannelChatPanel />
+    <ChannelChatInput />
   </main>
 </template>

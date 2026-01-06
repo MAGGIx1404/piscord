@@ -1,10 +1,10 @@
 <template>
   <div class="w-full" id="tiptap">
     <!-- Bubble Menu (appears on text selection) -->
-    <CommunityWorkspaceEditorMenusBubbleMenu v-if="editorInstance" :editor="editorInstance" />
+    <WorkspaceEditorBubbleMenu v-if="editorInstance" :editor="editorInstance" />
 
     <!-- Slash Menu (appears on / command or right-click) -->
-    <CommunityWorkspaceEditorMenusSlashMenu
+    <WorkspaceEditorSlashMenu
       ref="slashMenuRef"
       :editor="editorInstance"
       @insert-table="openTableDialog"
@@ -126,7 +126,7 @@
 <script setup lang="ts">
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { ImagePlus } from "lucide-vue-next";
-import CodeBlock from "./code-block.vue";
+import WorkspaceEditorCodeBlock from "./WorkspaceEditorCodeBlock.vue";
 
 const model = defineModel<String>({
   required: true,
@@ -171,7 +171,7 @@ const editorInstance = useEditor({
   onUpdate: ({ editor }) => {
     model.value = editor.getHTML();
   },
-  extensions: tiptapExtensions(undefined, CodeBlock)
+  extensions: tiptapExtensions(undefined, WorkspaceEditorCodeBlock)
 });
 
 // Context menu handler

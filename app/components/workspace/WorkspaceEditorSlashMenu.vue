@@ -228,6 +228,7 @@ const setSelected = (groupIndex: number, itemIndex: number) => {
 
 const navigateDown = () => {
   const currentGroup = filteredGroups.value[selectedGroup.value];
+  if (!currentGroup) return;
   if (selectedItem.value < currentGroup.items.length - 1) {
     selectedItem.value++;
   } else if (selectedGroup.value < filteredGroups.value.length - 1) {
@@ -241,14 +242,16 @@ const navigateUp = () => {
     selectedItem.value--;
   } else if (selectedGroup.value > 0) {
     selectedGroup.value--;
-    selectedItem.value = filteredGroups.value[selectedGroup.value].items.length - 1;
+    const prevGroup = filteredGroups.value[selectedGroup.value];
+    selectedItem.value = prevGroup ? prevGroup.items.length - 1 : 0;
   }
 };
 
 const selectItem = () => {
   const group = filteredGroups.value[selectedGroup.value];
-  if (group && group.items[selectedItem.value]) {
-    executeCommand(group.items[selectedItem.value]);
+  const item = group?.items[selectedItem.value];
+  if (item) {
+    executeCommand(item);
   }
 };
 

@@ -36,7 +36,109 @@
 
       <!-- Actions -->
       <div class="w-full grid grid-cols-2 items-center gap-4">
-        <Button class="w-full"><CirclePlus /> Join Now </Button>
+        <Dialog v-model:open="joinDialogOpen">
+          <DialogTrigger asChild class="gap-1">
+            <Button class="w-full"><CirclePlus /> Join Now </Button>
+          </DialogTrigger>
+          <DialogContent class="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle class="flex items-center gap-2">
+                <Avatar class="size-10 rounded-md">
+                  <AvatarImage :src="community.iconImage" :alt="community.name" />
+                  <AvatarFallback>{{ community.name.charAt(0) }}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <span>{{
+                    community.requiresApproval ? "Request to Join" : "Join Community"
+                  }}</span>
+                  <p class="text-sm font-normal text-muted-foreground">{{ community.name }}</p>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <!-- Requires Approval -->
+            <div v-if="community.requiresApproval" class="space-y-4 py-4">
+              <div
+                class="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20"
+              >
+                <ShieldAlert class="size-5 text-amber-500 shrink-0 mt-0.5" />
+                <div class="space-y-1">
+                  <p class="text-sm font-medium">Admin Approval Required</p>
+                  <p class="text-xs text-muted-foreground">
+                    This community requires admin approval before you can join. Your request will be
+                    reviewed by the community moderators.
+                  </p>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <Label>Why do you want to join? (Optional)</Label>
+                <Textarea
+                  v-model="joinReason"
+                  placeholder="Tell the admins a bit about yourself and why you'd like to join..."
+                  class="resize-none"
+                  :rows="3"
+                />
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <Checkbox id="agree-rules" v-model:checked="agreedToRules" />
+                <Label for="agree-rules" class="text-sm cursor-pointer">
+                  I agree to follow the community rules and guidelines
+                </Label>
+              </div>
+            </div>
+
+            <!-- Direct Join -->
+            <div v-else class="space-y-3 py-4">
+              <div
+                class="flex items-start gap-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20"
+              >
+                <UserCheck class="size-5 text-green-500 shrink-0 mt-0.5" />
+                <div class="space-y-1">
+                  <p class="text-sm font-medium">Open Community</p>
+                  <p class="text-xs text-muted-foreground">
+                    You can join this community immediately and start participating right away.
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-4 p-3 rounded-lg bg-muted">
+                <Users class="size-5 text-muted-foreground" />
+                <div class="flex-1">
+                  <p class="text-sm font-medium">
+                    {{ formatNumber(community.totalUsers) }} members
+                  </p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ formatNumber(getOnlineCount(community.totalUsers)) }} online now
+                  </p>
+                </div>
+              </div>
+
+              <p class="text-sm text-center text-muted-foreground">
+                Are you sure you want to join
+                <span class="font-medium text-foreground">{{ community.name }}</span
+                >?
+              </p>
+            </div>
+
+            <DialogFooter class="gap-2">
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button @click="handleJoin" :disabled="community.requiresApproval && !agreedToRules">
+                <template v-if="community.requiresApproval">
+                  <Send class="size-4" />
+                  Send Request
+                </template>
+                <template v-else>
+                  <Check class="size-4" />
+                  Join Community
+                </template>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div class="flex items-center justify-between gap-4 text-xs text-muted-foreground">
           <!-- Member avatars preview -->
@@ -64,7 +166,7 @@
   </Card>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   CirclePlus,
   BadgeCheck,
@@ -75,28 +177,71 @@ import {
   Briefcase,
   Palette,
   MessageCircle,
-  Coins
+  Coins,
+  ShieldAlert,
+  UserCheck,
+  Users,
+  Send,
+  Check
 } from "lucide-vue-next";
 
-defineProps({
-  community: {
-    type: Object,
-    required: true
-  }
-});
+interface Community {
+  id: string;
+  name: string;
+  description: string;
+  totalUsers: number;
+  posterImage: string;
+  iconImage: string;
+  type: string;
+  requiresApproval?: boolean;
+}
 
-const formatNumber = (num) => {
+const props = defineProps<{
+  community: Community;
+}>();
+
+const joinDialogOpen = ref(false);
+const joinReason = ref("");
+const agreedToRules = ref(false);
+
+const handleJoin = () => {
+  if (props.community.requiresApproval) {
+    // Send join request logic
+    console.log("Join request sent:", {
+      communityId: props.community.id,
+      reason: joinReason.value
+    });
+  } else {
+    // Direct join logic
+    console.log("Joined community:", props.community.id);
+  }
+  joinDialogOpen.value = false;
+  joinReason.value = "";
+  agreedToRules.value = false;
+};
+
+const formatNumber = (num: number) => {
   if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
   if (num >= 1000) return (num / 1000).toFixed(1) + "K";
   return num.toString();
 };
 
-const getOnlineCount = (total) => {
+const getOnlineCount = (total: number) => {
   return Math.floor(total * (0.05 + Math.random() * 0.15));
 };
 
-const getCategoryIcon = (type) => {
-  const icons = {
+type CategoryType =
+  | "gaming"
+  | "tech"
+  | "study"
+  | "fun"
+  | "business"
+  | "design"
+  | "discussion"
+  | "finance";
+
+const getCategoryIcon = (type: string) => {
+  const icons: Record<CategoryType, typeof Gamepad2> = {
     gaming: Gamepad2,
     tech: Code2,
     study: BookOpen,
@@ -106,11 +251,11 @@ const getCategoryIcon = (type) => {
     discussion: MessageCircle,
     finance: Coins
   };
-  return icons[type] || MessageCircle;
+  return icons[type as CategoryType] || MessageCircle;
 };
 
-const getCategoryBadgeClass = (type) => {
-  const classes = {
+const getCategoryBadgeClass = (type: string) => {
+  const classes: Record<CategoryType, string> = {
     gaming: "bg-purple-500 text-purple-100",
     tech: "bg-blue-500 text-blue-100",
     study: "bg-amber-500 text-amber-100",
@@ -120,6 +265,6 @@ const getCategoryBadgeClass = (type) => {
     discussion: "bg-cyan-500 text-cyan-100",
     finance: "bg-yellow-500 text-yellow-100"
   };
-  return classes[type] || "bg-gray-500/20 text-gray-300";
+  return classes[type as CategoryType] || "bg-gray-500/20 text-gray-300";
 };
 </script>
