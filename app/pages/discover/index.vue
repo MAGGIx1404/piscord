@@ -1,5 +1,5 @@
 <template>
-  <main class="w-full space-y-10 pb-10 px-4">
+  <main class="w-full space-y-10 px-4 pb-10">
     <!-- Hero Section -->
     <DiscoverHero />
 

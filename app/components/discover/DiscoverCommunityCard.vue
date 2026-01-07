@@ -11,12 +11,14 @@
     <!-- Content -->
     <div class="p-4 space-y-1">
       <div class="flex items-center gap-1">
-        <Tooltip v-if="community.totalUsers > 20000">
-          <TooltipTrigger>
-            <BadgeCheck class="size-5 text-green-500" />
-          </TooltipTrigger>
-          <TooltipContent>Verified Community</TooltipContent>
-        </Tooltip>
+        <TooltipProvider>
+          <Tooltip v-if="community.totalUsers > 20000">
+            <TooltipTrigger>
+              <BadgeCheck class="size-5 text-green-500" />
+            </TooltipTrigger>
+            <TooltipContent>Verified Community</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <h2 class="text-lg font-medium">
           {{ community.name }}
         </h2>

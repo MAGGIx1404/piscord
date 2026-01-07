@@ -1,7 +1,7 @@
 <template>
   <main class="w-full pb-10">
     <!-- Workspace Header -->
-    <div class="w-full px-6 pt-6">
+    <div class="w-full px-4 pt-6">
       <WorkspaceHeader
         :name="workspace.name"
         :icon="FileText"
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Main Content Grid -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6 px-6">
+    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6 px-4">
       <!-- Editor (Main Content) -->
       <div class="lg:col-span-3">
         <ClientOnly>
