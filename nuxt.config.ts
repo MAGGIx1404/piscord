@@ -9,7 +9,6 @@ export default defineNuxtConfig({
     "@nuxt/eslint",
     "@nuxt/fonts",
     "@nuxt/hints",
-    "@prisma/nuxt",
     "@nuxt/scripts",
     "shadcn-nuxt",
     "@pinia/nuxt",
