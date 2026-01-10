@@ -13,7 +13,7 @@
 <script setup>
 const store = useUserStore();
 
-const { data } = await useFetch("/api/auth/me", {
+const { data } = await useFetch("/api/user/me", {
   headers: {
     "content-type": "application/json"
   },
@@ -22,6 +22,6 @@ const { data } = await useFetch("/api/auth/me", {
 });
 
 if (data.value) {
-  store.setUser(data.value.user);
+  store.setUser(data.value);
 }
 </script>

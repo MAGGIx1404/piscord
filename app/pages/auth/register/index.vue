@@ -114,9 +114,9 @@ const { errors, handleSubmit, defineField } = useForm({
 const router = useRouter();
 const isPending = ref(false);
 
-const [username, usernameAttrs] = defineField("username");
-const [email, emailAttrs] = defineField("email");
-const [password, passwordAttrs] = defineField("password");
+const [username] = defineField("username");
+const [email] = defineField("email");
+const [password] = defineField("password");
 
 // Username availability state
 const usernameAvailable = ref(null);
@@ -129,11 +129,10 @@ const checkUsername = async (value) => {
     checking.value = false;
     return;
   }
-
   checking.value = true;
   try {
     await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-    const res = await $fetch("/api/auth/username-availability", {
+    const res = await $fetch("/api/user/username-available", {
       method: "POST",
       body: { username: value }
     });
@@ -157,7 +156,7 @@ const processRegistration = async (values) => {
   isPending.value = true;
 
   try {
-    const res = await $fetch("/api/auth/register", {
+    await $fetch("/api/auth/signup", {
       method: "POST",
       body: {
         username: values.username,
@@ -167,10 +166,7 @@ const processRegistration = async (values) => {
     });
 
     isPending.value = false;
-    router.push({
-      name: "auth-login"
-    });
-    return res;
+    router.push("/");
   } catch (err) {
     isPending.value = false;
     throw err;

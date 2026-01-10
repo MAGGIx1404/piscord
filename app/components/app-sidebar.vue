@@ -13,13 +13,15 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "offcanvas"
 });
 
-// This is sample data.
+const store = useUserStore();
+
+const user = {
+  name: store.user?.username || "",
+  email: store.user?.email || "",
+  avatar: store.user?.avatar || "/images/avatar/3.png"
+};
+
 const data = {
-  user: {
-    name: "maggix1404",
-    email: "m@example.com",
-    avatar: "/images/avatar/3.png"
-  },
   teams: [
     {
       name: "Orion Group",
@@ -153,7 +155,7 @@ const data = {
       <NavWorkspaces :workspaces="data.workspaces" />
     </SidebarContent>
     <SidebarFooter>
-      <NavUser :user="data.user" />
+      <NavUser :user="user" />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, LogOut, Sparkles } from "lucide-vue-next";
-
+import { BadgeCheck, Bell, ChevronsUpDown, CreditCard, Sparkles } from "lucide-vue-next";
 import { useSidebar } from "@/components/ui/sidebar";
 
 const props = defineProps<{
@@ -78,8 +77,7 @@ const { isMobile } = useSidebar();
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <LogOut />
-            Log out
+            <LogoutBtn />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

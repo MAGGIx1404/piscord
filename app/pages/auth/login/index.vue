@@ -88,7 +88,7 @@ const processLogin = async (values) => {
   isPending.value = true;
 
   try {
-    const res = await $fetch("/api/auth/login", {
+    await $fetch("/api/auth/signin", {
       method: "POST",
       body: {
         email: values.email,
@@ -97,8 +97,7 @@ const processLogin = async (values) => {
     });
 
     isPending.value = false;
-    router.push("/");
-    return res;
+    await router.push("/");
   } catch (err) {
     isPending.value = false;
     throw err;
