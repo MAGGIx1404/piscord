@@ -15,6 +15,8 @@
           :icon-preview="form.iconPreview"
           :banner-preview="form.bannerPreview"
           :is-generating="isGenerating"
+          :slug-error="slugError"
+          :is-checking-slug="isCheckingSlug"
           @trigger-icon-upload="triggerIconUpload"
           @trigger-banner-upload="triggerBannerUpload"
           @generate-description="generateAIDescription"
@@ -84,6 +86,7 @@
         <!-- Action Buttons -->
         <CommunityCreateActions
           :is-valid="isFormValid"
+          :is-loading="isCreating"
           @create="handleCreate"
           @cancel="handleCancel"
         />
@@ -92,32 +95,37 @@
   </main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { Gamepad2, Code, Music, Palette, BookOpen, Briefcase, Film, Heart } from "lucide-vue-next";
+import { toast } from "vue-sonner";
 
 const router = useRouter();
+const communityStore = useCommunityStore();
 
-const iconInput = ref(null);
-const bannerInput = ref(null);
+const iconInput = ref<HTMLInputElement | null>(null);
+const bannerInput = ref<HTMLInputElement | null>(null);
 const tagInput = ref("");
 const ruleInput = ref("");
 const isGenerating = ref(false);
+const isCreating = ref(false);
+const slugError = ref<string | null>(null);
+const isCheckingSlug = ref(false);
 
 const form = reactive({
   name: "",
   slug: "",
   description: "",
   category: "",
-  tags: [],
-  rules: [],
-  visibility: "public",
+  tags: [] as string[],
+  rules: [] as { id: number; text: string }[],
+  visibility: "public" as "public" | "private",
   requireApproval: false,
   enableWelcome: true,
   discoverable: true,
-  iconPreview: null,
-  iconFile: null,
-  bannerPreview: null,
-  bannerFile: null
+  iconPreview: null as string | null,
+  iconFile: null as File | null,
+  bannerPreview: null as string | null,
+  bannerFile: null as File | null
 });
 
 const ruleSuggestions = [
@@ -140,19 +148,50 @@ const categories = [
 ];
 
 const isFormValid = computed(() => {
-  return form.name.trim().length >= 3 && form.description.trim().length >= 10 && form.category;
+  return !!(
+    form.name.trim().length >= 3 &&
+    form.description.trim().length >= 10 &&
+    form.category &&
+    !slugError.value
+  );
 });
+
+// Debounced slug availability check
+let slugCheckTimeout: ReturnType<typeof setTimeout>;
+const checkSlugAvailability = async (slug: string) => {
+  if (!slug || slug.length < 2) {
+    slugError.value = null;
+    return;
+  }
+
+  clearTimeout(slugCheckTimeout);
+  slugCheckTimeout = setTimeout(async () => {
+    isCheckingSlug.value = true;
+    try {
+      const { available, reason } = await $fetch("/api/community/slug-available", {
+        query: { slug }
+      });
+      slugError.value = available ? null : reason;
+    } catch {
+      slugError.value = "Failed to check availability";
+    } finally {
+      isCheckingSlug.value = false;
+    }
+  }, 300);
+};
 
 // Auto-generate slug from name
 watch(
   () => form.name,
   (newName) => {
-    form.slug = newName
+    const newSlug = newName
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
       .slice(0, 30);
+    form.slug = newSlug;
+    checkSlugAvailability(newSlug);
   }
 );
 
@@ -160,17 +199,18 @@ const triggerIconUpload = () => {
   iconInput.value?.click();
 };
 
-const handleIconUpload = (event) => {
-  const file = event.target.files?.[0];
+const handleIconUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
   if (file) {
     if (file.size > 2 * 1024 * 1024) {
-      alert("File size must be less than 2MB");
+      toast.error("File size must be less than 2MB");
       return;
     }
     form.iconFile = file;
     const reader = new FileReader();
     reader.onload = (e) => {
-      form.iconPreview = e.target?.result;
+      form.iconPreview = (e.target?.result as string) || null;
     };
     reader.readAsDataURL(file);
   }
@@ -180,17 +220,18 @@ const triggerBannerUpload = () => {
   bannerInput.value?.click();
 };
 
-const handleBannerUpload = (event) => {
-  const file = event.target.files?.[0];
+const handleBannerUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
   if (file) {
     if (file.size > 4 * 1024 * 1024) {
-      alert("File size must be less than 4MB");
+      toast.error("File size must be less than 4MB");
       return;
     }
     form.bannerFile = file;
     const reader = new FileReader();
     reader.onload = (e) => {
-      form.bannerPreview = e.target?.result;
+      form.bannerPreview = (e.target?.result as string) || null;
     };
     reader.readAsDataURL(file);
   }
@@ -219,7 +260,7 @@ const generateAIDescription = async () => {
   ];
 
   await new Promise((resolve) => setTimeout(resolve, 500));
-  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)] || "";
 
   form.description = "";
   for (let i = 0; i < selectedPrompt.length; i++) {
@@ -238,7 +279,7 @@ const addTag = () => {
   }
 };
 
-const removeTag = (tag) => {
+const removeTag = (tag: string) => {
   form.tags = form.tags.filter((t) => t !== tag);
 };
 
@@ -250,30 +291,70 @@ const addRule = () => {
   }
 };
 
-const addSuggestedRule = (text) => {
+const addSuggestedRule = (text: string) => {
   if (form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
     form.rules.push({ id: Date.now(), text });
   }
 };
 
-const removeRule = (id) => {
+const removeRule = (id: number) => {
   form.rules = form.rules.filter((r) => r.id !== id);
 };
 
-const moveRule = (index, direction) => {
+const moveRule = (index: number, direction: number) => {
   const newIndex = index + direction;
   if (newIndex >= 0 && newIndex < form.rules.length) {
     const temp = form.rules[index];
-    form.rules[index] = form.rules[newIndex];
-    form.rules[newIndex] = temp;
+    const swapItem = form.rules[newIndex];
+    if (temp && swapItem) {
+      form.rules[index] = swapItem;
+      form.rules[newIndex] = temp;
+    }
   }
 };
 
-const handleCreate = () => {
-  if (!isFormValid.value) return;
+const handleCreate = async () => {
+  if (!isFormValid.value || isCreating.value) return;
 
-  console.log("Creating community:", form);
-  router.push(`/community/${form.slug}`);
+  isCreating.value = true;
+
+  try {
+    const response = await $fetch("/api/community", {
+      method: "POST",
+      body: {
+        name: form.name.trim(),
+        slug: form.slug.trim(),
+        description: form.description.trim(),
+        category: form.category,
+        visibility: form.visibility,
+        tags: form.tags,
+        rules: form.rules.map((r) => ({ text: r.text })),
+        requireApproval: form.requireApproval,
+        enableWelcome: form.enableWelcome,
+        discoverable: form.discoverable,
+        iconBase64: form.iconPreview,
+        bannerBase64: form.bannerPreview
+      }
+    });
+
+    if (response.success && response.community?.slug) {
+      toast.success("Community created successfully!");
+
+      // Refresh communities list
+      await communityStore.fetchCommunities(true);
+
+      // Set the new community as current
+      communityStore.setCurrentCommunity(response.community.slug);
+
+      // Navigate to the new community
+      router.push(`/community/${response.community.slug}`);
+    }
+  } catch (error: unknown) {
+    const err = error as { data?: { statusMessage?: string } };
+    toast.error(err.data?.statusMessage || "Failed to create community");
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 const handleCancel = () => {

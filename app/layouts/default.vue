@@ -11,17 +11,22 @@
 </template>
 
 <script setup>
-const store = useUserStore();
+const userStore = useUserStore();
+const communityStore = useCommunityStore();
 
 const { data } = await useFetch("/api/user/me", {
-  headers: {
-    "content-type": "application/json"
-  },
+  headers: { "content-type": "application/json" },
   method: "GET",
   server: true
 });
 
+const { data: communitiesData } = await useFetch("/api/user/communities", {
+  server: true
+});
+
 if (data.value) {
-  store.setUser(data.value);
+  userStore.setUser(data.value);
 }
+
+communityStore.setCommunities(communitiesData.value.communities);
 </script>

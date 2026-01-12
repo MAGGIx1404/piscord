@@ -67,7 +67,7 @@
           <Input
             id="name"
             :model-value="name"
-            @update:model-value="$emit('update:name', $event)"
+            @update:model-value="$emit('update:name', String($event))"
             placeholder="Enter community name"
             maxlength="50"
           />
@@ -87,13 +87,18 @@
                 :model-value="slug"
                 @update:model-value="$emit('update:slug', $event)"
                 placeholder="your-community"
+                :class="{ 'border-destructive': slugError }"
               />
               <InputGroupAddon align="inline-end">
-                <Link2Icon />
+                <Loader2 v-if="isCheckingSlug" class="size-4 animate-spin text-muted-foreground" />
+                <CheckCircle2 v-else-if="slug && !slugError" class="size-4 text-green-500" />
+                <XCircle v-else-if="slugError" class="size-4 text-destructive" />
+                <Link2Icon v-else />
               </InputGroupAddon>
             </InputGroup>
           </ButtonGroup>
-          <p class="text-xs text-muted-foreground">
+          <p v-if="slugError" class="text-xs text-destructive">{{ slugError }}</p>
+          <p v-else class="text-xs text-muted-foreground">
             Only lowercase letters, numbers, and hyphens allowed.
           </p>
         </div>
@@ -118,7 +123,7 @@
           <Textarea
             id="description"
             :model-value="description"
-            @update:model-value="$emit('update:description', $event)"
+            @update:model-value="$emit('update:description', String($event))"
             placeholder="Tell people what your community is about..."
             rows="4"
             maxlength="500"
@@ -160,7 +165,17 @@
 </template>
 
 <script setup lang="ts">
-import { Info, ImagePlus, Camera, Link2Icon, Sparkles, Loader2, Wand2 } from "lucide-vue-next";
+import {
+  Info,
+  ImagePlus,
+  Camera,
+  Link2Icon,
+  Sparkles,
+  Loader2,
+  Wand2,
+  CheckCircle2,
+  XCircle
+} from "lucide-vue-next";
 
 interface Props {
   name: string;
@@ -169,12 +184,16 @@ interface Props {
   iconPreview?: string | null;
   bannerPreview?: string | null;
   isGenerating?: boolean;
+  slugError?: string | null;
+  isCheckingSlug?: boolean;
 }
 
 withDefaults(defineProps<Props>(), {
   iconPreview: null,
   bannerPreview: null,
-  isGenerating: false
+  isGenerating: false,
+  slugError: null,
+  isCheckingSlug: false
 });
 
 defineEmits<{

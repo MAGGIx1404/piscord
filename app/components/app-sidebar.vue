@@ -1,143 +1,69 @@
 <script setup lang="ts">
 import type { SidebarProps } from "@/components/ui/sidebar";
-
-import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
-  LayoutDashboard,
-  Compass
-} from "lucide-vue-next";
+import { LayoutDashboard, Compass, Hash } from "lucide-vue-next";
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: "offcanvas"
 });
 
-const store = useUserStore();
+const userStore = useUserStore();
+const communityStore = useCommunityStore();
 
-const user = {
-  name: store.user?.username || "",
-  email: store.user?.email || "",
-  avatar: store.user?.avatar || "/images/avatar/3.png"
-};
+const user = computed(() => ({
+  name: userStore.user?.username || "",
+  email: userStore.user?.email || "",
+  avatar: userStore.user?.avatar || "/images/avatar/3.png"
+}));
 
-const data = {
-  teams: [
-    {
-      name: "Orion Group",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise"
-    },
-    {
-      name: "Delta Inc.",
-      logo: AudioWaveform,
-      plan: "Startup"
-    },
-    {
-      name: "Developers Hub",
-      logo: Command,
-      plan: "Free"
-    }
-  ],
-  channels: [
+const hasCommunities = computed(() => communityStore.hasCommunities);
+const communities = computed(() => communityStore.communities);
+const currentCommunity = computed(() => communityStore.currentCommunity);
+
+// @todo: Fetch channels and workspaces
+const channels = computed(() => {
+  if (!currentCommunity.value) return [];
+  return [
     {
       name: "General",
-      url: "/community/orion_group/channels/general",
-      icon: Command
-    },
-    {
-      name: "Development",
-      url: "/community/orion_group/channels/development",
-      icon: AudioWaveform
-    },
-    {
-      name: "Design",
-      url: "/community/orion_group/channels/design",
-      icon: GalleryVerticalEnd
+      url: `/community/${currentCommunity.value.slug}/channels/general`,
+      icon: Hash
     }
-  ],
-  workspaces: [
-    {
-      name: "Personal Life Management",
-      emoji: "🏠",
-      pages: [
-        {
-          name: "Daily Journal & Reflection",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "📔"
-        },
-        {
-          name: "Health & Wellness Tracker",
-          url: "/community/orion_group/workspaces/2",
-          emoji: "🍏"
-        },
-        {
-          name: "Personal Growth & Learning Goals",
-          url: "/community/orion_group/workspaces/3",
-          emoji: "🌟"
-        }
-      ]
-    },
-    {
-      name: "Professional Development",
-      emoji: "💼",
-      pages: [
-        {
-          name: "Career Objectives & Milestones",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "🎯"
-        },
-        {
-          name: "Skill Acquisition & Training Log",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "🧠"
-        },
-        {
-          name: "Networking Contacts & Events",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "🤝"
-        }
-      ]
-    },
-    {
-      name: "Creative Projects",
-      emoji: "🎨",
-      pages: [
-        {
-          name: "Writing Ideas & Story Outlines",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "✍️"
-        },
-        {
-          name: "Art & Design Portfolio",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "🖼️"
-        },
-        {
-          name: "Music Composition & Practice Log",
-          url: "/community/orion_group/workspaces/1",
-          emoji: "🎵"
-        }
-      ]
-    }
-  ]
-};
+  ];
+});
+
+const workspaces = computed(() => {
+  if (!currentCommunity.value) return [];
+  return [];
+});
 </script>
 
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <NavCommunitySwitcher :teams="data.teams" />
+      <NavCommunitySwitcher v-if="hasCommunities" :communities="communities" />
+      <div v-else class="p-2">
+        <div class="flex items-center gap-2 px-2">
+          <div
+            class="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+          >
+            <Compass class="size-5" />
+          </div>
+          <div class="grid flex-1 text-left text-sm leading-tight">
+            <span class="truncate text-base font-medium">Piscord</span>
+            <span class="truncate text-xs text-muted-foreground">Find your community</span>
+          </div>
+        </div>
+      </div>
     </SidebarHeader>
     <SidebarContent>
       <SidebarGroup class="group-data-[collapsible=icon]:hidden">
         <SidebarGroupLabel>Dashboard</SidebarGroupLabel>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem v-if="currentCommunity">
             <SidebarMenuButton class="text-sidebar-foreground" as-child>
-              <NuxtLink to="/community/orion_group">
+              <NuxtLink :to="`/community/${currentCommunity.slug}`">
                 <LayoutDashboard class="text-sidebar-foreground" />
-                <span> Overview </span>
+                <span>Overview</span>
               </NuxtLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -145,14 +71,14 @@ const data = {
             <SidebarMenuButton class="text-sidebar-foreground" as-child>
               <NuxtLink to="/discover">
                 <Compass class="text-sidebar-foreground" />
-                <span> Discover </span>
+                <span>Discover</span>
               </NuxtLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
-      <NavChannels :channels="data.channels" />
-      <NavWorkspaces :workspaces="data.workspaces" />
+      <NavChannels v-if="currentCommunity && channels.length > 0" :channels="channels" />
+      <NavWorkspaces v-if="currentCommunity && workspaces.length > 0" :workspaces="workspaces" />
     </SidebarContent>
     <SidebarFooter>
       <NavUser :user="user" />
