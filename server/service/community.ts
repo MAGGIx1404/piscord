@@ -188,3 +188,106 @@ export async function getCommunityMember(communityId: string, userId: string) {
     .where("user_id", "=", userId)
     .executeTakeFirst();
 }
+
+export interface CommunityDetails {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  cover_url: string | null;
+  is_verified: boolean;
+  type: string;
+  tier: string;
+  url: string | null;
+  location: string | null;
+  created_at: Date;
+  total_members: number;
+  total_messages: number;
+  total_channels: number;
+  total_workspaces: number;
+  rules: {
+    id: string;
+    title: string;
+    description: string | null;
+    sort_order: number;
+  }[];
+  tags: string[];
+}
+
+export async function getCommunityDetails(slug: string): Promise<CommunityDetails | null> {
+  const community = await findCommunityBySlug(slug);
+
+  if (!community) {
+    return null;
+  }
+
+  const memberCountPromise = db
+    .selectFrom("community_members")
+    .select(db.fn.count<number>("id").as("count"))
+    .where("community_id", "=", community.id)
+    .executeTakeFirst();
+
+  const totalMessagesPromise = db
+    .selectFrom("messages")
+    .innerJoin("channels", "channels.id", "messages.channel_id")
+    .select(db.fn.count<number>("messages.id").as("count"))
+    .where("channels.community_id", "=", community.id)
+    .executeTakeFirst();
+
+  const channelCountPromise = db
+    .selectFrom("channels")
+    .select(db.fn.count<number>("id").as("count"))
+    .where("community_id", "=", community.id)
+    .executeTakeFirst();
+
+  const workspaceCountPromise = db
+    .selectFrom("workspaces")
+    .select(db.fn.count<number>("id").as("count"))
+    .where("community_id", "=", community.id)
+    .executeTakeFirst();
+
+  const rulesPromise = db
+    .selectFrom("community_rules")
+    .select(["id", "title", "description", "sort_order"])
+    .where("community_id", "=", community.id)
+    .orderBy("sort_order", "asc")
+    .execute();
+
+  const tagsPromise = db
+    .selectFrom("community_tags")
+    .innerJoin("tags", "tags.id", "community_tags.tag_id")
+    .select("tags.name")
+    .where("community_tags.community_id", "=", community.id)
+    .execute();
+
+  const [memberCount, messageCount, channelCount, workspaceCount, rules, tags] = await Promise.all([
+    memberCountPromise,
+    totalMessagesPromise,
+    channelCountPromise,
+    workspaceCountPromise,
+    rulesPromise,
+    tagsPromise
+  ]);
+
+  return {
+    id: community.id,
+    name: community.name,
+    slug: community.slug,
+    description: community.description,
+    logo_url: community.logo_url,
+    cover_url: community.cover_url,
+    is_verified: community.is_verified,
+    type: community.type,
+    tier: community.tier,
+    url: community.url,
+    location: community.location,
+    created_at: community.created_at,
+    total_members: Number(memberCount?.count) || 0,
+    total_messages: Number(messageCount?.count) || 0,
+    total_channels: Number(channelCount?.count) || 0,
+    total_workspaces: Number(workspaceCount?.count) || 0,
+    rules,
+    tags: tags.map((t) => t.name)
+  };
+}
