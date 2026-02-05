@@ -1,7 +1,7 @@
 <template>
   <section class="relative h-[420px] overflow-hidden">
     <!-- Banner with overlay -->
-    <div class="absolute inset-0">
+    <div class="absolute inset-0 overflow-hidden rounded-t-xl">
       <img :src="bannerImage" alt="" class="w-full h-full object-cover" />
       <div
         class="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent"

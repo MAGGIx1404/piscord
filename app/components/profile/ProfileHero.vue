@@ -9,9 +9,6 @@
           <!-- Avatar Section -->
           <div class="relative shrink-0">
             <div class="relative group">
-              <div
-                class="absolute -inset-1 bg-linear-to-r from-primary via-purple-500 to-pink-500 rounded-full blur opacity-75 group-hover:opacity-100 transition duration-500"
-              />
               <Avatar class="relative size-32 ring-4 ring-card">
                 <AvatarImage :src="avatarImage" />
                 <AvatarFallback class="text-3xl">{{ avatarFallback }}</AvatarFallback>
@@ -36,7 +33,7 @@
               <div class="w-auto">
                 <div class="flex items-center gap-2">
                   <h1 class="text-2xl font-bold">{{ displayName }}</h1>
-                  <Badge v-if="isPremium" class="bg-purple-500 text-primary">
+                  <Badge v-if="isPremium" class="bg-primary text-white">
                     <Sparkles class="size-4" />
                     Premium
                   </Badge>
@@ -67,7 +64,7 @@
             <!-- Quick Stats -->
             <div v-if="stats.length" class="flex flex-wrap gap-5">
               <Button v-for="stat in stats" :key="stat.label" variant="link" size="link">
-                <component :is="stat.icon" class="size-4 text-purple-500" />
+                <component :is="stat.icon" class="size-4 text-white" />
                 {{ stat.value }} {{ stat.label }}
               </Button>
             </div>

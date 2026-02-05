@@ -46,9 +46,6 @@
 
       <!-- Middle Column -->
       <div class="lg:col-span-2 space-y-6">
-        <!-- Activity Chart -->
-        <WidgetsActivityChart />
-
         <!-- Communities -->
         <ProfileCommunities
           :communities="communities"

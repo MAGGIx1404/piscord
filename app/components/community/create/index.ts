@@ -1,8 +1,8 @@
-export { default as Header } from "./Header.vue";
-export { default as BasicInfo } from "./BasicInfo.vue";
-export { default as CategoryTags } from "./CategoryTags.vue";
-export { default as Rules } from "./Rules.vue";
-export { default as Privacy } from "./Privacy.vue";
-export { default as Preview } from "./Preview.vue";
-export { default as Guidelines } from "./Guidelines.vue";
-export { default as Actions } from "./Actions.vue";
+export { default as CreateHeader } from "./CreateHeader.vue";
+export { default as CreateStepIdentity } from "./CreateStepIdentity.vue";
+export { default as CreateStepDiscovery } from "./CreateStepDiscovery.vue";
+export { default as CreateStepRules } from "./CreateStepRules.vue";
+export { default as CreateStepSettings } from "./CreateStepSettings.vue";
+export { default as CreateNavigation } from "./CreateNavigation.vue";
+export { default as CreatePreview } from "./CreatePreview.vue";
+export { default as CreateTips } from "./CreateTips.vue";

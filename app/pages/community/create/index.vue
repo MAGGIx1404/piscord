@@ -1,111 +1,107 @@
 <template>
-  <main class="w-full pb-10">
-    <!-- Header -->
-    <CommunityCreateHeader />
+  <main class="w-full min-h-screen relative bg-background">
+    <!-- Progress Header -->
+    <CreateHeader
+      :current-step="currentStep"
+      :total-steps="totalSteps"
+      :step-titles="stepTitles"
+      @cancel="handleCancel"
+    />
 
     <!-- Form Content -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
-      <!-- Left Column - Main Form -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Basic Info -->
-        <CommunityCreateBasicInfo
-          v-model:name="form.name"
-          v-model:slug="form.slug"
-          v-model:description="form.description"
-          :icon-preview="form.iconPreview"
-          :banner-preview="form.bannerPreview"
-          :is-generating="isGenerating"
-          :slug-error="slugError"
-          :is-checking-slug="isCheckingSlug"
-          @trigger-icon-upload="triggerIconUpload"
-          @trigger-banner-upload="triggerBannerUpload"
-          @generate-description="generateAIDescription"
-        />
+    <div class="relative px-6 py-10">
+      <div class="grid lg:grid-cols-5 gap-8">
+        <!-- Left: Form Steps -->
+        <div class="lg:col-span-3">
+          <!-- Step 1: Identity -->
+          <CreateStepIdentity
+            v-show="currentStep === 1"
+            v-model:name="form.name"
+            v-model:slug="form.slug"
+            v-model:description="form.description"
+            :icon-preview="form.iconPreview"
+            :banner-preview="form.bannerPreview"
+            :slug-error="slugError"
+            :is-checking-slug="isCheckingSlug"
+            :is-generating="isGenerating"
+            @update:icon-preview="form.iconPreview = $event"
+            @update:icon-file="form.iconFile = $event"
+            @update:banner-preview="form.bannerPreview = $event"
+            @update:banner-file="form.bannerFile = $event"
+            @generate-description="generateAIDescription"
+          />
 
-        <!-- Hidden file inputs -->
-        <input
-          ref="iconInput"
-          type="file"
-          accept="image/*"
-          class="hidden"
-          @change="handleIconUpload"
-        />
-        <input
-          ref="bannerInput"
-          type="file"
-          accept="image/*"
-          class="hidden"
-          @change="handleBannerUpload"
-        />
+          <!-- Step 2: Category & Tags -->
+          <CreateStepDiscovery
+            v-show="currentStep === 2"
+            v-model:category="form.category"
+            v-model:tags="form.tags"
+          />
 
-        <!-- Category & Tags -->
-        <CommunityCreateCategoryTags
-          v-model:category="form.category"
-          v-model:tag-input="tagInput"
-          :tags="form.tags"
-          :categories="categories"
-          @add-tag="addTag"
-          @remove-tag="removeTag"
-        />
+          <!-- Step 3: Rules -->
+          <CreateStepRules v-show="currentStep === 3" v-model:rules="form.rules" />
 
-        <!-- Community Rules -->
-        <CommunityCreateRules
-          v-model:rule-input="ruleInput"
-          :rules="form.rules"
-          :suggestions="ruleSuggestions"
-          @add-rule="addRule"
-          @remove-rule="removeRule"
-          @move-rule="moveRule"
-          @add-suggested-rule="addSuggestedRule"
-        />
+          <!-- Step 4: Privacy -->
+          <CreateStepSettings
+            v-show="currentStep === 4"
+            v-model:visibility="form.visibility"
+            v-model:require-approval="form.requireApproval"
+            v-model:enable-welcome="form.enableWelcome"
+            v-model:discoverable="form.discoverable"
+          />
 
-        <!-- Privacy & Settings -->
-        <CommunityCreatePrivacy
-          v-model:visibility="form.visibility"
-          v-model:require-approval="form.requireApproval"
-          v-model:enable-welcome="form.enableWelcome"
-          v-model:discoverable="form.discoverable"
-        />
-      </div>
+          <!-- Navigation Buttons -->
+          <CreateNavigation
+            :current-step="currentStep"
+            :total-steps="totalSteps"
+            :can-proceed="canProceed"
+            :is-form-valid="isFormValid"
+            :is-creating="isCreating"
+            @prev="currentStep--"
+            @next="currentStep++"
+            @create="handleCreate"
+          />
+        </div>
 
-      <!-- Right Column - Preview & Actions -->
-      <div class="space-y-6 lg:sticky lg:top-20 lg:self-start">
-        <!-- Preview Card -->
-        <CommunityCreatePreview
-          :name="form.name"
-          :description="form.description"
-          :visibility="form.visibility"
-          :tags="form.tags"
-          :icon-preview="form.iconPreview"
-          :banner-preview="form.bannerPreview"
-        />
+        <!-- Right: Preview -->
+        <div class="lg:col-span-2 lg:sticky lg:top-24 lg:self-start space-y-6">
+          <CreatePreview
+            :name="form.name"
+            :description="form.description"
+            :icon-preview="form.iconPreview"
+            :banner-preview="form.bannerPreview"
+            :visibility="form.visibility"
+            :tags="form.tags"
+          />
 
-        <!-- Guidelines -->
-        <CommunityCreateGuidelines />
-
-        <!-- Action Buttons -->
-        <CommunityCreateActions
-          :is-valid="isFormValid"
-          :is-loading="isCreating"
-          @create="handleCreate"
-          @cancel="handleCancel"
-        />
+          <CreateTips :current-step="currentStep" />
+        </div>
       </div>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
+import {
+  CreateHeader,
+  CreateStepIdentity,
+  CreateStepDiscovery,
+  CreateStepRules,
+  CreateStepSettings,
+  CreateNavigation,
+  CreatePreview,
+  CreateTips
+} from "~/components/community/create";
 import { Gamepad2, Code, Music, Palette, BookOpen, Briefcase, Film, Heart } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
 const router = useRouter();
-const communityStore = useCommunityStore();
 
-const iconInput = ref<HTMLInputElement | null>(null);
-const bannerInput = ref<HTMLInputElement | null>(null);
-const tagInput = ref("");
-const ruleInput = ref("");
+// Step management
+const currentStep = ref(1);
+const totalSteps = 4;
+const stepTitles = ["Identity", "Discovery", "Rules", "Settings"];
+
 const isGenerating = ref(false);
 const isCreating = ref(false);
 const slugError = ref<string | null>(null);
@@ -128,14 +124,6 @@ const form = reactive({
   bannerFile: null as File | null
 });
 
-const ruleSuggestions = [
-  "Be respectful to all members",
-  "No spam or self-promotion",
-  "No hate speech or harassment",
-  "Keep discussions on topic",
-  "No NSFW content"
-];
-
 const categories = [
   { value: "gaming", label: "Gaming", icon: Gamepad2 },
   { value: "technology", label: "Technology", icon: Code },
@@ -146,6 +134,23 @@ const categories = [
   { value: "entertainment", label: "Entertainment", icon: Film },
   { value: "lifestyle", label: "Lifestyle", icon: Heart }
 ];
+
+const canProceed = computed(() => {
+  switch (currentStep.value) {
+    case 1:
+      return (
+        form.name.trim().length >= 3 && form.description.trim().length >= 10 && !slugError.value
+      );
+    case 2:
+      return !!form.category;
+    case 3:
+      return true;
+    case 4:
+      return true;
+    default:
+      return false;
+  }
+});
 
 const isFormValid = computed(() => {
   return !!(
@@ -167,16 +172,14 @@ const checkSlugAvailability = async (slug: string) => {
   clearTimeout(slugCheckTimeout);
   slugCheckTimeout = setTimeout(async () => {
     isCheckingSlug.value = true;
-    try {
-      const { available, reason } = await $fetch("/api/community/slug-available", {
-        query: { slug }
-      });
-      slugError.value = available ? null : reason;
-    } catch {
-      slugError.value = "Failed to check availability";
-    } finally {
-      isCheckingSlug.value = false;
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    const takenSlugs = ["test", "admin"];
+    if (takenSlugs.includes(slug)) {
+      slugError.value = "This URL is already taken.";
+    } else {
+      slugError.value = null;
     }
+    isCheckingSlug.value = false;
   }, 300);
 };
 
@@ -195,48 +198,6 @@ watch(
   }
 );
 
-const triggerIconUpload = () => {
-  iconInput.value?.click();
-};
-
-const handleIconUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("File size must be less than 2MB");
-      return;
-    }
-    form.iconFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.iconPreview = (e.target?.result as string) || null;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const triggerBannerUpload = () => {
-  bannerInput.value?.click();
-};
-
-const handleBannerUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error("File size must be less than 4MB");
-      return;
-    }
-    form.bannerFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.bannerPreview = (e.target?.result as string) || null;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
 const generateAIDescription = async () => {
   if (!form.name.trim() || isGenerating.value) return;
 
@@ -244,9 +205,7 @@ const generateAIDescription = async () => {
 
   const categoryLabel = categories.find((c) => c.value === form.category)?.label || "";
   const prompts = [
-    `Welcome to ${
-      form.name
-    }! A vibrant community where members connect, share ideas, and grow together. ${
+    `Welcome to ${form.name}! A vibrant community where members connect, share ideas, and grow together. ${
       categoryLabel
         ? `Whether you're passionate about ${categoryLabel.toLowerCase()} or just getting started, you'll find a welcoming space here.`
         : "Join us and be part of something special!"
@@ -271,53 +230,51 @@ const generateAIDescription = async () => {
   isGenerating.value = false;
 };
 
-const addTag = () => {
-  const tag = tagInput.value.trim().toLowerCase();
-  if (tag && !form.tags.includes(tag) && form.tags.length < 5) {
-    form.tags.push(tag);
-    tagInput.value = "";
-  }
-};
-
-const removeTag = (tag: string) => {
-  form.tags = form.tags.filter((t) => t !== tag);
-};
-
-const addRule = () => {
-  const text = ruleInput.value.trim();
-  if (text && form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
-    form.rules.push({ id: Date.now(), text });
-    ruleInput.value = "";
-  }
-};
-
-const addSuggestedRule = (text: string) => {
-  if (form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
-    form.rules.push({ id: Date.now(), text });
-  }
-};
-
-const removeRule = (id: number) => {
-  form.rules = form.rules.filter((r) => r.id !== id);
-};
-
-const moveRule = (index: number, direction: number) => {
-  const newIndex = index + direction;
-  if (newIndex >= 0 && newIndex < form.rules.length) {
-    const temp = form.rules[index];
-    const swapItem = form.rules[newIndex];
-    if (temp && swapItem) {
-      form.rules[index] = swapItem;
-      form.rules[newIndex] = temp;
-    }
-  }
-};
-
 const handleCreate = async () => {
-  console.log("Create community with data:", form);
+  isCreating.value = true;
+  try {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    toast.success("Community created successfully!");
+    console.log("Create community with data:", form);
+  } catch (error) {
+    toast.error("Failed to create community");
+  } finally {
+    isCreating.value = false;
+  }
 };
 
 const handleCancel = () => {
   router.back();
 };
 </script>
+
+<style scoped>
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+}
+
+@keyframes float-delayed {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(1.05);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 20s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 25s ease-in-out infinite;
+  animation-delay: 5s;
+}
+</style>

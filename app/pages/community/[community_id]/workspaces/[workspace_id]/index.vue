@@ -1,52 +1,125 @@
 <template>
-  <main class="w-full pb-10">
-    <!-- Workspace Header -->
-    <div class="w-full px-4 pt-6">
-      <WorkspaceHeader
-        :name="workspace.name"
-        :icon="FileText"
-        icon-class="text-emerald-500"
-        :is-public="workspace.isPublic"
-        :created-at="workspace.createdAt"
-        :last-edited="workspace.lastEdited"
-        :active-users="activeUsers"
-        :collaborators-count="workspace.collaborators"
-        :views-count="workspace.views"
-        :comments-count="workspace.comments"
-        :word-count="documentInfo.wordCount"
-        :reading-time="documentInfo.readingTime"
-        @share="handleShare"
-        @favorite="handleFavorite"
-        @duplicate="handleDuplicate"
-        @history="handleHistory"
-        @delete="handleDelete"
-      />
+  <main class="w-full min-h-screen relative -mb-5">
+    <!-- Minimal Header Bar -->
+    <div class="sticky px-6 top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-border/50">
+      <div class="flex items-center justify-between py-3">
+        <!-- Left: Breadcrumb & Title -->
+        <div class="flex items-center gap-3">
+          <div class="size-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+            <FileText class="size-4 text-emerald-500" />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-semibold">{{ workspace.name }}</h1>
+              <Badge
+                variant="outline"
+                class="text-xs"
+                :class="workspace.isPublic ? 'text-emerald-500 border-emerald-500/30' : ''"
+              >
+                <component :is="workspace.isPublic ? Globe : Lock" class="size-3 mr-1" />
+                {{ workspace.isPublic ? "Public" : "Private" }}
+              </Badge>
+            </div>
+            <p class="text-xs text-muted-foreground">Last edited {{ workspace.lastEdited }}</p>
+          </div>
+        </div>
+
+        <!-- Center: Active Collaborators -->
+        <div class="hidden md:flex items-center gap-2">
+          <div class="flex -space-x-2">
+            <Tooltip v-for="user in activeUsers.slice(0, 4)" :key="user.id">
+              <TooltipTrigger>
+                <Avatar
+                  class="size-7 ring-2 ring-background hover:ring-primary transition-all hover:z-10 cursor-pointer"
+                >
+                  <AvatarImage :src="user.avatar" />
+                  <AvatarFallback class="text-xs">{{ user.initials }}</AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p class="text-xs">{{ user.name }}</p>
+              </TooltipContent>
+            </Tooltip>
+            <div
+              v-if="activeUsers.length > 4"
+              class="size-7 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-xs font-medium"
+            >
+              +{{ activeUsers.length - 4 }}
+            </div>
+          </div>
+          <span class="text-xs text-muted-foreground ml-1">{{ activeUsers.length }} online</span>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex items-center gap-2">
+          <Button variant="ghost" size="sm" class="hidden sm:flex gap-1.5 text-muted-foreground">
+            <MessageSquare class="size-4" />
+            <span>{{ workspace.comments }}</span>
+          </Button>
+          <Button variant="outline" size="sm" @click="handleShare">
+            <Share2 class="size-4 mr-1.5" />
+            Share
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" class="size-8">
+                <MoreHorizontal class="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-48">
+              <DropdownMenuItem @click="handleFavorite">
+                <Star class="size-4" />
+                Add to favorites
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleDuplicate">
+                <Copy class="size-4" />
+                Duplicate
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="handleHistory">
+                <History class="size-4" />
+                Version history
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem class="text-destructive" @click="handleDelete">
+                <Trash2 class="size-4" />
+                Delete workspace
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6 px-4">
-      <!-- Editor (Main Content) -->
-      <div class="lg:col-span-3">
-        <ClientOnly>
-          <WorkspaceEditor v-model="content" />
-        </ClientOnly>
-      </div>
+    <!-- Main Content -->
+    <div class="relative flex justify-center py-8 pb-10 px-6">
+      <!-- Editor content -->
+      <ClientOnly>
+        <WorkspaceEditor v-model="content" />
+      </ClientOnly>
+    </div>
 
-      <!-- Right Sidebar -->
-      <div class="space-y-6 sticky top-16 h-max">
-        <!-- Collaborators Card -->
-        <WorkspaceCollaborators
-          :collaborators="collaborators"
-          @add="handleAddCollaborator"
-          @select="handleSelectCollaborator"
-        />
-
-        <!-- Activity Card -->
-        <WorkspaceActivity
-          :activities="activities"
-          @view-all="handleViewAllActivities"
-          @select="handleSelectActivity"
-        />
+    <!-- Bottom Status Bar -->
+    <div class="sticky bottom-0 left-0 right-0 z-20">
+      <div class="max-w-4xl mx-auto px-6">
+        <div
+          class="bg-card/95 backdrop-blur-xl border border-border/50 border-b-0 rounded-t-xl shadow-lg px-4 py-2 flex items-center gap-4"
+        >
+          <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Saved</span>
+          </div>
+          <Separator orientation="vertical" class="h-4" />
+          <span class="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Type class="size-3" />
+            {{ documentInfo.wordCount }} words
+          </span>
+          <span class="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Clock class="size-3" />
+            {{ documentInfo.readingTime }} read
+          </span>
+          <div class="flex-1" />
+          <span class="text-xs text-muted-foreground">{{ workspace.createdAt }}</span>
+        </div>
       </div>
     </div>
   </main>
@@ -54,7 +127,31 @@
 
 <script setup lang="ts">
 import Intro from "@/assets/intro/workspace.txt?raw";
-import { FileText, Edit3, MessageCircle, Image, Link } from "lucide-vue-next";
+import {
+  FileText,
+  Edit3,
+  MessageCircle,
+  MessageSquare,
+  Image,
+  Link,
+  Globe,
+  Lock,
+  Share2,
+  MoreHorizontal,
+  Star,
+  Copy,
+  History,
+  Trash2,
+  UserPlus,
+  Users,
+  Type,
+  Clock,
+  PanelRight,
+  PanelRightClose,
+  Activity,
+  Pencil,
+  Eye
+} from "lucide-vue-next";
 import type { Component } from "vue";
 
 interface ActiveUser {
@@ -89,6 +186,7 @@ interface ActivityItem {
 }
 
 const content = ref<string>(Intro);
+const showSidebar = ref(true);
 
 const workspace = ref({
   name: "Project Documentation",
