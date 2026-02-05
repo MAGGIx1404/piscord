@@ -1,33 +1,32 @@
 <template>
-  <main class="w-full space-y-10 px-4 pb-10">
-    <!-- Hero Section -->
-    <DiscoverHero />
-
-    <!-- Search and Filter Section -->
-    <DiscoverSearch
-      v-model:searchQuery="searchQuery"
-      v-model:activeFilter="activeFilter"
-      v-model:sortBy="sortBy"
+  <main class="w-full min-h-screen">
+    <!-- Header with Search -->
+    <DiscoverHeader
+      v-model:search-query="searchQuery"
+      v-model:active-filter="activeFilter"
+      v-model:sort-by="sortBy"
       :filters="communityFilters"
       :sort-options="sortOptions"
-      :results-count="filteredCommunities.length"
-      @clear-filters="clearFilters"
+      :total-communities="totalCommunities"
+      :total-members="totalMembers"
+      :online-now="onlineNow"
     />
 
-    <!-- Community list -->
-    <div
-      v-if="filteredCommunities.length"
-      class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
-      <DiscoverCommunityCard
-        v-for="community in filteredCommunities"
-        :key="community.id"
-        :community="community"
+    <!-- Main Content -->
+    <div class="px-6 py-10">
+      <!-- Community Grid -->
+      <DiscoverCommunityGrid
+        v-if="filteredCommunities.length"
+        :communities="filteredCommunities"
+        :show-title="!searchQuery && activeFilter === 'all'"
       />
-    </div>
 
-    <!-- Empty State -->
-    <DiscoverEmptyState v-else @reset="clearFilters" />
+      <!-- Empty State -->
+      <DiscoverEmptyState v-else @reset="clearFilters" />
+
+      <!-- Create CTA -->
+      <DiscoverCreateCTA />
+    </div>
   </main>
 </template>
 
@@ -43,19 +42,20 @@ import {
   TrendingUp,
   ArrowUpDown
 } from "lucide-vue-next";
+import type { Community } from "~/components/discover/types";
 
 const searchQuery = ref("");
 const activeFilter = ref("all");
 const sortBy = ref("popular");
 
 const communityFilters = [
-  { value: "all", label: "All", icon: Sparkles, count: null },
-  { value: "gaming", label: "Gaming", icon: Gamepad2, count: 12 },
-  { value: "tech", label: "Tech", icon: Code, count: 8 },
-  { value: "study", label: "Study", icon: BookOpen, count: 5 },
-  { value: "art", label: "Art & Design", icon: Palette, count: 6 },
-  { value: "music", label: "Music", icon: Music, count: 4 },
-  { value: "fun", label: "Fun & Memes", icon: Users, count: 10 }
+  { value: "all", label: "All", icon: Sparkles },
+  { value: "gaming", label: "Gaming", icon: Gamepad2 },
+  { value: "tech", label: "Tech", icon: Code },
+  { value: "study", label: "Study", icon: BookOpen },
+  { value: "art", label: "Art", icon: Palette },
+  { value: "music", label: "Music", icon: Music },
+  { value: "fun", label: "Fun", icon: Users }
 ];
 
 const sortOptions = [
@@ -64,6 +64,10 @@ const sortOptions = [
   { value: "members", label: "Most Members", icon: Users },
   { value: "name", label: "Name (A-Z)", icon: ArrowUpDown }
 ];
+
+const currentSortLabel = computed(() => {
+  return sortOptions.find((opt) => opt.value === sortBy.value)?.label || "Sort";
+});
 
 const communities = ref([
   {
@@ -103,7 +107,8 @@ const communities = ref([
     totalUsers: 39210,
     posterImage: "/images/servers/p-4.jpg",
     iconImage: "https://api.dicebear.com/7.x/thumbs/png?seed=MemeTown",
-    type: "fun"
+    type: "fun",
+    requiresApproval: false
   },
   {
     id: "c5",
@@ -147,6 +152,11 @@ const communities = ref([
   }
 ]);
 
+// Stats
+const totalCommunities = computed(() => communities.value.length);
+const totalMembers = computed(() => communities.value.reduce((sum, c) => sum + c.totalUsers, 0));
+const onlineNow = computed(() => Math.floor(totalMembers.value * 0.08));
+
 const filteredCommunities = computed(() => {
   let result = [...communities.value];
 
@@ -173,7 +183,6 @@ const filteredCommunities = computed(() => {
       result.sort((a, b) => a.name.localeCompare(b.name));
       break;
     case "newest":
-      // For demo, reverse the array
       result.reverse();
       break;
   }

@@ -314,47 +314,7 @@ const moveRule = (index: number, direction: number) => {
 };
 
 const handleCreate = async () => {
-  if (!isFormValid.value || isCreating.value) return;
-
-  isCreating.value = true;
-
-  try {
-    const response = await $fetch("/api/community", {
-      method: "POST",
-      body: {
-        name: form.name.trim(),
-        slug: form.slug.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        visibility: form.visibility,
-        tags: form.tags,
-        rules: form.rules.map((r) => ({ text: r.text })),
-        requireApproval: form.requireApproval,
-        enableWelcome: form.enableWelcome,
-        discoverable: form.discoverable,
-        iconBase64: form.iconPreview,
-        bannerBase64: form.bannerPreview
-      }
-    });
-
-    if (response.success && response.community?.slug) {
-      toast.success("Community created successfully!");
-
-      // Refresh communities list
-      await communityStore.fetchCommunities(true);
-
-      // Set the new community as current
-      communityStore.setCurrentCommunity(response.community.slug);
-
-      // Navigate to the new community
-      router.push(`/community/${response.community.slug}`);
-    }
-  } catch (error: unknown) {
-    const err = error as { data?: { statusMessage?: string } };
-    toast.error(err.data?.statusMessage || "Failed to create community");
-  } finally {
-    isCreating.value = false;
-  }
+  console.log("Create community with data:", form);
 };
 
 const handleCancel = () => {

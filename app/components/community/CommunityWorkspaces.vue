@@ -1,40 +1,42 @@
 <template>
-  <Card class="gap-4">
+  <div class="p-5 rounded-2xl bg-card/50 border border-border/50 space-y-3">
     <div class="flex items-center justify-between">
-      <h3 class="font-semibold flex items-center gap-2">
-        <Layers class="size-4" />
-        Workspaces
-      </h3>
-      <Badge variant="secondary">{{ workspaces.length }}</Badge>
+      <h3 class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Workspaces</h3>
+      <span class="text-xs text-muted-foreground">{{ workspaces.length }}</span>
     </div>
-    <div class="space-y-2">
-      <div
+    <div class="space-y-1">
+      <button
         v-for="workspace in workspaces"
         :key="workspace.id"
-        class="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+        class="w-full flex items-center gap-3 p-2.5 -mx-0.5 rounded-xl hover:bg-muted/40 transition-colors group text-left"
         @click="$emit('select', workspace)"
       >
-        <div class="size-8 rounded-lg flex items-center justify-center" :class="workspace.color">
-          <component :is="workspace.icon" class="size-4" />
+        <div
+          class="size-9 rounded-lg flex items-center justify-center shrink-0"
+          :class="workspace.color.replace('/20', '/15')"
+        >
+          <component :is="workspace.icon" class="size-4" :class="workspace.color.split(' ')[1]" />
         </div>
         <div class="flex-1 min-w-0">
-          <p class="font-medium text-sm truncate">{{ workspace.name }}</p>
+          <p class="text-sm font-medium group-hover:text-primary transition-colors truncate">
+            {{ workspace.name }}
+          </p>
           <p class="text-xs text-muted-foreground">{{ workspace.channelCount }} channels</p>
         </div>
         <ChevronRight
-          class="size-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+          class="size-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors"
         />
-      </div>
+      </button>
     </div>
-  </Card>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { Layers, ChevronRight } from "lucide-vue-next";
+import { ChevronRight } from "lucide-vue-next";
 import type { Component } from "vue";
 
 interface Workspace {
-  id: number | string;
+  id: string | number;
   name: string;
   icon: Component;
   color: string;

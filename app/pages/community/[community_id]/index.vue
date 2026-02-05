@@ -1,59 +1,82 @@
 <template>
-  <main class="w-full pb-10">
-    <!-- Hero Section with Banner & Community Info -->
-    <CommunityHero
+  <main class="w-full min-h-screen">
+    <!-- Hero Banner -->
+    <CommunityBanner
       :name="community.name"
       :type="community.type"
       :description="community.description"
-      :created-at="community.createdAt"
-      :member-count="community.memberCount"
-      :stats="quickStats"
+      :banner-image="community.bannerImage"
+      :verified="true"
+      @notify="handleNotify"
+      @settings="handleSettings"
+      @invite="handleInvite"
     />
 
-    <!-- Main Content Grid -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
-      <!-- Left Column -->
-      <div class="space-y-6">
-        <!-- About Card -->
-        <CommunityAbout
-          :created-at="'Jan 15, 2024'"
-          :website="'https://oriongroup.gg'"
-          :tags="community.tags"
-        />
+    <!-- Sticky Stats Bar -->
+    <CommunityStatsBar :stats="quickStats" v-model:active-tab="activeTab" />
 
-        <!-- Community Rules -->
-        <CommunityRules :rules="communityRules" />
+    <!-- Main content - asymmetric bento -->
+    <div class="w-full px-8 py-8">
+      <div class="grid grid-cols-12 gap-5">
+        <!-- Left narrow column -->
+        <div class="col-span-12 lg:col-span-3 space-y-5">
+          <!-- About -->
+          <CommunityAbout
+            :created-at="community.createdAt"
+            :website="community.website"
+            :tags="community.tags"
+          />
 
-        <!-- Workspaces -->
-        <CommunityWorkspaces :workspaces="workspaces" />
-      </div>
+          <!-- Rules -->
+          <CommunityRules :rules="communityRules" />
 
-      <!-- Middle Column -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Community Stats Chart -->
-        <WidgetsStatsChart
-          title="Community Stats"
-          description="Activity overview showing members, messages, and engagement metrics."
-        />
+          <!-- Workspaces -->
+          <CommunityWorkspaces :workspaces="workspaces" @select="handleSelectWorkspace" />
+        </div>
 
-        <!-- Members by Role -->
-        <CommunityMembers
-          v-model:selected-role="selectedRole"
-          :roles="memberRoles"
-          :members="members"
-        />
+        <!-- Center wide column -->
+        <div class="col-span-12 lg:col-span-6 space-y-5">
+          <!-- Community Pulse -->
+          <CommunityPulse
+            :active-now="47"
+            :today-messages="128"
+            :new-members="12"
+            @select-topic="handleSelectTopic"
+            @join-event="handleJoinEvent"
+          />
 
-        <!-- Channels -->
-        <CommunityChannels :channels="channels" />
+          <!-- Channels Grid -->
+          <CommunityChannelGrid
+            :channels="channels"
+            @create="handleCreateChannel"
+            @select="handleSelectChannel"
+          />
+        </div>
 
-        <!-- Recent Activity -->
-        <CommunityActivity :activities="recentActivity" />
+        <!-- Right column - members focus -->
+        <div class="col-span-12 lg:col-span-3 space-y-5">
+          <!-- Online Now -->
+          <CommunityOnlineNow :online-members="onlineMembers" @select-member="handleSelectMember" />
+
+          <!-- Roles Filter -->
+          <CommunityRolesFilter
+            :roles="memberRoles.filter((r) => r.id !== 'all')"
+            v-model:selected-role="selectedRole"
+          />
+
+          <!-- Member List -->
+          <CommunityMemberList
+            :members="filteredMembers"
+            @view-all="handleViewAllMembers"
+            @select-member="handleSelectMember"
+          />
+        </div>
       </div>
     </div>
   </main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import {
   Users,
   MessageSquare,
@@ -67,7 +90,9 @@ import {
   Video,
   Megaphone
 } from "lucide-vue-next";
+import { markRaw } from "vue";
 
+// Community data
 const community = {
   id: "orion_group",
   name: "Orion Group",
@@ -76,16 +101,20 @@ const community = {
     "🚀 Welcome to Orion Group! A thriving community of developers, designers, and tech enthusiasts. Join us for discussions, collaborations, and fun events. Building the future together! 💻",
   createdAt: "Jan 2024",
   memberCount: "18.4K",
+  bannerImage: "/images/servers/p-1.jpg",
+  website: "https://oriongroup.gg",
   tags: ["Technology", "Gaming", "Development", "Community", "Esports"]
 };
 
+// Stats
 const quickStats = [
-  { icon: Users, value: "18.4K", label: "Members" },
-  { icon: MessageSquare, value: "124K", label: "Messages" },
-  { icon: Hash, value: "42", label: "Channels" },
-  { icon: Layers, value: "6", label: "Workspaces" }
+  { icon: markRaw(Users), value: "18.4K", label: "Members" },
+  { icon: markRaw(MessageSquare), value: "124K", label: "Messages" },
+  { icon: markRaw(Hash), value: "42", label: "Channels" },
+  { icon: markRaw(Layers), value: "6", label: "Workspaces" }
 ];
 
+// Rules
 const communityRules = [
   "Be respectful to all members",
   "No spam or self-promotion",
@@ -94,38 +123,46 @@ const communityRules = [
   "Follow Discord ToS"
 ];
 
+// Workspaces
 const workspaces = [
   {
     id: 1,
     name: "General",
-    icon: MessageSquare,
+    icon: markRaw(MessageSquare),
     color: "bg-blue-500/20 text-blue-500",
     channelCount: 8
   },
   {
     id: 2,
     name: "Development",
-    icon: Code,
+    icon: markRaw(Code),
     color: "bg-green-500/20 text-green-500",
     channelCount: 12
   },
   {
     id: 3,
     name: "Gaming",
-    icon: Gamepad2,
+    icon: markRaw(Gamepad2),
     color: "bg-purple-500/20 text-purple-500",
     channelCount: 6
   },
-  { id: 4, name: "Music", icon: Music, color: "bg-pink-500/20 text-pink-500", channelCount: 4 },
+  {
+    id: 4,
+    name: "Music",
+    icon: markRaw(Music),
+    color: "bg-pink-500/20 text-pink-500",
+    channelCount: 4
+  },
   {
     id: 5,
     name: "Learning",
-    icon: BookOpen,
+    icon: markRaw(BookOpen),
     color: "bg-amber-500/20 text-amber-500",
     channelCount: 7
   }
 ];
 
+// Roles
 const memberRoles = [
   { id: "all", label: "All", count: 18420, dotColor: "bg-gray-500" },
   { id: "owner", label: "Owner", count: 1, dotColor: "bg-yellow-500" },
@@ -134,8 +171,7 @@ const memberRoles = [
   { id: "member", label: "Members", count: 18402, dotColor: "bg-green-500" }
 ];
 
-const selectedRole = ref("all");
-
+// Members
 const members = [
   {
     id: 1,
@@ -203,11 +239,12 @@ const members = [
   }
 ];
 
+// Channels
 const channels = [
   {
     id: 1,
     name: "general",
-    icon: MessageSquare,
+    icon: markRaw(MessageSquare),
     iconBg: "bg-blue-500/20",
     iconColor: "text-blue-500",
     lastActivity: "Just now",
@@ -216,7 +253,7 @@ const channels = [
   {
     id: 2,
     name: "announcements",
-    icon: Megaphone,
+    icon: markRaw(Megaphone),
     iconBg: "bg-amber-500/20",
     iconColor: "text-amber-500",
     lastActivity: "2h ago",
@@ -225,7 +262,7 @@ const channels = [
   {
     id: 3,
     name: "voice-chat",
-    icon: Mic,
+    icon: markRaw(Mic),
     iconBg: "bg-green-500/20",
     iconColor: "text-green-500",
     lastActivity: "Active",
@@ -234,7 +271,7 @@ const channels = [
   {
     id: 4,
     name: "dev-talk",
-    icon: Code,
+    icon: markRaw(Code),
     iconBg: "bg-purple-500/20",
     iconColor: "text-purple-500",
     lastActivity: "5m ago",
@@ -243,7 +280,7 @@ const channels = [
   {
     id: 5,
     name: "gaming",
-    icon: Gamepad2,
+    icon: markRaw(Gamepad2),
     iconBg: "bg-pink-500/20",
     iconColor: "text-pink-500",
     lastActivity: "1h ago",
@@ -252,7 +289,7 @@ const channels = [
   {
     id: 6,
     name: "stream",
-    icon: Video,
+    icon: markRaw(Video),
     iconBg: "bg-red-500/20",
     iconColor: "text-red-500",
     lastActivity: "Live",
@@ -260,34 +297,26 @@ const channels = [
   }
 ];
 
-const recentActivity = [
-  {
-    id: 1,
-    userName: "CyberNinja",
-    userAvatar: "/images/avatar/1.png",
-    action: "created a new channel #announcements",
-    time: "2 minutes ago"
-  },
-  {
-    id: 2,
-    userName: "PixelQueen",
-    userAvatar: "/images/avatar/2.png",
-    action: "promoted GameWizard to Moderator",
-    time: "1 hour ago"
-  },
-  {
-    id: 3,
-    userName: "CodeMaster",
-    userAvatar: "/images/avatar/3.png",
-    action: "updated community rules",
-    time: "3 hours ago"
-  },
-  {
-    id: 4,
-    userName: "GameWizard",
-    userAvatar: "/images/avatar/4.png",
-    action: "started a voice channel",
-    time: "5 hours ago"
-  }
-];
+// State
+const activeTab = ref("Overview");
+const selectedRole = ref("all");
+
+// Computed
+const onlineMembers = computed(() => members.filter((m) => m.online));
+const filteredMembers = computed(() => {
+  if (selectedRole.value === "all") return members;
+  return members.filter((m) => m.role === selectedRole.value);
+});
+
+// Event handlers
+const handleNotify = () => console.log("Notify clicked");
+const handleSettings = () => console.log("Settings clicked");
+const handleInvite = () => console.log("Invite clicked");
+const handleSelectWorkspace = (workspace: any) => console.log("Selected workspace:", workspace);
+const handleSelectTopic = (topic: any) => console.log("Selected topic:", topic);
+const handleJoinEvent = (event: any) => console.log("Join event:", event);
+const handleCreateChannel = () => console.log("Create channel");
+const handleSelectChannel = (channel: any) => console.log("Selected channel:", channel);
+const handleSelectMember = (member: any) => console.log("Selected member:", member);
+const handleViewAllMembers = () => console.log("View all members");
 </script>

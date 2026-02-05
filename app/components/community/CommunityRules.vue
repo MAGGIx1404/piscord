@@ -1,29 +1,20 @@
 <template>
-  <Card class="gap-4">
-    <h3 class="font-semibold flex items-center gap-2">
-      <ScrollText class="size-4" />
-      Community Rules
-    </h3>
-    <div class="space-y-2">
-      <div
-        v-for="(rule, index) in rules"
-        :key="index"
-        class="flex gap-3 text-sm p-2 rounded-lg hover:bg-muted/50 transition-colors"
-      >
+  <div class="p-5 rounded-2xl bg-card/50 border border-border/50 space-y-4">
+    <h3 class="text-sm font-medium text-muted-foreground uppercase tracking-wider">Rules</h3>
+    <ol class="space-y-2">
+      <li v-for="(rule, i) in rules" :key="i" class="flex gap-3 text-sm">
         <span
-          class="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-medium shrink-0"
+          class="size-5 shrink-0 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground"
         >
-          {{ index + 1 }}
+          {{ i + 1 }}
         </span>
         <span class="text-muted-foreground">{{ rule }}</span>
-      </div>
-    </div>
-  </Card>
+      </li>
+    </ol>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ScrollText } from "lucide-vue-next";
-
 interface Props {
   rules: string[];
 }

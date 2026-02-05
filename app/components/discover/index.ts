@@ -1,4 +1,6 @@
-export { default as DiscoverHero } from "./DiscoverHero.vue";
-export { default as DiscoverSearch } from "./DiscoverSearch.vue";
+export { default as DiscoverHeader } from "./DiscoverHeader.vue";
+export { default as DiscoverCommunityGrid } from "./DiscoverCommunityGrid.vue";
+export { default as DiscoverCard } from "./DiscoverCard.vue";
 export { default as DiscoverEmptyState } from "./DiscoverEmptyState.vue";
-export { default as DiscoverCommunityCard } from "./DiscoverCommunityCard.vue";
+export { default as DiscoverCreateCTA } from "./DiscoverCreateCTA.vue";
+export * from "./types";

@@ -1,209 +1,107 @@
 <template>
-  <main class="w-full h-full flex items-center justify-center p-6">
-    <div v-if="communityStore.isLoading" class="flex items-center justify-center">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
+  <main class="w-full h-[calc(100vh-6rem)] relative overflow-hidden flex flex-col">
+    <!-- Full Page Background -->
+    <div
+      class="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none rounded-xl"
+    />
+    <div class="absolute top-20 -left-32 size-96 bg-primary/20 rounded-full blur-3xl opacity-40" />
+    <div class="absolute top-1/3 right-0 size-80 bg-primary/15 rounded-full blur-3xl opacity-30" />
+    <div
+      class="absolute bottom-20 left-1/4 size-64 bg-blue-500/10 rounded-full blur-3xl opacity-40"
+    />
+    <div
+      class="absolute -bottom-20 -right-20 size-96 bg-primary/10 rounded-full blur-3xl opacity-50"
+    />
 
-    <div v-else-if="communityStore.hasCommunities" class="w-full max-w-6xl space-y-6">
-      <div class="space-y-2">
-        <h1 class="text-3xl font-bold">Welcome back, {{ userStore.user?.first_name }}!</h1>
-        <p class="text-muted-foreground">Select a community from the sidebar to get started.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card
-          v-for="community in communityStore.communities"
-          :key="community.id"
-          class="p-4 hover:border-primary/50 transition-colors cursor-pointer group"
-          @click="navigateToCommunity(community.slug)"
-        >
-          <div class="flex items-start gap-4">
-            <div
-              class="size-14 rounded-xl bg-muted flex items-center justify-center overflow-hidden shrink-0"
-            >
-              <img
-                v-if="community.logo_url"
-                :src="community.logo_url"
-                :alt="community.name"
-                class="size-full object-cover"
-              />
-              <Users v-else class="size-7 text-muted-foreground" />
-            </div>
-            <div class="flex-1 min-w-0 space-y-1">
-              <div class="flex items-center gap-2">
-                <h3 class="font-semibold truncate group-hover:text-primary transition-colors">
-                  {{ community.name }}
-                </h3>
-                <Badge v-if="community.is_verified" variant="secondary" class="shrink-0">
-                  <CheckCircle class="size-3 mr-1" />
-                  Verified
-                </Badge>
-              </div>
-              <p class="text-sm text-muted-foreground line-clamp-2">
-                {{ community.description || "No description" }}
-              </p>
-              <div class="flex items-center gap-3 text-xs text-muted-foreground">
-                <span class="flex items-center gap-1">
-                  <Users class="size-3" />
-                  {{ community.member_count }} members
-                </span>
-                <Badge variant="outline" class="text-xs">{{ community.role }}</Badge>
-              </div>
-            </div>
-            <ArrowRight
-              class="size-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0"
-            />
+    <!-- Main Content - Centered -->
+    <div class="relative flex-1 flex items-center justify-center px-6">
+      <div class="max-w-2xl w-full text-center space-y-10">
+        <!-- Hero Text -->
+        <div class="space-y-5">
+          <div
+            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary font-medium"
+          >
+            <Zap class="size-3.5" />
+            Ready to connect
           </div>
-        </Card>
-      </div>
 
-      <div class="flex items-center gap-3">
-        <Separator class="flex-1" />
-        <span class="text-xs text-muted-foreground">or</span>
-        <Separator class="flex-1" />
-      </div>
-
-      <div class="flex flex-wrap gap-3">
-        <Button variant="outline" as-child>
-          <NuxtLink to="/discover">
-            <Compass class="size-4" />
-            Discover More Communities
-          </NuxtLink>
-        </Button>
-        <Button variant="outline" as-child>
-          <NuxtLink to="/community/create">
-            <Plus class="size-4" />
-            Create New Community
-          </NuxtLink>
-        </Button>
-      </div>
-    </div>
-
-    <div v-else class="w-full max-w-4xl space-y-10">
-      <HomeBanner />
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card class="p-6 hover:border-primary/50 transition-colors">
-          <div class="space-y-4">
-            <div class="size-14 rounded-xl bg-blue-500/20 flex items-center justify-center">
-              <Users class="size-7 text-blue-500" />
-            </div>
-            <div>
-              <h2 class="text-xl font-semibold mb-2">Join a Community</h2>
-              <p class="text-sm text-muted-foreground">
-                Find and join communities that match your interests. Connect with others who share
-                your passions.
-              </p>
-            </div>
-
-            <Separator />
-
-            <!-- Invitation Link Option -->
-            <div class="space-y-3">
-              <Label class="flex items-center gap-2 text-sm font-medium">
-                <Link2 class="size-4" />
-                Have an invitation link?
-              </Label>
-              <div class="flex gap-2">
-                <Input
-                  v-model="inviteLink"
-                  placeholder="Paste invite link here..."
-                  class="flex-1"
+          <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+            Your space to
+            <span class="relative">
+              <span class="text-primary">connect</span>
+              <svg class="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
+                <path
+                  d="M2 6c50-4 100-4 196 0"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  class="text-primary/40"
                 />
-                <Button class="h-auto" @click="handleJoinWithLink" :disabled="!inviteLink.trim()">
-                  <ArrowRight class="size-4" />
-                </Button>
-              </div>
-            </div>
+              </svg>
+            </span>
+          </h1>
 
-            <div class="flex items-center gap-3">
-              <Separator class="flex-1" />
-              <span class="text-xs text-muted-foreground">or</span>
-              <Separator class="flex-1" />
-            </div>
+          <p class="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Build communities, spark conversations, and bring people together.
+          </p>
+        </div>
 
-            <!-- Discover Communities -->
-            <Button variant="outline" class="w-full" as-child>
-              <NuxtLink to="/discover">
-                <Compass class="size-4" />
-                Discover Public Communities
-                <ArrowRight class="size-4 ml-auto" />
-              </NuxtLink>
+        <!-- Invite Link Input -->
+        <div class="max-w-md mx-auto">
+          <div
+            class="flex gap-2 p-1.5 rounded-lg bg-card/60 backdrop-blur-sm border border-border/50"
+          >
+            <div class="flex-1 flex items-center gap-3 px-4">
+              <Link2 class="size-4 text-muted-foreground shrink-0" />
+              <input
+                type="text"
+                placeholder="Paste invite link..."
+                class="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+              />
+            </div>
+            <Button class="px-5">
+              Join
+              <ArrowRight class="size-4" />
             </Button>
           </div>
-        </Card>
+        </div>
 
-        <Card class="p-6 hover:border-primary/50 transition-colors">
-          <div class="space-y-4">
-            <div class="size-14 rounded-xl bg-green-500/20 flex items-center justify-center">
-              <Plus class="size-7 text-green-500" />
-            </div>
-            <div>
-              <h2 class="text-xl font-semibold mb-2">Create Your Community</h2>
-              <p class="text-sm text-muted-foreground">
-                Build your own space for your team, friends, or audience. Customize it your way and
-                invite others to join.
-              </p>
-            </div>
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button variant="outline" size="lg" as-child>
+            <NuxtLink to="/discover">
+              <Compass class="size-4 text-primary" />
+              Explore Communities
+              <Badge variant="secondary" class="text-[10px] px-1.5 py-0">2.4k+</Badge>
+            </NuxtLink>
+          </Button>
 
-            <Separator />
-
-            <div class="space-y-2">
-              <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle class="size-4 text-green-500" />
-                <span>Create channels and workspaces</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle class="size-4 text-green-500" />
-                <span>Manage members and roles</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle class="size-4 text-green-500" />
-                <span>Customize with your branding</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                <CheckCircle class="size-4 text-green-500" />
-                <span>Public or private visibility</span>
-              </div>
-            </div>
-
-            <Button class="w-full" as-child>
-              <NuxtLink to="/community/create">
-                <Sparkles class="size-4" />
-                Create Community
-                <ArrowRight class="size-4 ml-auto" />
-              </NuxtLink>
-            </Button>
-          </div>
-        </Card>
+          <Button variant="outline" size="lg" as-child>
+            <NuxtLink to="/community/create">
+              <Plus class="size-4 text-primary" />
+              Create Community
+            </NuxtLink>
+          </Button>
+        </div>
       </div>
-
-      <QuickTip />
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { Users, Plus, Link2, ArrowRight, Compass, CheckCircle, Sparkles } from "lucide-vue-next";
-
-const router = useRouter();
-const userStore = useUserStore();
-const communityStore = useCommunityStore();
-
-const inviteLink = ref("");
-
-const handleJoinWithLink = () => {
-  if (!inviteLink.value.trim()) return;
-
-  const code = inviteLink.value.includes("/invite/")
-    ? inviteLink.value.split("/invite/").pop()
-    : inviteLink.value;
-
-  router.push(`/invite/${code}`);
-};
-
-const navigateToCommunity = (slug: string) => {
-  communityStore.setCurrentCommunity(slug);
-  router.push(`/community/${slug}`);
-};
+import { Plus, Link2, ArrowRight, Compass, Zap } from "lucide-vue-next";
 </script>
+
+<style scoped>
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 25s linear infinite;
+}
+</style>

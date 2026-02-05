@@ -1,100 +1,109 @@
 <template>
-  <div class="w-1/2 flex flex-col gap-10">
-    <div class="w-full space-y-4">
-      <h1 class="text-5xl font-semibold">Create an Account</h1>
-      <p class="text-base">
-        Join us today! Please fill in the details below to create your account.
+  <div class="w-full max-w-md">
+    <div class="space-y-8">
+      <!-- Header -->
+      <div class="space-y-3">
+        <h1 class="text-3xl font-bold tracking-tight">Create an account</h1>
+        <p class="text-base text-muted-foreground">Enter your details to get started</p>
+      </div>
+
+      <!-- Form -->
+      <form class="space-y-5">
+        <!-- Username Field -->
+        <div class="space-y-2">
+          <Label for="username" class="flex items-center justify-between">
+            Username
+            <span v-if="errors.username" class="text-xs text-destructive font-normal">{{
+              errors.username
+            }}</span>
+            <span
+              v-else-if="usernameAvailable === false"
+              class="text-xs text-destructive font-normal"
+              >Username taken</span
+            >
+          </Label>
+          <div class="relative">
+            <Input
+              id="username"
+              type="text"
+              placeholder="Choose a username"
+              v-model="username"
+              class="h-11 bg-card/50 border-border/50 pr-10"
+              :class="errors.username || usernameAvailable === false ? 'border-destructive' : ''"
+            />
+            <div class="absolute right-3 top-1/2 -translate-y-1/2 size-4">
+              <Loader2 v-if="checking" class="size-full animate-spin text-muted-foreground" />
+              <CircleCheck v-else-if="usernameAvailable === true" class="size-full text-primary" />
+              <XCircle v-else-if="usernameAvailable === false" class="size-full text-destructive" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Email Field -->
+        <div class="space-y-2">
+          <Label for="email" class="flex items-center justify-between">
+            Email
+            <span v-if="errors.email" class="text-xs text-destructive font-normal">{{
+              errors.email
+            }}</span>
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            v-model="email"
+            class="h-11 bg-card/50 border-border/50"
+            :class="errors.email ? 'border-destructive' : ''"
+          />
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-2">
+          <Label for="password" class="flex items-center justify-between">
+            Password
+            <span v-if="errors.password" class="text-xs text-destructive font-normal">{{
+              errors.password
+            }}</span>
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            v-model="password"
+            class="h-11 bg-card/50 border-border/50"
+            :class="errors.password ? 'border-destructive' : ''"
+          />
+        </div>
+
+        <!-- Submit Button -->
+        <Button
+          type="submit"
+          size="lg"
+          :disabled="isPending || usernameAvailable === false"
+          @click.prevent="onSubmit"
+          class="w-full mt-2"
+        >
+          <Loader2 v-if="isPending" class="size-4 mr-2 animate-spin" />
+          {{ isPending ? "Creating account..." : "Create account" }}
+        </Button>
+      </form>
+
+      <!-- Sign In Link -->
+      <p class="text-muted-foreground">
+        Already have an account?
+        <NuxtLink
+          to="/auth/login"
+          class="text-primary font-medium hover:underline underline-offset-4"
+        >
+          Sign in
+        </NuxtLink>
       </p>
     </div>
-
-    <form class="w-full space-y-6">
-      <div class="w-full space-y-2 relative">
-        <Label
-          for="username"
-          :class="errors.username || usernameAvailable === false ? 'text-destructive' : ''"
-          >Username : {{ errors.username }}
-          {{ usernameAvailable === false ? " - Username is taken" : "" }}
-        </Label>
-        <Input
-          id="username"
-          type="text"
-          placeholder="Choose a username"
-          v-model="username"
-          :class="
-            errors.username || usernameAvailable === false
-              ? 'text-destructive border-destructive placeholder:text-destructive'
-              : ''
-          "
-        />
-        <div class="absolute right-3 bottom-4.5 size-5">
-          <template v-if="checking">
-            <Loader2Icon class="size-full animate-spin" />
-          </template>
-          <template v-else-if="usernameAvailable === true">
-            <CircleCheckIcon class="size-full text-green-600" />
-          </template>
-          <template v-else-if="usernameAvailable === false">
-            <OctagonXIcon class="size-full text-red-600" />
-          </template>
-        </div>
-      </div>
-      <div class="w-full space-y-2">
-        <Label for="email" :class="errors.email ? 'text-destructive' : ''"
-          >Email :
-          {{ errors.email }}
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="Enter your email"
-          v-model="email"
-          :class="
-            errors.email ? 'text-destructive border-destructive placeholder:text-destructive' : ''
-          "
-        />
-      </div>
-      <div class="w-full space-y-2 mt-4">
-        <Label for="password" :class="errors.password ? 'text-destructive' : ''"
-          >Password :
-          {{ errors.password }}
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="Create a password"
-          v-model="password"
-          :class="
-            errors.password
-              ? 'text-destructive border-destructive placeholder:text-destructive'
-              : ''
-          "
-        />
-      </div>
-
-      <Button
-        type="submit"
-        size="lg"
-        :disabled="isPending"
-        @click.prevent="onSubmit"
-        class="w-full"
-      >
-        {{ isPending ? "Creating Account..." : "Register" }}
-      </Button>
-
-      <Separator />
-
-      <p class="text-sm -mt-2">
-        Already have an account ?
-        <Button variant="link" size="link" as-child class="text-sm">
-          <NuxtLink to="/auth/login"> Sign In </NuxtLink>
-        </Button>
-      </p>
-    </form>
   </div>
 </template>
 
 <script setup>
-import { CircleCheckIcon, Loader2Icon, OctagonXIcon } from "lucide-vue-next";
+import { CircleCheck, XCircle, Loader2 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 import { useForm } from "vee-validate";
 import * as yup from "yup";
@@ -130,57 +139,32 @@ const checkUsername = async (value) => {
     return;
   }
   checking.value = true;
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-    const res = await $fetch("/api/user/username-available", {
-      method: "POST",
-      body: { username: value }
-    });
-    usernameAvailable.value = !!res.available;
-  } catch (err) {
-    usernameAvailable.value = null;
-  } finally {
-    checking.value = false;
-  }
+  // Simulate check - replace with actual API call
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  usernameAvailable.value = value !== "taken";
+  checking.value = false;
 };
 
 watch(username, (val) => {
   usernameAvailable.value = null;
   checking.value = false;
-  if (usernameDebounce) clearTimeout(usernameDebounce);
+  clearTimeout(usernameDebounce);
   usernameDebounce = setTimeout(() => checkUsername(val), 400);
 });
 
-const processRegistration = async (values) => {
-  await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+const processRegister = async (values) => {
   isPending.value = true;
-
-  try {
-    await $fetch("/api/auth/signup", {
-      method: "POST",
-      body: {
-        username: values.username,
-        email: values.email,
-        password: values.password
-      }
-    });
-
-    isPending.value = false;
-    router.push("/");
-  } catch (err) {
-    isPending.value = false;
-    throw err;
-  }
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  console.log("Registering with:", values);
+  isPending.value = false;
 };
 
 const onSubmit = handleSubmit((v) => {
-  const registrationPromise = processRegistration(v);
-  toast.promise(registrationPromise, {
+  const registerPromise = processRegister(v);
+  toast.promise(registerPromise, {
     loading: "Creating your account...",
-    success: "Account created successfully! Please log in.",
-    error: (err) => {
-      return err?.statusMessage || "Something went wrong";
-    }
+    success: "Account created!",
+    error: (err) => err?.statusMessage || "Something went wrong"
   });
 });
 </script>

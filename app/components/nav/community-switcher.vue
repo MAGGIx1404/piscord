@@ -1,42 +1,19 @@
 <script setup lang="ts">
-import { ChevronsUpDown, Plus, Users } from "lucide-vue-next";
+import type { Component } from "vue";
+
+import { ChevronsUpDown, Plus } from "lucide-vue-next";
 import { useSidebar } from "@/components/ui/sidebar";
 
-interface Community {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  logo_url: string | null;
-  tier: string;
-  member_count: number;
-}
-
 const props = defineProps<{
-  communities: Community[];
+  teams: {
+    name: string;
+    logo: Component;
+    plan: string;
+  }[];
 }>();
 
 const { isMobile } = useSidebar();
-const communityStore = useCommunityStore();
-const router = useRouter();
-
-const activeCommunity = computed(() => communityStore.currentCommunity);
-
-function selectCommunity(community: Community) {
-  communityStore.setCurrentCommunity(community.slug);
-  router.push(`/community/${community.slug}`);
-}
-
-function getTierLabel(tier: string) {
-  switch (tier) {
-    case "enterprise":
-      return "Enterprise";
-    case "premium":
-      return "Premium";
-    default:
-      return "Free";
-  }
-}
+const activeTeam = ref(props.teams[0]);
 </script>
 
 <template>
@@ -49,23 +26,15 @@ function getTierLabel(tier: string) {
             class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
             <div
-              class="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground overflow-hidden"
+              class="flex aspect-square size-10 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
             >
-              <img
-                v-if="activeCommunity?.logo_url"
-                :src="activeCommunity.logo_url"
-                :alt="activeCommunity.name"
-                class="size-full object-cover"
-              />
-              <Users v-else class="size-5" />
+              <component :is="activeTeam?.logo" class="size-4" />
             </div>
             <div class="grid flex-1 text-left text-sm leading-tight">
               <span class="truncate text-base font-medium">
-                {{ activeCommunity?.name || "Select Community" }}
+                {{ activeTeam?.name }}
               </span>
-              <span class="truncate text-xs">{{
-                activeCommunity ? getTierLabel(activeCommunity.tier) : ""
-              }}</span>
+              <span class="truncate text-xs">{{ activeTeam?.plan }}</span>
             </div>
             <ChevronsUpDown class="ml-auto" />
           </SidebarMenuButton>
@@ -78,24 +47,15 @@ function getTierLabel(tier: string) {
         >
           <DropdownMenuLabel class="text-xs text-muted-foreground"> Communities </DropdownMenuLabel>
           <DropdownMenuItem
-            v-for="(community, index) in communities"
-            :key="community.id"
+            v-for="(team, index) in teams"
+            :key="team.name"
             class="gap-2 p-2"
-            @click="selectCommunity(community)"
+            @click="activeTeam = team"
           >
-            <div class="flex size-10 items-center justify-center rounded-sm border overflow-hidden">
-              <img
-                v-if="community.logo_url"
-                :src="community.logo_url"
-                :alt="community.name"
-                class="size-full object-cover"
-              />
-              <Users v-else class="size-5 shrink-0" />
+            <div class="flex size-10 items-center justify-center rounded-sm border">
+              <component :is="team.logo" class="size-5 shrink-0" />
             </div>
-            <div class="flex-1">
-              <div class="font-medium">{{ community.name }}</div>
-              <div class="text-xs text-muted-foreground">{{ community.member_count }} members</div>
-            </div>
+            {{ team.name }}
             <DropdownMenuShortcut>⌘{{ index + 1 }}</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
