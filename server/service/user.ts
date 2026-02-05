@@ -21,6 +21,7 @@ export async function findUserByUsername(username: string) {
     .where("username", "=", username)
     .selectAll()
     .executeTakeFirst();
+  console.log(db.selectFrom("users").where("username", "=", username).selectAll().compile());
   return user;
 }
 
