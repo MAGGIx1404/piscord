@@ -97,6 +97,11 @@
         <!-- Message Text -->
         <p class="text-sm leading-relaxed wrap-break-word">{{ message.content }}</p>
 
+        <!-- Workspace Cards -->
+        <div v-if="message.workspaces?.length" class="w-full grid grid-cols-4 gap-2.5">
+          <ChannelWorkspaceCard v-for="ws in message.workspaces" :key="ws.id" :workspace="ws" />
+        </div>
+
         <!-- Reactions -->
         <div v-if="message.reactions?.length" class="flex items-center gap-1.5 mt-2">
           <button
@@ -191,6 +196,7 @@ import {
   Trash2
 } from "lucide-vue-next";
 import { computed } from "vue";
+import type { ChatWorkspace } from "./ChannelWorkspaceCard.vue";
 
 interface Author {
   id: string;
@@ -212,6 +218,8 @@ interface Message {
   isReply: boolean;
   messageId?: string;
   reactions?: Reaction[];
+  isBot: boolean;
+  workspaces?: ChatWorkspace[];
 }
 
 interface Props {

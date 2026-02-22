@@ -2,6 +2,7 @@ export { default as CreateHeader } from "./CreateHeader.vue";
 export { default as CreateStepIdentity } from "./CreateStepIdentity.vue";
 export { default as CreateStepDiscovery } from "./CreateStepDiscovery.vue";
 export { default as CreateStepRules } from "./CreateStepRules.vue";
+export { default as CreateStepAIPet } from "./CreateStepAIPet.vue";
 export { default as CreateStepSettings } from "./CreateStepSettings.vue";
 export { default as CreateNavigation } from "./CreateNavigation.vue";
 export { default as CreatePreview } from "./CreatePreview.vue";

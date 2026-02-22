@@ -19,14 +19,12 @@
             v-model:name="form.name"
             v-model:slug="form.slug"
             v-model:description="form.description"
-            :icon-preview="form.iconPreview"
-            :banner-preview="form.bannerPreview"
+            v-model:icon-preview="form.iconPreview"
+            v-model:banner-preview="form.bannerPreview"
             :slug-error="slugError"
             :is-checking-slug="isCheckingSlug"
             :is-generating="isGenerating"
-            @update:icon-preview="form.iconPreview = $event"
             @update:icon-file="form.iconFile = $event"
-            @update:banner-preview="form.bannerPreview = $event"
             @update:banner-file="form.bannerFile = $event"
             @generate-description="generateAIDescription"
           />
@@ -41,9 +39,24 @@
           <!-- Step 3: Rules -->
           <CreateStepRules v-show="currentStep === 3" v-model:rules="form.rules" />
 
-          <!-- Step 4: Privacy -->
-          <CreateStepSettings
+          <!-- Step 4: AI Pet -->
+          <CreateStepAIPet
             v-show="currentStep === 4"
+            v-model:enabled="aiPet.enabled"
+            v-model:avatar="aiPet.avatar"
+            v-model:name="aiPet.name"
+            v-model:nickname="aiPet.nickname"
+            v-model:personality="aiPet.personality"
+            v-model:model="aiPet.model"
+            v-model:use-custom-key="aiPet.useCustomKey"
+            v-model:api-key="aiPet.apiKey"
+            v-model:enabled-capabilities="aiPet.enabledCapabilities"
+            @update:custom-avatar-file="aiPet.customAvatarFile = $event"
+          />
+
+          <!-- Step 5: Privacy -->
+          <CreateStepSettings
+            v-show="currentStep === 5"
             v-model:visibility="form.visibility"
             v-model:require-approval="form.requireApproval"
             v-model:enable-welcome="form.enableWelcome"
@@ -87,6 +100,7 @@ import {
   CreateStepIdentity,
   CreateStepDiscovery,
   CreateStepRules,
+  CreateStepAIPet,
   CreateStepSettings,
   CreateNavigation,
   CreatePreview,
@@ -99,8 +113,8 @@ const router = useRouter();
 
 // Step management
 const currentStep = ref(1);
-const totalSteps = 4;
-const stepTitles = ["Identity", "Discovery", "Rules", "Settings"];
+const totalSteps = 5;
+const stepTitles = ["Identity", "Discovery", "Rules", "AI Pet", "Settings"];
 
 const isGenerating = ref(false);
 const isCreating = ref(false);
@@ -122,6 +136,19 @@ const form = reactive({
   iconFile: null as File | null,
   bannerPreview: null as string | null,
   bannerFile: null as File | null
+});
+
+const aiPet = reactive({
+  enabled: false,
+  avatar: "1",
+  name: "",
+  nickname: "",
+  personality: "",
+  model: "gpt-4o-mini",
+  useCustomKey: false,
+  apiKey: "",
+  enabledCapabilities: ["chat", "welcome"] as string[],
+  customAvatarFile: null as File | null
 });
 
 const categories = [
@@ -146,6 +173,12 @@ const canProceed = computed(() => {
     case 3:
       return true;
     case 4:
+      // AI Pet step: if enabled, require a name
+      if (aiPet.enabled) {
+        return aiPet.name.trim().length >= 2;
+      }
+      return true;
+    case 5:
       return true;
     default:
       return false;
@@ -235,7 +268,7 @@ const handleCreate = async () => {
   try {
     await new Promise((resolve) => setTimeout(resolve, 1500));
     toast.success("Community created successfully!");
-    console.log("Create community with data:", form);
+    console.log("Create community with data:", { ...form, aiPet: { ...aiPet } });
   } catch (error) {
     toast.error("Failed to create community");
   } finally {

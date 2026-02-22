@@ -72,8 +72,7 @@
         </Label>
         <Input
           id="name"
-          :model-value="name"
-          @update:model-value="updateName"
+          v-model="communityName"
           placeholder="My Awesome Community"
           maxlength="50"
           class="h-12 text-lg"
@@ -88,19 +87,18 @@
           </span>
           <Input
             id="slug"
-            :model-value="slug"
-            @update:model-value="updateSlug"
+            v-model="slug"
             placeholder="my-community"
             class="h-12 pl-28"
-            :class="{ 'border-destructive focus-visible:ring-destructive': slugError }"
+            :class="{ 'border-destructive focus-visible:ring-destructive': props.slugError }"
           />
           <div class="absolute right-3 top-1/2 -translate-y-1/2">
             <Loader2 v-if="isCheckingSlug" class="size-4 animate-spin text-muted-foreground" />
-            <CheckCircle2 v-else-if="slug && !slugError" class="size-4 text-emerald-500" />
-            <XCircle v-else-if="slugError" class="size-4 text-destructive" />
+            <CheckCircle2 v-else-if="slug && !props.slugError" class="size-4 text-emerald-500" />
+            <XCircle v-else-if="props.slugError" class="size-4 text-destructive" />
           </div>
         </div>
-        <p v-if="slugError" class="text-xs text-destructive">{{ slugError }}</p>
+        <p v-if="props.slugError" class="text-xs text-destructive">{{ props.slugError }}</p>
       </div>
     </div>
 
@@ -115,7 +113,7 @@
           size="sm"
           class="h-7 gap-1.5 text-primary hover:text-primary"
           @click="emit('generate-description')"
-          :disabled="isGenerating || !name.trim()"
+          :disabled="isGenerating || !communityName.trim()"
         >
           <Sparkles class="size-3.5" :class="{ 'animate-pulse': isGenerating }" />
           {{ isGenerating ? "Writing..." : "AI Generate" }}
@@ -124,8 +122,7 @@
       <div class="relative">
         <Textarea
           id="description"
-          :model-value="description"
-          @update:model-value="updateDescription"
+          v-model="description"
           placeholder="Tell people what your community is about, what they can expect, and why they should join..."
           rows="5"
           maxlength="500"
@@ -151,34 +148,26 @@
 import { ImagePlus, Camera, Loader2, CheckCircle2, XCircle, Sparkles } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
+const communityName = defineModel<string>("name", { required: true });
+const slug = defineModel<string>("slug", { required: true });
+const description = defineModel<string>("description", { required: true });
+const iconPreview = defineModel<string | null>("iconPreview", { required: true });
+const bannerPreview = defineModel<string | null>("bannerPreview", { required: true });
+
 const props = defineProps<{
-  name: string;
-  slug: string;
-  description: string;
-  iconPreview: string | null;
-  bannerPreview: string | null;
   slugError: string | null;
   isCheckingSlug: boolean;
   isGenerating: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: "update:name", value: string): void;
-  (e: "update:slug", value: string): void;
-  (e: "update:description", value: string): void;
-  (e: "update:iconPreview", value: string | null): void;
   (e: "update:iconFile", value: File | null): void;
-  (e: "update:bannerPreview", value: string | null): void;
   (e: "update:bannerFile", value: File | null): void;
   (e: "generate-description"): void;
 }>();
 
 const iconInput = ref<HTMLInputElement | null>(null);
 const bannerInput = ref<HTMLInputElement | null>(null);
-
-const updateName = (val: string | number) => emit("update:name", String(val));
-const updateSlug = (val: string | number) => emit("update:slug", String(val));
-const updateDescription = (val: string | number) => emit("update:description", String(val));
 
 const triggerIconUpload = () => {
   iconInput.value?.click();
@@ -195,7 +184,7 @@ const handleIconUpload = (event: Event) => {
     emit("update:iconFile", file);
     const reader = new FileReader();
     reader.onload = (e) => {
-      emit("update:iconPreview", (e.target?.result as string) || null);
+      iconPreview.value = (e.target?.result as string) || null;
     };
     reader.readAsDataURL(file);
   }
@@ -216,7 +205,7 @@ const handleBannerUpload = (event: Event) => {
     emit("update:bannerFile", file);
     const reader = new FileReader();
     reader.onload = (e) => {
-      emit("update:bannerPreview", (e.target?.result as string) || null);
+      bannerPreview.value = (e.target?.result as string) || null;
     };
     reader.readAsDataURL(file);
   }

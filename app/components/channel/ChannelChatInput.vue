@@ -3,7 +3,7 @@
     <Textarea
       ref="textarea"
       v-model="text"
-      placeholder="Type a message… Use @ to mention"
+      placeholder="Type a message… Use @ to mention, # to tag workspace"
       class="min-h-28 resize-none"
       @input="onInput"
       @scroll="syncScroll"
@@ -21,21 +21,55 @@
       <Button class="text-sm h-9"> <Send /> Send </Button>
     </div>
 
-    <!-- User list -->
+    <!-- User mention list -->
     <div
-      v-if="open"
+      v-if="open && mentionType === 'user'"
       ref="panelRef"
       class="absolute bottom-full left-2 z-50 mb-2 w-56 rounded-md border bg-popover shadow-md"
     >
       <div
         v-for="(user, i) in filteredUsers"
         :key="user.id"
-        @mousedown.prevent="insert(user)"
+        @mousedown.prevent="insertUser(user)"
         class="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
         :class="{ 'bg-accent': i === index }"
       >
         <img :src="user.avatar" class="h-6 w-6 rounded-full" />
         <span>{{ user.name }}</span>
+      </div>
+    </div>
+
+    <!-- Workspace mention list -->
+    <div
+      v-if="open && mentionType === 'workspace'"
+      ref="panelRef"
+      class="absolute bottom-full left-2 z-50 mb-2 w-64 rounded-md border bg-popover shadow-md"
+    >
+      <div
+        class="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b"
+      >
+        Workspaces
+      </div>
+      <div
+        v-for="(ws, i) in filteredWorkspaces"
+        :key="ws.id"
+        @mousedown.prevent="insertWorkspace(ws)"
+        class="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+        :class="{ 'bg-accent': i === index }"
+      >
+        <span class="text-base">{{ ws.emoji }}</span>
+        <div class="flex flex-col min-w-0">
+          <span class="truncate font-medium">{{ ws.name }}</span>
+          <span v-if="ws.parentName" class="text-xs text-muted-foreground truncate">{{
+            ws.parentName
+          }}</span>
+        </div>
+      </div>
+      <div
+        v-if="filteredWorkspaces.length === 0"
+        class="px-3 py-3 text-sm text-muted-foreground text-center"
+      >
+        No workspaces found
       </div>
     </div>
   </div>
@@ -51,8 +85,9 @@ const text = ref("");
 const open = ref(false);
 const query = ref("");
 const index = ref(0);
+const mentionType = ref("user"); // 'user' | 'workspace'
 
-/* Dummy users (replace with real users) */
+/* Dummy users */
 const users = [
   { id: "u1", name: "Alice", avatar: "/images/avatar/1.png" },
   { id: "u2", name: "Bob", avatar: "/images/avatar/2.png" },
@@ -60,35 +95,114 @@ const users = [
   { id: "u4", name: "Daisy", avatar: "/images/avatar/4.png" }
 ];
 
+/* Workspace pages (flattened from sidebar data) */
+const workspacePages = [
+  {
+    id: "ws_1",
+    name: "Daily Journal & Reflection",
+    emoji: "📔",
+    url: "/community/orion_group/workspaces/1",
+    parentName: "Personal Life Management",
+    description: "Track your daily thoughts, gratitude, and reflections."
+  },
+  {
+    id: "ws_2",
+    name: "Health & Wellness Tracker",
+    emoji: "🍏",
+    url: "/community/orion_group/workspaces/2",
+    parentName: "Personal Life Management",
+    description: "Monitor health goals, workouts, and nutrition."
+  },
+  {
+    id: "ws_3",
+    name: "Personal Growth & Learning Goals",
+    emoji: "🌟",
+    url: "/community/orion_group/workspaces/3",
+    parentName: "Personal Life Management",
+    description: "Set and track personal development milestones."
+  },
+  {
+    id: "ws_4",
+    name: "Career Objectives & Milestones",
+    emoji: "🎯",
+    url: "/community/orion_group/workspaces/4",
+    parentName: "Professional Development",
+    description: "Plan career goals and track progress."
+  },
+  {
+    id: "ws_5",
+    name: "Skill Acquisition & Training Log",
+    emoji: "🧠",
+    url: "/community/orion_group/workspaces/5",
+    parentName: "Professional Development",
+    description: "Log new skills learned and training completed."
+  },
+  {
+    id: "ws_6",
+    name: "Writing Ideas & Story Outlines",
+    emoji: "✍️",
+    url: "/community/orion_group/workspaces/6",
+    parentName: "Creative Projects",
+    description: "Brainstorm writing ideas and create story outlines."
+  },
+  {
+    id: "ws_7",
+    name: "Art & Design Portfolio",
+    emoji: "🖼️",
+    url: "/community/orion_group/workspaces/7",
+    parentName: "Creative Projects",
+    description: "Showcase and organize your design work."
+  }
+];
+
 /* Filter users */
 const filteredUsers = computed(() =>
   users.filter((u) => u.name.toLowerCase().startsWith(query.value.toLowerCase()))
 );
 
+/* Filter workspaces */
+const filteredWorkspaces = computed(() =>
+  workspacePages.filter((w) => w.name.toLowerCase().includes(query.value.toLowerCase()))
+);
+
+const currentList = computed(() =>
+  mentionType.value === "user" ? filteredUsers.value : filteredWorkspaces.value
+);
+
 function onInput(e) {
   const cursor = e.target.selectionStart;
   const before = text.value.slice(0, cursor);
-  const match = before.match(/@(\w*)$/);
 
-  if (match) {
-    query.value = match[1];
+  // Check for # (workspace mention)
+  const wsMatch = before.match(/#([\w\s]*)$/);
+  if (wsMatch) {
+    query.value = wsMatch[1].trim();
+    mentionType.value = "workspace";
     open.value = true;
     index.value = 0;
-  } else {
-    open.value = false;
+    return;
   }
+
+  // Check for @ (user mention)
+  const userMatch = before.match(/@(\w*)$/);
+  if (userMatch) {
+    query.value = userMatch[1];
+    mentionType.value = "user";
+    open.value = true;
+    index.value = 0;
+    return;
+  }
+
+  open.value = false;
 }
 
-function insert(user) {
+function insertUser(user) {
   const ta = textarea.value;
   const cursor = ta.selectionStart;
-
-  // find the nearest '@' before the cursor and replace the whole token
   const full = text.value;
   const atIndex = full.lastIndexOf("@", cursor - 1);
 
   if (atIndex !== -1) {
-    // consume word characters after the @ to remove partial token
     let end = atIndex + 1;
     while (end < full.length && /[\w]/.test(full.charAt(end))) end++;
 
@@ -116,19 +230,56 @@ function insert(user) {
   });
 }
 
+function insertWorkspace(ws) {
+  const ta = textarea.value;
+  const cursor = ta.selectionStart;
+  const full = text.value;
+  const hashIndex = full.lastIndexOf("#", cursor - 1);
+
+  if (hashIndex !== -1) {
+    // consume all chars after # until cursor (workspace names can have spaces)
+    const before = full.slice(0, hashIndex);
+    const after = full.slice(cursor);
+    const inserted = `#[${ws.name}](${ws.id}) `;
+
+    text.value = before + inserted + after;
+    open.value = false;
+
+    nextTick(() => {
+      const pos = before.length + inserted.length;
+      ta.focus();
+      ta.setSelectionRange(pos, pos);
+    });
+    return;
+  }
+
+  text.value = full + ` #[${ws.name}](${ws.id}) `;
+  open.value = false;
+  nextTick(() => {
+    ta.focus();
+    const pos = text.value.length;
+    ta.setSelectionRange(pos, pos);
+  });
+}
+
 function next() {
-  if (!open.value) return;
-  index.value = (index.value + 1) % filteredUsers.value.length;
+  if (!open.value || currentList.value.length === 0) return;
+  index.value = (index.value + 1) % currentList.value.length;
 }
 
 function prev() {
-  if (!open.value) return;
-  index.value = (index.value - 1 + filteredUsers.value.length) % filteredUsers.value.length;
+  if (!open.value || currentList.value.length === 0) return;
+  index.value = (index.value - 1 + currentList.value.length) % currentList.value.length;
 }
 
 function select() {
-  if (!open.value) return;
-  insert(filteredUsers.value[index.value]);
+  if (!open.value || currentList.value.length === 0) return;
+  const item = currentList.value[index.value];
+  if (mentionType.value === "user") {
+    insertUser(item);
+  } else {
+    insertWorkspace(item);
+  }
 }
 
 function syncScroll() {
@@ -140,7 +291,6 @@ function closePanel() {
 }
 
 function onBlur(e) {
-  // Delay to allow mousedown on panel items to fire first
   setTimeout(() => {
     if (!panelRef.value?.contains(document.activeElement)) {
       open.value = false;
@@ -149,35 +299,59 @@ function onBlur(e) {
 }
 
 function onCursorMove() {
-  // Check if cursor is still in a mention token
   const ta = textarea.value;
   if (!ta) return;
   const cursor = ta.selectionStart;
   const before = text.value.slice(0, cursor);
-  const match = before.match(/@(\w*)$/);
-  if (!match) {
-    open.value = false;
+
+  const wsMatch = before.match(/#([\w\s]*)$/);
+  if (wsMatch) {
+    query.value = wsMatch[1].trim();
+    mentionType.value = "workspace";
+    open.value = true;
+    index.value = 0;
+    return;
   }
+
+  const userMatch = before.match(/@(\w*)$/);
+  if (userMatch) {
+    query.value = userMatch[1];
+    mentionType.value = "user";
+    open.value = true;
+    index.value = 0;
+    return;
+  }
+
+  open.value = false;
 }
 
 function onKeydown(e) {
-  // Ctrl+Space to reopen suggestions if cursor is at a mention token
   if (e.ctrlKey && e.code === "Space") {
     e.preventDefault();
     const ta = textarea.value;
     if (!ta) return;
     const cursor = ta.selectionStart;
     const before = text.value.slice(0, cursor);
-    const match = before.match(/@(\w*)$/);
-    if (match) {
-      query.value = match[1];
+
+    const wsMatch = before.match(/#([\w\s]*)$/);
+    if (wsMatch) {
+      query.value = wsMatch[1].trim();
+      mentionType.value = "workspace";
+      open.value = true;
+      index.value = 0;
+      return;
+    }
+
+    const userMatch = before.match(/@(\w*)$/);
+    if (userMatch) {
+      query.value = userMatch[1];
+      mentionType.value = "user";
       open.value = true;
       index.value = 0;
     }
   }
 }
 
-// Click outside detection
 function onClickOutside(e) {
   if (!open.value) return;
   const panel = panelRef.value;

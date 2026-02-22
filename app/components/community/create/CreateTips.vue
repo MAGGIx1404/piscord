@@ -47,6 +47,20 @@
           You can always add more later
         </li>
       </template>
+      <template v-else-if="currentStep === 4">
+        <li class="flex items-start gap-2">
+          <span class="text-primary">•</span>
+          Give your AI pet a friendly personality
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary">•</span>
+          Custom API keys give you more control
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-primary">•</span>
+          Start with basic capabilities, add more later
+        </li>
+      </template>
       <template v-else>
         <li class="flex items-start gap-2">
           <span class="text-primary">•</span>

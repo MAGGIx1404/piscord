@@ -20,6 +20,9 @@
       <div class="grid grid-cols-12 gap-5">
         <!-- Left narrow column -->
         <div class="col-span-12 lg:col-span-3 space-y-5">
+          <!-- AI Agent -->
+          <CommunityAIAgent :agent="aiAgent" @view-profile="handleViewAgentProfile" />
+
           <!-- About -->
           <CommunityAbout
             :created-at="community.createdAt"
@@ -104,6 +107,14 @@ const community = {
   bannerImage: "/images/servers/p-1.jpg",
   website: "https://oriongroup.gg",
   tags: ["Technology", "Gaming", "Development", "Community", "Esports"]
+};
+
+// AI Agent
+const aiAgent = {
+  id: "orion_ai",
+  name: "Orion",
+  petName: "The Cosmic Helper",
+  avatar: "/images/avatar/ai.png"
 };
 
 // Stats
@@ -319,4 +330,5 @@ const handleCreateChannel = () => console.log("Create channel");
 const handleSelectChannel = (channel: any) => console.log("Selected channel:", channel);
 const handleSelectMember = (member: any) => console.log("Selected member:", member);
 const handleViewAllMembers = () => console.log("View all members");
+const handleViewAgentProfile = () => console.log("View AI agent profile");
 </script>
