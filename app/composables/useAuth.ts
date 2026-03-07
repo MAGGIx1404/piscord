@@ -127,11 +127,8 @@ export function useAuth() {
   // ─── 2FA setup ─────────────────────────────────────────────────────────────
 
   async function setup2FA(): Promise<TwoFactorSetupResponse> {
-    const token = userStore.accessToken;
-    return $fetch<TwoFactorSetupResponse>("/api/auth/2fa/setup", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    const api = useApi();
+    return api<TwoFactorSetupResponse>("/api/auth/2fa/setup", { method: "POST" });
   }
 
   return {

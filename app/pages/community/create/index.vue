@@ -1,5 +1,5 @@
 <template>
-  <main class="w-full min-h-screen relative bg-background">
+  <main class="relative min-h-screen w-full bg-background">
     <!-- Progress Header -->
     <CreateHeader
       :current-step="currentStep"
@@ -10,7 +10,7 @@
 
     <!-- Form Content -->
     <div class="relative px-6 py-10">
-      <div class="grid lg:grid-cols-5 gap-8">
+      <div class="grid gap-8 lg:grid-cols-5">
         <!-- Left: Form Steps -->
         <div class="lg:col-span-3">
           <!-- Step 1: Identity -->
@@ -23,10 +23,8 @@
             v-model:banner-preview="form.bannerPreview"
             :slug-error="slugError"
             :is-checking-slug="isCheckingSlug"
-            :is-generating="isGenerating"
             @update:icon-file="form.iconFile = $event"
             @update:banner-file="form.bannerFile = $event"
-            @generate-description="generateAIDescription"
           />
 
           <!-- Step 2: Category & Tags -->
@@ -77,7 +75,7 @@
         </div>
 
         <!-- Right: Preview -->
-        <div class="lg:col-span-2 lg:sticky lg:top-24 lg:self-start space-y-6">
+        <div class="space-y-6 lg:sticky lg:top-24 lg:col-span-2 lg:self-start">
           <CreatePreview
             :name="form.name"
             :description="form.description"
@@ -114,6 +112,7 @@ definePageMeta({
 });
 
 const router = useRouter();
+const api = useApi();
 
 // Step management
 const currentStep = ref(1);
@@ -198,7 +197,7 @@ const isFormValid = computed(() => {
   );
 });
 
-// Debounced slug availability check
+// Debounced slug availability check (real API)
 let slugCheckTimeout: ReturnType<typeof setTimeout>;
 const checkSlugAvailability = async (slug: string) => {
   if (!slug || slug.length < 2) {
@@ -209,15 +208,17 @@ const checkSlugAvailability = async (slug: string) => {
   clearTimeout(slugCheckTimeout);
   slugCheckTimeout = setTimeout(async () => {
     isCheckingSlug.value = true;
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const takenSlugs = ["test", "admin"];
-    if (takenSlugs.includes(slug)) {
-      slugError.value = "This URL is already taken.";
-    } else {
-      slugError.value = null;
+    try {
+      const res = await $fetch<{ available: boolean }>("/api/communities/check-slug", {
+        query: { slug }
+      });
+      slugError.value = res.available ? null : "This URL is already taken.";
+    } catch {
+      slugError.value = null; // don't block the user on network errors
+    } finally {
+      isCheckingSlug.value = false;
     }
-    isCheckingSlug.value = false;
-  }, 300);
+  }, 400);
 };
 
 // Auto-generate slug from name
@@ -270,11 +271,30 @@ const generateAIDescription = async () => {
 const handleCreate = async () => {
   isCreating.value = true;
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("slug", form.slug);
+    fd.append("description", form.description);
+    fd.append("category", form.category);
+    fd.append("visibility", form.visibility);
+    fd.append("tags", JSON.stringify(form.tags));
+    fd.append("rules", JSON.stringify(form.rules));
+    fd.append("requireApproval", String(form.requireApproval));
+    fd.append("enableWelcome", String(form.enableWelcome));
+    fd.append("discoverable", String(form.discoverable));
+
+    if (form.iconFile) fd.append("icon", form.iconFile);
+    if (form.bannerFile) fd.append("banner", form.bannerFile);
+
+    const res = await api<{ community: { id: string; slug: string } }>("/api/communities", {
+      method: "POST",
+      body: fd
+    });
+
     toast.success("Community created successfully!");
-    console.log("Create community with data:", { ...form, aiPet: { ...aiPet } });
-  } catch (error) {
-    toast.error("Failed to create community");
+    await router.push(`/community/${res.community.slug}`);
+  } catch (error: any) {
+    toast.error(error?.data?.message ?? "Failed to create community.");
   } finally {
     isCreating.value = false;
   }

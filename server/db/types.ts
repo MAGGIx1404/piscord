@@ -21,3 +21,24 @@ export interface TwoFactorSetupResult {
   qr_code: string; // data-URI PNG
   secret: string; // base32 for manual entry
 }
+
+// ─── Community ────────────────────────────────────────────────────────────────
+
+export interface PublicCommunity {
+  id: string;
+  owner_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon_url: string | null;
+  banner_url: string | null;
+  rules: Array<{ id: number; text: string }>;
+  is_public: boolean;
+  member_count: number;
+  category: string | null;
+  tags: string[];
+  require_approval: boolean;
+  is_discoverable: boolean;
+  enable_welcome: boolean;
+  created_at: Date;
+}

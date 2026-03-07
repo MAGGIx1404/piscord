@@ -454,6 +454,7 @@ const { user } = storeToRefs(userStore);
 const { open: openEnable2FA } = use2FASetup();
 const theme = useTheme();
 const route = useRoute();
+const api = useApi();
 
 // ─── Tabs ────────────────────────────────────────────────────────────────────
 const tabs = [
@@ -490,10 +491,8 @@ const savingProfile = ref(false);
 async function saveProfile() {
   savingProfile.value = true;
   try {
-    const token = userStore.accessToken;
-    const data = await $fetch<{ user: typeof user.value }>("/api/users/me", {
+    const data = await api<{ user: typeof user.value }>("/api/users/me", {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${token}` },
       body: { username: form.username, email: form.email }
     });
     if (data.user) userStore.setUser(data.user as any);
@@ -525,10 +524,8 @@ async function saveAvatar() {
   try {
     const fd = new FormData();
     fd.append("avatar", avatarFile.value);
-    const token = userStore.accessToken;
-    const data = await $fetch<{ avatar_url: string }>("/api/users/avatar", {
+    const data = await api<{ avatar_url: string }>("/api/users/avatar", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
       body: fd
     });
     userStore.setUser({ ...user.value!, avatar_url: data.avatar_url });
@@ -577,9 +574,8 @@ async function changePassword() {
   if (!canChangePassword.value) return;
   changingPassword.value = true;
   try {
-    await ($fetch as any)("/api/users/me/password", {
+    await (api as any)("/api/users/me/password", {
       method: "POST",
-      headers: { Authorization: `Bearer ${userStore.accessToken}` },
       body: { current_password: passwordForm.current, new_password: passwordForm.newPwd }
     });
     passwordForm.current = "";

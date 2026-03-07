@@ -11,21 +11,21 @@
     <div class="flex items-start gap-6">
       <!-- Icon -->
       <div class="space-y-2">
-        <Label class="text-xs uppercase tracking-wider text-muted-foreground">Icon</Label>
+        <Label class="text-xs tracking-wider text-muted-foreground uppercase">Icon</Label>
         <div
-          class="size-28 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group bg-card/50"
+          class="group relative flex size-28 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-card/50 transition-all duration-300 hover:border-primary/50"
           @click="triggerIconUpload"
         >
-          <img v-if="iconPreview" :src="iconPreview" class="w-full h-full object-cover" />
+          <img v-if="iconPreview" :src="iconPreview" class="h-full w-full object-cover" />
           <div v-else class="flex flex-col items-center gap-2 text-muted-foreground">
-            <div class="size-10 rounded-xl bg-muted flex items-center justify-center">
+            <div class="flex size-10 items-center justify-center rounded-xl bg-muted">
               <ImagePlus class="size-5" />
             </div>
             <span class="text-xs">Upload</span>
           </div>
           <div
             v-if="iconPreview"
-            class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            class="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
           >
             <Camera class="size-6 text-white" />
           </div>
@@ -34,19 +34,19 @@
 
       <!-- Banner -->
       <div class="flex-1 space-y-2">
-        <Label class="text-xs uppercase tracking-wider text-muted-foreground">Banner</Label>
+        <Label class="text-xs tracking-wider text-muted-foreground uppercase">Banner</Label>
         <div
-          class="w-full h-28 rounded-2xl border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center cursor-pointer transition-all duration-300 relative overflow-hidden group bg-card/50"
+          class="group relative flex h-28 w-full cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-card/50 transition-all duration-300 hover:border-primary/50"
           @click="triggerBannerUpload"
         >
-          <img v-if="bannerPreview" :src="bannerPreview" class="w-full h-full object-cover" />
+          <img v-if="bannerPreview" :src="bannerPreview" class="h-full w-full object-cover" />
           <div v-else class="flex flex-col items-center gap-2 text-muted-foreground">
             <ImagePlus class="size-6" />
             <span class="text-sm">Upload banner (1200×400)</span>
           </div>
           <div
             v-if="bannerPreview"
-            class="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            class="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100"
           >
             <Camera class="size-6 text-white" />
           </div>
@@ -65,9 +65,9 @@
     />
 
     <!-- Name & Slug -->
-    <div class="grid md:grid-cols-2 gap-6">
+    <div class="grid gap-6 md:grid-cols-2">
       <div class="space-y-2">
-        <Label for="name" class="text-xs uppercase tracking-wider text-muted-foreground">
+        <Label for="name" class="text-xs tracking-wider text-muted-foreground uppercase">
           Community Name <span class="text-destructive">*</span>
         </Label>
         <Input
@@ -80,9 +80,9 @@
       </div>
 
       <div class="space-y-2">
-        <Label for="slug" class="text-xs uppercase tracking-wider text-muted-foreground">URL</Label>
+        <Label for="slug" class="text-xs tracking-wider text-muted-foreground uppercase">URL</Label>
         <div class="relative">
-          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+          <span class="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
             piscord.com/c/
           </span>
           <Input
@@ -92,7 +92,7 @@
             class="h-12 pl-28"
             :class="{ 'border-destructive focus-visible:ring-destructive': props.slugError }"
           />
-          <div class="absolute right-3 top-1/2 -translate-y-1/2">
+          <div class="absolute top-1/2 right-3 -translate-y-1/2">
             <Loader2 v-if="isCheckingSlug" class="size-4 animate-spin text-muted-foreground" />
             <CheckCircle2 v-else-if="slug && !props.slugError" class="size-4 text-emerald-500" />
             <XCircle v-else-if="props.slugError" class="size-4 text-destructive" />
@@ -105,19 +105,9 @@
     <!-- Description -->
     <div class="space-y-2">
       <div class="flex items-center justify-between">
-        <Label for="description" class="text-xs uppercase tracking-wider text-muted-foreground">
+        <Label for="description" class="text-xs tracking-wider text-muted-foreground uppercase">
           Description <span class="text-destructive">*</span>
         </Label>
-        <Button
-          variant="ghost"
-          size="sm"
-          class="h-7 gap-1.5 text-primary hover:text-primary"
-          @click="emit('generate-description')"
-          :disabled="isGenerating || !communityName.trim()"
-        >
-          <Sparkles class="size-3.5" :class="{ 'animate-pulse': isGenerating }" />
-          {{ isGenerating ? "Writing..." : "AI Generate" }}
-        </Button>
       </div>
       <div class="relative">
         <Textarea
@@ -126,26 +116,16 @@
           placeholder="Tell people what your community is about, what they can expect, and why they should join..."
           rows="5"
           maxlength="500"
-          class="resize-none min-h-32"
-          :disabled="isGenerating"
+          class="min-h-32 resize-none"
         />
-        <div
-          v-if="isGenerating"
-          class="absolute inset-0 bg-background/50 rounded-md flex items-center justify-center backdrop-blur-sm"
-        >
-          <div class="flex items-center gap-2 text-sm text-primary">
-            <Loader2 class="size-4 animate-spin" />
-            <span>AI is crafting your description...</span>
-          </div>
-        </div>
       </div>
-      <p class="text-xs text-muted-foreground text-right">{{ description.length }}/500</p>
+      <p class="text-right text-xs text-muted-foreground">{{ description.length }}/500</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ImagePlus, Camera, Loader2, CheckCircle2, XCircle, Sparkles } from "lucide-vue-next";
+import { ImagePlus, Camera, Loader2, CheckCircle2, XCircle } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
 const communityName = defineModel<string>("name", { required: true });
@@ -157,13 +137,11 @@ const bannerPreview = defineModel<string | null>("bannerPreview", { required: tr
 const props = defineProps<{
   slugError: string | null;
   isCheckingSlug: boolean;
-  isGenerating: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: "update:iconFile", value: File | null): void;
   (e: "update:bannerFile", value: File | null): void;
-  (e: "generate-description"): void;
 }>();
 
 const iconInput = ref<HTMLInputElement | null>(null);
