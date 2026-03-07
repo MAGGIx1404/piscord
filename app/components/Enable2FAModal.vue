@@ -34,7 +34,7 @@
           </ul>
         </div>
 
-        <DialogFooter class="gap-2 sm:gap-0">
+        <DialogFooter class="gap-2">
           <Button variant="ghost" @click="close">Maybe later</Button>
           <Button @click="startSetup">
             Enable 2FA

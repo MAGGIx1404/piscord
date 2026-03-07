@@ -77,6 +77,7 @@ import { useForm } from "vee-validate";
 import { toast } from "vue-sonner";
 import * as yup from "yup";
 import { Loader2 } from "lucide-vue-next";
+import { set } from "@vueuse/core";
 
 definePageMeta({
   layout: "auth"
@@ -111,7 +112,9 @@ const processLogin = async (values) => {
     // Auto-open 2FA setup dialog if not yet enabled
     if (!result.user.is_2fa_enabled) {
       const { open } = use2FASetup();
-      open();
+      setTimeout(() => {
+        open();
+      }, 2000);
     }
   } finally {
     isPending.value = false;

@@ -1,13 +1,20 @@
 <script setup lang="ts">
-import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from "lucide-vue-next";
+import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles, Settings } from "lucide-vue-next";
+
+const userStore = useUserStore();
+const { user } = storeToRefs(userStore);
+const { logout } = useAuth();
+const router = useRouter();
+
+const userInitials = computed(() => (user.value?.username ?? "U").slice(0, 2).toUpperCase());
 </script>
 
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger class="size-10 min-h-10 overflow-hidden">
       <Avatar class="size-full rounded-lg">
-        <AvatarImage src="/images/avatar/1.png" alt="user.name" />
-        <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
+        <AvatarImage :src="user?.avatar_url ?? ''" :alt="user?.username" />
+        <AvatarFallback class="rounded-lg">{{ userInitials }}</AvatarFallback>
       </Avatar>
     </DropdownMenuTrigger>
     <DropdownMenuContent
@@ -18,12 +25,12 @@ import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from "lucide-vue-next"
       <DropdownMenuLabel class="p-0 font-normal">
         <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
           <Avatar class="h-8 w-8 rounded-lg">
-            <AvatarImage src="/images/avatar/1.png" alt="user.name" />
-            <AvatarFallback class="rounded-lg"> CN </AvatarFallback>
+            <AvatarImage :src="user?.avatar_url ?? ''" :alt="user?.username" />
+            <AvatarFallback class="rounded-lg">{{ userInitials }}</AvatarFallback>
           </Avatar>
           <div class="grid flex-1 text-left text-sm leading-tight">
-            <span class="truncate font-semibold"> Maggix1404 </span>
-            <span class="truncate text-xs"> jeetpatel0070070@gmail.com </span>
+            <span class="truncate font-semibold">{{ user?.username ?? "—" }}</span>
+            <span class="truncate text-xs">{{ user?.email ?? "" }}</span>
           </div>
         </div>
       </DropdownMenuLabel>
@@ -36,21 +43,21 @@ import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from "lucide-vue-next"
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem>
+        <DropdownMenuItem @click="router.push('/me/settings')">
+          <Settings />
+          Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem @click="router.push('/me/settings?tab=security')">
           <BadgeCheck />
-          Account
+          Security
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <CreditCard />
-          Billing
-        </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem @click="router.push('/me/settings?tab=notifications')">
           <Bell />
           Notifications
         </DropdownMenuItem>
       </DropdownMenuGroup>
       <DropdownMenuSeparator />
-      <DropdownMenuItem>
+      <DropdownMenuItem @click="logout">
         <LogOut />
         Log out
       </DropdownMenuItem>
