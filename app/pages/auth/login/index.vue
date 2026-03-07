@@ -13,7 +13,7 @@
         <div class="space-y-2">
           <Label for="email" class="flex items-center justify-between">
             Email
-            <span v-if="errors.email" class="text-xs text-destructive font-normal">{{
+            <span v-if="errors.email" class="text-xs font-normal text-destructive">{{
               errors.email
             }}</span>
           </Label>
@@ -22,7 +22,7 @@
             type="email"
             placeholder="you@example.com"
             v-model="email"
-            class="h-11 bg-card/50 border-border/50"
+            class="h-11 border-border/50 bg-card/50"
             :class="errors.email ? 'border-destructive' : ''"
           />
         </div>
@@ -31,7 +31,7 @@
         <div class="space-y-2">
           <Label for="password" class="flex items-center justify-between">
             Password
-            <span v-if="errors.password" class="text-xs text-destructive font-normal">{{
+            <span v-if="errors.password" class="text-xs font-normal text-destructive">{{
               errors.password
             }}</span>
           </Label>
@@ -40,7 +40,7 @@
             type="password"
             placeholder="••••••••"
             v-model="password"
-            class="h-11 bg-card/50 border-border/50"
+            class="h-11 border-border/50 bg-card/50"
             :class="errors.password ? 'border-destructive' : ''"
           />
         </div>
@@ -51,9 +51,9 @@
           size="lg"
           :disabled="isPending"
           @click.prevent="onSubmit"
-          class="w-full mt-2"
+          class="mt-2 w-full"
         >
-          <Loader2 v-if="isPending" class="size-4 mr-2 animate-spin" />
+          <Loader2 v-if="isPending" class="mr-2 size-4 animate-spin" />
           {{ isPending ? "Signing in..." : "Sign in" }}
         </Button>
       </form>
@@ -63,7 +63,7 @@
         Don't have an account?
         <NuxtLink
           to="/auth/register"
-          class="text-primary font-medium hover:underline underline-offset-4"
+          class="font-medium text-primary underline-offset-4 hover:underline"
         >
           Sign up
         </NuxtLink>
@@ -73,8 +73,8 @@
 </template>
 
 <script setup>
-import { toast } from "vue-sonner";
 import { useForm } from "vee-validate";
+import { toast } from "vue-sonner";
 import * as yup from "yup";
 import { Loader2 } from "lucide-vue-next";
 
@@ -82,13 +82,14 @@ definePageMeta({
   layout: "auth"
 });
 
+const { login } = useAuth();
 const isPending = ref(false);
 const router = useRouter();
 
 const { errors, handleSubmit, defineField } = useForm({
   validationSchema: yup.object({
-    email: yup.string().email().required(),
-    password: yup.string().min(6).required()
+    email: yup.string().email("Invalid email").required("Email is required"),
+    password: yup.string().min(1, "Password is required").required("Password is required")
   })
 });
 
@@ -96,19 +97,36 @@ const [email] = defineField("email");
 const [password] = defineField("password");
 
 const processLogin = async (values) => {
-  await new Promise((resolve) => setTimeout(resolve, 100));
   isPending.value = true;
-  console.log("Logging in with:", values);
+  try {
+    const result = await login(values.email, values.password);
+
+    if ("requires_2fa" in result) {
+      router.push(`/auth/2fa?user_id=${result.user_id}`);
+      return;
+    }
+
+    await router.push("/");
+
+    // Auto-open 2FA setup dialog if not yet enabled
+    if (!result.user.is_2fa_enabled) {
+      const { open } = use2FASetup();
+      open();
+    }
+  } finally {
+    isPending.value = false;
+  }
 };
 
 const onSubmit = handleSubmit((v) => {
   const loginPromise = processLogin(v);
   toast.promise(loginPromise, {
-    loading: "Taking you in...",
+    loading: "Signing you in...",
     success: "Welcome back!",
     error: (err) => {
-      console.log("error from login:", err);
-      return err?.statusMessage || "Something went wrong";
+      const status = err?.statusCode ?? err?.status;
+      if (status === 401) return "Invalid email or password";
+      return err?.data?.message || err?.statusMessage || "Something went wrong";
     }
   });
 });

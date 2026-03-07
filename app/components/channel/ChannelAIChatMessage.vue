@@ -3,7 +3,7 @@
     <!-- Reply Reference (if replying) -->
     <div
       v-if="message.isReply && replyMessage"
-      class="flex items-center gap-2 ml-14 mb-1 text-xs text-muted-foreground"
+      class="mb-1 ml-14 flex items-center gap-2 text-xs text-muted-foreground"
     >
       <div class="flex items-center gap-1">
         <CornerUpRight class="size-3" />
@@ -14,13 +14,13 @@
           {{ replyMessage.author.name }}
         </span>
       </div>
-      <span class="truncate max-w-xs opacity-70">
+      <span class="max-w-xs truncate opacity-70">
         {{ replyMessage.content || "Message deleted" }}
       </span>
     </div>
 
     <!-- AI Message Card -->
-    <div class="relative mx-2 px-4 py-3 rounded-lg" :class="{ 'mt-0': stacked }">
+    <div class="relative mx-2 rounded-lg px-4 py-3" :class="{ 'mt-0': stacked }">
       <div class="flex items-start gap-3">
         <!-- Avatar -->
         <div class="shrink-0">
@@ -28,13 +28,13 @@
             <div class="relative">
               <Avatar class="size-9 ring-1 ring-violet-500/30">
                 <AvatarImage :src="message.author.avatar" :alt="message.author.name" />
-                <AvatarFallback class="bg-violet-600 text-white text-xs">
+                <AvatarFallback class="bg-violet-600 text-xs text-white">
                   <Bot class="size-4" />
                 </AvatarFallback>
               </Avatar>
               <!-- AI indicator dot -->
               <div
-                class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-violet-500 ring-2 ring-background flex items-center justify-center"
+                class="absolute -right-0.5 -bottom-0.5 flex size-3 items-center justify-center rounded-full bg-violet-500 ring-2 ring-background"
               >
                 <Sparkles class="size-1.5 text-white" />
               </div>
@@ -42,7 +42,7 @@
           </template>
           <template v-else>
             <span
-              class="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity w-9 block text-center pt-0.5"
+              class="block w-9 pt-0.5 text-center text-[10px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
             >
               {{ formattedTime }}
             </span>
@@ -50,14 +50,14 @@
         </div>
 
         <!-- Content -->
-        <div class="flex-1 min-w-0 space-y-1">
+        <div class="min-w-0 flex-1 space-y-1">
           <!-- Header -->
           <div v-if="!stacked" class="flex items-center gap-2">
-            <span class="font-semibold text-sm text-violet-400">
+            <span class="text-sm font-semibold text-violet-400">
               {{ message.author.name }}
             </span>
-            <Badge variant="outline" class="border-violet-500/40 text-violet-400 bg-violet-500/10">
-              <Bot class="size-2.5 mr-0.5" />
+            <Badge variant="outline" class="border-violet-500/40 bg-violet-500/10 text-violet-400">
+              <Bot class="mr-0.5 size-2.5" />
               AI
             </Badge>
             <span class="text-xs text-muted-foreground">

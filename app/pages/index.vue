@@ -1,31 +1,31 @@
 <template>
-  <main class="w-full h-full relative overflow-hidden flex flex-col">
+  <main class="relative flex h-full w-full flex-col overflow-hidden">
     <!-- Full Page Background -->
     <div
-      class="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none rounded-xl"
+      class="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-br from-primary/5 via-transparent to-primary/10"
     />
-    <div class="absolute top-20 -left-32 size-96 bg-primary/20 rounded-full blur-3xl opacity-40" />
-    <div class="absolute top-1/3 right-0 size-80 bg-primary/15 rounded-full blur-3xl opacity-30" />
+    <div class="absolute top-20 -left-32 size-96 rounded-full bg-primary/20 opacity-40 blur-3xl" />
+    <div class="absolute top-1/3 right-0 size-80 rounded-full bg-primary/15 opacity-30 blur-3xl" />
     <div
-      class="absolute bottom-20 left-1/4 size-64 bg-blue-500/10 rounded-full blur-3xl opacity-40"
+      class="absolute bottom-20 left-1/4 size-64 rounded-full bg-blue-500/10 opacity-40 blur-3xl"
     />
     <div
-      class="absolute -bottom-20 -right-20 size-96 bg-primary/10 rounded-full blur-3xl opacity-50"
+      class="absolute -right-20 -bottom-20 size-96 rounded-full bg-primary/10 opacity-50 blur-3xl"
     />
 
     <!-- Main Content - Centered -->
-    <div class="relative flex-1 flex items-center justify-center px-6">
-      <div class="max-w-2xl w-full text-center space-y-10">
+    <div class="relative flex flex-1 items-center justify-center px-6">
+      <div class="w-full max-w-2xl space-y-10 text-center">
         <!-- Hero Text -->
         <div class="space-y-5">
           <div
-            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-sm text-primary font-medium"
+            class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
           >
             <Zap class="size-3.5" />
             Ready to connect
           </div>
 
-          <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+          <h1 class="text-4xl font-bold tracking-tight md:text-6xl">
             Your space to
             <span class="relative">
               <span class="text-primary">connect</span>
@@ -41,16 +41,16 @@
             </span>
           </h1>
 
-          <p class="text-lg text-muted-foreground max-w-md mx-auto leading-relaxed">
+          <p class="mx-auto max-w-md text-lg leading-relaxed text-muted-foreground">
             Build communities, spark conversations, and bring people together.
           </p>
         </div>
 
         <!-- Invite Link Input -->
-        <div class="max-w-md mx-auto">
-          <div class="flex gap-2 p-1.5 rounded-lg bg-card/60 backdrop-blur-sm border border-border">
-            <div class="flex-1 flex items-center gap-3 px-4">
-              <Link2 class="size-4 text-muted-foreground shrink-0" />
+        <div class="mx-auto max-w-md">
+          <div class="flex gap-2 rounded-lg border border-border bg-card/60 p-1.5 backdrop-blur-sm">
+            <div class="flex flex-1 items-center gap-3 px-4">
+              <Link2 class="size-4 shrink-0 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Paste invite link..."
@@ -65,12 +65,12 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div class="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button variant="outline" size="lg" as-child>
             <NuxtLink to="/discover">
               <Compass class="size-4 text-primary" />
               Explore Communities
-              <Badge variant="secondary" class="text-[10px] px-1.5 py-0">2.4k+</Badge>
+              <Badge variant="secondary" class="px-1.5 py-0 text-[10px]">2.4k+</Badge>
             </NuxtLink>
           </Button>
 

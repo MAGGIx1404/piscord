@@ -13,12 +13,12 @@
         <div class="space-y-2">
           <Label for="username" class="flex items-center justify-between">
             Username
-            <span v-if="errors.username" class="text-xs text-destructive font-normal">{{
+            <span v-if="errors.username" class="text-xs font-normal text-destructive">{{
               errors.username
             }}</span>
             <span
               v-else-if="usernameAvailable === false"
-              class="text-xs text-destructive font-normal"
+              class="text-xs font-normal text-destructive"
               >Username taken</span
             >
           </Label>
@@ -28,10 +28,10 @@
               type="text"
               placeholder="Choose a username"
               v-model="username"
-              class="h-11 bg-card/50 border-border/50 pr-10"
+              class="h-11 border-border/50 bg-card/50 pr-10"
               :class="errors.username || usernameAvailable === false ? 'border-destructive' : ''"
             />
-            <div class="absolute right-3 top-1/2 -translate-y-1/2 size-4">
+            <div class="absolute top-1/2 right-3 size-4 -translate-y-1/2">
               <Loader2 v-if="checking" class="size-full animate-spin text-muted-foreground" />
               <CircleCheck v-else-if="usernameAvailable === true" class="size-full text-primary" />
               <XCircle v-else-if="usernameAvailable === false" class="size-full text-destructive" />
@@ -43,7 +43,7 @@
         <div class="space-y-2">
           <Label for="email" class="flex items-center justify-between">
             Email
-            <span v-if="errors.email" class="text-xs text-destructive font-normal">{{
+            <span v-if="errors.email" class="text-xs font-normal text-destructive">{{
               errors.email
             }}</span>
           </Label>
@@ -52,7 +52,7 @@
             type="email"
             placeholder="you@example.com"
             v-model="email"
-            class="h-11 bg-card/50 border-border/50"
+            class="h-11 border-border/50 bg-card/50"
             :class="errors.email ? 'border-destructive' : ''"
           />
         </div>
@@ -61,7 +61,7 @@
         <div class="space-y-2">
           <Label for="password" class="flex items-center justify-between">
             Password
-            <span v-if="errors.password" class="text-xs text-destructive font-normal">{{
+            <span v-if="errors.password" class="text-xs font-normal text-destructive">{{
               errors.password
             }}</span>
           </Label>
@@ -70,7 +70,7 @@
             type="password"
             placeholder="••••••••"
             v-model="password"
-            class="h-11 bg-card/50 border-border/50"
+            class="h-11 border-border/50 bg-card/50"
             :class="errors.password ? 'border-destructive' : ''"
           />
         </div>
@@ -81,9 +81,9 @@
           size="lg"
           :disabled="isPending || usernameAvailable === false"
           @click.prevent="onSubmit"
-          class="w-full mt-2"
+          class="mt-2 w-full"
         >
-          <Loader2 v-if="isPending" class="size-4 mr-2 animate-spin" />
+          <Loader2 v-if="isPending" class="mr-2 size-4 animate-spin" />
           {{ isPending ? "Creating account..." : "Create account" }}
         </Button>
       </form>
@@ -93,7 +93,7 @@
         Already have an account?
         <NuxtLink
           to="/auth/login"
-          class="text-primary font-medium hover:underline underline-offset-4"
+          class="font-medium text-primary underline-offset-4 hover:underline"
         >
           Sign in
         </NuxtLink>
@@ -112,59 +112,78 @@ definePageMeta({
   layout: "auth"
 });
 
-const { errors, handleSubmit, defineField } = useForm({
-  validationSchema: yup.object({
-    username: yup.string().min(3).max(20).required(),
-    email: yup.string().email().required(),
-    password: yup.string().min(6).required()
-  })
-});
-
+const { register, checkUsername: checkUsernameAvailability } = useAuth();
 const router = useRouter();
 const isPending = ref(false);
+
+const { errors, handleSubmit, defineField } = useForm({
+  validationSchema: yup.object({
+    username: yup
+      .string()
+      .min(3, "At least 3 characters")
+      .max(20, "At most 20 characters")
+      .matches(/^[a-zA-Z0-9_]+$/, "Letters, numbers and underscores only")
+      .required("Username is required"),
+    email: yup.string().email("Invalid email").required("Email is required"),
+    password: yup.string().min(8, "At least 8 characters").required("Password is required")
+  })
+});
 
 const [username] = defineField("username");
 const [email] = defineField("email");
 const [password] = defineField("password");
 
-// Username availability state
+// ─── Username availability ────────────────────────────────────────────────────
+
 const usernameAvailable = ref(null);
 const checking = ref(false);
 let usernameDebounce = null;
 
-const checkUsername = async (value) => {
+const runUsernameCheck = async (value) => {
   if (!value || value.length < 3) {
     usernameAvailable.value = null;
     checking.value = false;
     return;
   }
   checking.value = true;
-  // Simulate check - replace with actual API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  usernameAvailable.value = value !== "taken";
-  checking.value = false;
+  try {
+    usernameAvailable.value = await checkUsernameAvailability(value);
+  } catch {
+    usernameAvailable.value = null;
+  } finally {
+    checking.value = false;
+  }
 };
 
 watch(username, (val) => {
   usernameAvailable.value = null;
   checking.value = false;
   clearTimeout(usernameDebounce);
-  usernameDebounce = setTimeout(() => checkUsername(val), 400);
+  usernameDebounce = setTimeout(() => runUsernameCheck(val), 400);
 });
+
+// ─── Submit ───────────────────────────────────────────────────────────────────
 
 const processRegister = async (values) => {
   isPending.value = true;
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  console.log("Registering with:", values);
-  isPending.value = false;
+  try {
+    await register(values.username, values.email, values.password);
+    router.push("/auth/login");
+  } finally {
+    isPending.value = false;
+  }
 };
 
 const onSubmit = handleSubmit((v) => {
   const registerPromise = processRegister(v);
   toast.promise(registerPromise, {
     loading: "Creating your account...",
-    success: "Account created!",
-    error: (err) => err?.statusMessage || "Something went wrong"
+    success: "Account created! Please sign in.",
+    error: (err) => {
+      const status = err?.statusCode ?? err?.status;
+      if (status === 409) return "Username or email is already taken";
+      return err?.data?.message || err?.statusMessage || "Something went wrong";
+    }
   });
 });
 </script>
