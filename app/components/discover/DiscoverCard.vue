@@ -1,6 +1,6 @@
 <template>
   <div
-    class="group relative overflow-hidden rounded-2xl bg-card/30 border border-border/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300"
+    class="group relative overflow-hidden rounded-2xl bg-card/30 border border-border/50 transition-all duration-300"
   >
     <!-- Poster Image -->
     <div class="relative h-36 overflow-hidden">

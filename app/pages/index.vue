@@ -1,5 +1,5 @@
 <template>
-  <main class="w-full h-[calc(100vh-6rem)] relative overflow-hidden flex flex-col">
+  <main class="w-full h-full relative overflow-hidden flex flex-col">
     <!-- Full Page Background -->
     <div
       class="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none rounded-xl"
@@ -48,9 +48,7 @@
 
         <!-- Invite Link Input -->
         <div class="max-w-md mx-auto">
-          <div
-            class="flex gap-2 p-1.5 rounded-lg bg-card/60 backdrop-blur-sm border border-border/50"
-          >
+          <div class="flex gap-2 p-1.5 rounded-lg bg-card/60 backdrop-blur-sm border border-border">
             <div class="flex-1 flex items-center gap-3 px-4">
               <Link2 class="size-4 text-muted-foreground shrink-0" />
               <input
@@ -90,6 +88,10 @@
 
 <script setup lang="ts">
 import { Plus, Link2, ArrowRight, Compass, Zap } from "lucide-vue-next";
+
+definePageMeta({
+  layout: "entry"
+});
 </script>
 
 <style scoped>

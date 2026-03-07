@@ -15,11 +15,6 @@ const props = withDefaults(defineProps<SidebarProps>(), {
 
 // This is sample data.
 const data = {
-  user: {
-    name: "maggix1404",
-    email: "m@example.com",
-    avatar: "/images/avatar/3.png"
-  },
   teams: [
     {
       name: "Orion Group",
@@ -152,9 +147,7 @@ const data = {
       <NavChannels :channels="data.channels" />
       <NavWorkspaces :workspaces="data.workspaces" />
     </SidebarContent>
-    <SidebarFooter>
-      <NavUser :user="data.user" />
-    </SidebarFooter>
+    <SidebarFooter> </SidebarFooter>
     <SidebarRail />
   </Sidebar>
 </template>

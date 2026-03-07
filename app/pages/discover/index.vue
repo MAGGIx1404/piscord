@@ -42,7 +42,10 @@ import {
   TrendingUp,
   ArrowUpDown
 } from "lucide-vue-next";
-import type { Community } from "~/components/discover/types";
+
+definePageMeta({
+  layout: "entry"
+});
 
 const searchQuery = ref("");
 const activeFilter = ref("all");

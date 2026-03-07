@@ -36,10 +36,7 @@
       </Breadcrumb>
     </div>
 
-    <div class="flex items-center">
-      <ThemeChanger />
-      <!-- <TeamInfoSheet /> -->
-    </div>
+    <NavUser />
   </header>
 </template>
 
@@ -48,12 +45,6 @@ const route = useRoute();
 const channelId = ref("");
 const communityId = ref("");
 const workspaceId = ref("");
-
-const {
-  communityId: community_id,
-  channelId: channel_id,
-  workspaceId: workspace_id
-} = route.params;
 
 watch(
   route,

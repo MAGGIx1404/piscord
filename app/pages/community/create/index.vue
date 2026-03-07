@@ -109,6 +109,10 @@ import {
 import { Gamepad2, Code, Music, Palette, BookOpen, Briefcase, Film, Heart } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
+definePageMeta({
+  layout: "entry"
+});
+
 const router = useRouter();
 
 // Step management

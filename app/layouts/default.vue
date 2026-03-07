@@ -10,23 +10,4 @@
   </SidebarProvider>
 </template>
 
-<script setup>
-// const userStore = useUserStore();
-// const communityStore = useCommunityStore();
-
-// const { data } = await useFetch("/api/user/me", {
-//   headers: { "content-type": "application/json" },
-//   method: "GET",
-//   server: true
-// });
-
-// const { data: communitiesData } = await useFetch("/api/user/communities", {
-//   server: true
-// });
-
-// if (data.value) {
-//   userStore.setUser(data.value);
-// }
-
-// communityStore.setCommunities(communitiesData.value.communities);
-</script>
+<script setup></script>
