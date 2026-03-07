@@ -116,10 +116,14 @@ const onlineNow = computed(() => Math.floor(totalMembers.value * 0.08));
 
 // ─── Join ──────────────────────────────────────────────────────────────────────
 
-const handleJoin = async (communityId: string) => {
+const handleJoin = async (communityId: string, isRequest: boolean) => {
   try {
     await api(`/api/communities/${communityId}/join`, { method: "POST" });
-    toast.success("You joined the community!");
+    if (isRequest) {
+      toast.success("Join request sent! Waiting for admin approval.");
+    } else {
+      toast.success("You joined the community!");
+    }
     refresh();
   } catch (err: any) {
     toast.error(err?.data?.message ?? "Failed to join community.");

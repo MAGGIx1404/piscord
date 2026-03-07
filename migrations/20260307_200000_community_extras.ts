@@ -15,16 +15,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn("require_approval", "boolean", (col) => col.notNull().defaultTo(false))
     .execute();
 
-  await db.schema
-    .alterTable("communities")
-    .addColumn("is_discoverable", "boolean", (col) => col.notNull().defaultTo(true))
-    .execute();
-
-  await db.schema
-    .alterTable("communities")
-    .addColumn("enable_welcome", "boolean", (col) => col.notNull().defaultTo(true))
-    .execute();
-
   // Index for category lookups
   await db.schema
     .createIndex("idx_communities_category")
@@ -37,8 +27,6 @@ export async function up(db: Kysely<any>): Promise<void> {
 export async function down(db: Kysely<any>): Promise<void> {
   await db.schema.dropIndex("idx_communities_category").ifExists().execute();
 
-  await db.schema.alterTable("communities").dropColumn("enable_welcome").execute();
-  await db.schema.alterTable("communities").dropColumn("is_discoverable").execute();
   await db.schema.alterTable("communities").dropColumn("require_approval").execute();
   await db.schema.alterTable("communities").dropColumn("tags").execute();
   await db.schema.alterTable("communities").dropColumn("category").execute();

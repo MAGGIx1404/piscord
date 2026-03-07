@@ -27,8 +27,6 @@ export interface CreateCommunityPayload {
   rules?: Array<{ id: number; text: string }>;
   visibility: "public" | "private";
   requireApproval?: boolean;
-  enableWelcome?: boolean;
-  discoverable?: boolean;
   isAiPet?: boolean;
   aiAgentName?: string | null;
   aiAgentPetName?: string | null;
@@ -103,8 +101,6 @@ export async function createCommunity(
     rules = [],
     visibility,
     requireApproval = false,
-    enableWelcome = true,
-    discoverable = true,
     isAiPet = false,
     aiAgentName = null,
     aiAgentPetName = null,
@@ -162,8 +158,6 @@ export async function createCommunity(
       category: category ?? null,
       tags,
       require_approval: requireApproval,
-      is_discoverable: discoverable,
-      enable_welcome: enableWelcome,
       is_ai_pet: isAiPet,
       ai_agent_name: aiAgentName ?? null,
       ai_agent_pet_name: aiAgentPetName ?? null,
@@ -185,8 +179,6 @@ export async function createCommunity(
       "category",
       "tags",
       "require_approval",
-      "is_discoverable",
-      "enable_welcome",
       "is_ai_pet",
       "ai_agent_name",
       "ai_agent_pet_name",
@@ -242,9 +234,7 @@ export async function createCommunity(
     tags: community.tags ?? [],
     is_public: community.is_public as unknown as boolean,
     member_count: community.member_count as unknown as number,
-    require_approval: community.require_approval as unknown as boolean,
-    is_discoverable: community.is_discoverable as unknown as boolean,
-    enable_welcome: community.enable_welcome as unknown as boolean
+    require_approval: community.require_approval as unknown as boolean
   } as unknown as PublicCommunity;
 }
 
@@ -267,8 +257,6 @@ export async function getUserCommunities(userId: string): Promise<PublicCommunit
       "category",
       "tags",
       "require_approval",
-      "is_discoverable",
-      "enable_welcome",
       "is_ai_pet",
       "ai_agent_name",
       "ai_agent_pet_name",
@@ -323,8 +311,6 @@ export async function getDiscoverableCommunities(
       "category",
       "tags",
       "require_approval",
-      "is_discoverable",
-      "enable_welcome",
       "is_ai_pet",
       "ai_agent_name",
       "ai_agent_pet_name",
@@ -333,7 +319,7 @@ export async function getDiscoverableCommunities(
       "ai_agent_description",
       "created_at"
     ])
-    .where("is_discoverable", "=", true);
+    .where("is_public", "=", true);
 
   if (search) {
     q = q.where((eb) =>
@@ -350,7 +336,7 @@ export async function getDiscoverableCommunities(
     db
       .selectFrom("communities")
       .select((eb) => eb.fn.countAll<number>().as("count"))
-      .where("is_discoverable", "=", true)
+      .where("is_public", "=", true)
       .executeTakeFirstOrThrow()
   ]);
 
@@ -376,8 +362,6 @@ export async function getDiscoverableCommunities(
       is_public: r.is_public as unknown as boolean,
       member_count: r.member_count as unknown as number,
       require_approval: r.require_approval as unknown as boolean,
-      is_discoverable: r.is_discoverable as unknown as boolean,
-      enable_welcome: r.enable_welcome as unknown as boolean,
       is_ai_pet: r.is_ai_pet as unknown as boolean,
       is_member: memberSet.has(r.id)
     })) as unknown as DiscoverCommunity[],
@@ -535,8 +519,6 @@ export async function getCommunityOverview(
     is_public: row.is_public as unknown as boolean,
     member_count: row.member_count as unknown as number,
     require_approval: row.require_approval as unknown as boolean,
-    is_discoverable: row.is_discoverable as unknown as boolean,
-    enable_welcome: row.enable_welcome as unknown as boolean,
     is_ai_pet: row.is_ai_pet as unknown as boolean
   } as unknown as PublicCommunity;
 

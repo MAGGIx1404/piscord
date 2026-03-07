@@ -29,7 +29,7 @@
           class="border-amber-500/50 bg-background/60 text-amber-500 backdrop-blur-md"
         >
           <ShieldCheck class="mr-1 size-3" />
-          Invite Only
+          Approval Required
         </Badge>
       </div>
     </div>
@@ -45,7 +45,7 @@
         <div class="min-w-0 pt-1">
           <div class="flex items-center gap-1.5">
             <h3 class="truncate font-semibold">{{ community.name }}</h3>
-            <BadgeCheck v-if="community.totalUsers > 20000" class="size-4 shrink-0 text-primary" />
+            <BadgeCheck v-if="community.totalUsers > 10" class="size-4 shrink-0 text-primary" />
           </div>
         </div>
       </div>
@@ -80,7 +80,9 @@
           :class="
             community.isMember
               ? 'border-emerald-500/30 text-emerald-500'
-              : 'text-primary hover:bg-primary/10'
+              : community.requiresApproval
+                ? 'text-amber-500 hover:bg-amber-500/10'
+                : 'text-primary hover:bg-primary/10'
           "
           :disabled="community.isMember || isJoining"
           @click="handleJoin"
@@ -91,6 +93,10 @@
           </template>
           <template v-else-if="isJoining">
             <Loader2 class="size-3.5 animate-spin" />
+          </template>
+          <template v-else-if="community.requiresApproval">
+            <Lock class="mr-1 size-3.5" />
+            Request
           </template>
           <template v-else>
             Join
@@ -109,6 +115,61 @@
       />
     </div>
   </div>
+
+  <!-- Approval Request Modal -->
+  <Dialog v-model:open="showApprovalModal">
+    <DialogContent class="max-w-sm gap-0 overflow-hidden p-0">
+      <!-- Decorative top band -->
+      <div class="relative h-20 overflow-hidden bg-amber-500/10">
+        <div class="absolute inset-0 flex items-center justify-center opacity-10">
+          <Lock class="size-24 text-amber-500" />
+        </div>
+        <div
+          class="absolute inset-x-0 bottom-0 h-8 bg-linear-to-t from-background/80 to-transparent"
+        />
+      </div>
+
+      <!-- Community identity row, overlapping the band -->
+      <div class="-mt-7 flex flex-col items-center px-6 pb-0">
+        <Avatar class="mb-3 size-14 shadow-lg ring-4 ring-background">
+          <AvatarImage :src="community.iconImage as string" />
+          <AvatarFallback class="text-xl">{{ community.name.charAt(0) }}</AvatarFallback>
+        </Avatar>
+        <h2 class="text-base leading-tight font-semibold">{{ community.name }}</h2>
+        <p class="mt-0.5 text-xs text-muted-foreground">
+          {{ formatNumber(community.totalUsers) }} members
+        </p>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 pt-4 pb-2 text-center">
+        <div
+          class="mb-3 inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-500"
+        >
+          <ShieldCheck class="size-3.5" />
+          Approval Required
+        </div>
+        <p class="text-sm leading-relaxed text-muted-foreground">
+          This community reviews join requests before letting new members in. Your request will be
+          sent to the admins for review.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2 px-6 pt-3 pb-6">
+        <Button variant="outline" class="flex-1" @click="showApprovalModal = false"> Exit </Button>
+        <Button
+          class="flex-1 bg-amber-500 text-white hover:bg-amber-600"
+          :disabled="isJoining"
+          @click="confirmRequest"
+        >
+          <Loader2 v-if="isJoining" class="mr-1.5 size-3.5 animate-spin" />
+          <Send v-else class="mr-1.5 size-3.5" />
+          Send Request
+        </Button>
+      </div>
+    </DialogContent>
+  </Dialog>
 </template>
 
 <script setup lang="ts">
@@ -123,7 +184,9 @@ import {
   BadgeCheck,
   ShieldCheck,
   ArrowRight,
-  Loader2
+  Loader2,
+  Lock,
+  Send
 } from "lucide-vue-next";
 import type { Community } from "./types";
 
@@ -132,16 +195,29 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits<{ join: [id: string] }>();
+const emit = defineEmits<{ join: [id: string, isRequest: boolean] }>();
 
 const isJoining = ref(false);
+const showApprovalModal = ref(false);
 
-const handleJoin = async () => {
+const handleJoin = () => {
   if (props.community.isMember || isJoining.value) return;
+  if (props.community.requiresApproval) {
+    showApprovalModal.value = true;
+  } else {
+    isJoining.value = true;
+    emit("join", props.community.id, false);
+    setTimeout(() => (isJoining.value = false), 1500);
+  }
+};
+
+const confirmRequest = () => {
   isJoining.value = true;
-  emit("join", props.community.id);
-  // parent controls the isMember state; reset after short delay
-  setTimeout(() => (isJoining.value = false), 1500);
+  emit("join", props.community.id, true);
+  setTimeout(() => {
+    isJoining.value = false;
+    showApprovalModal.value = false;
+  }, 1500);
 };
 
 const formatNumber = (num: number) => {

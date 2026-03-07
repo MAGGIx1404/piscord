@@ -38,8 +38,6 @@ export interface PublicCommunity {
   category: string | null;
   tags: string[];
   require_approval: boolean;
-  is_discoverable: boolean;
-  enable_welcome: boolean;
   is_ai_pet: boolean;
   ai_agent_name: string | null;
   ai_agent_pet_name: string | null;

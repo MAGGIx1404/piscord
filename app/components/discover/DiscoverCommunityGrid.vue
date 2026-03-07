@@ -12,7 +12,7 @@
         v-for="community in communities"
         :key="community.id"
         :community="community"
-        @join="$emit('join', $event)"
+        @join="(id, isRequest) => $emit('join', id, isRequest)"
       />
     </div>
   </div>
@@ -31,5 +31,5 @@ withDefaults(defineProps<Props>(), {
   showTitle: true
 });
 
-defineEmits<{ join: [id: string] }>();
+defineEmits<{ join: [id: string, isRequest: boolean] }>();
 </script>

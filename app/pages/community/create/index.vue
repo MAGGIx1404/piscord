@@ -56,8 +56,6 @@
             v-show="currentStep === 5"
             v-model:visibility="form.visibility"
             v-model:require-approval="form.requireApproval"
-            v-model:enable-welcome="form.enableWelcome"
-            v-model:discoverable="form.discoverable"
           />
 
           <!-- Navigation Buttons -->
@@ -130,8 +128,6 @@ const form = reactive({
   rules: [] as { id: number; text: string }[],
   visibility: "public" as "public" | "private",
   requireApproval: false,
-  enableWelcome: true,
-  discoverable: true,
   iconPreview: null as string | null,
   iconFile: null as File | null,
   bannerPreview: null as string | null,
@@ -233,8 +229,6 @@ const handleCreate = async () => {
     fd.append("tags", JSON.stringify(form.tags));
     fd.append("rules", JSON.stringify(form.rules));
     fd.append("requireApproval", String(form.requireApproval));
-    fd.append("enableWelcome", String(form.enableWelcome));
-    fd.append("discoverable", String(form.discoverable));
 
     if (form.iconFile) fd.append("icon", form.iconFile);
     if (form.bannerFile) fd.append("banner", form.bannerFile);

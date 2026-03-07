@@ -64,8 +64,6 @@ export default defineEventHandler(async (event) => {
     rules,
     visibility,
     requireApproval: field("requireApproval") === "true",
-    enableWelcome: field("enableWelcome") !== "false",
-    discoverable: field("discoverable") !== "false",
     isAiPet: field("isAiPet") === "true",
     aiAgentName: field("aiAgentName") ?? null,
     aiAgentPetName: field("aiAgentPetName") ?? null,
