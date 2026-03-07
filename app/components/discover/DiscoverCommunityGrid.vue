@@ -1,14 +1,19 @@
 <template>
   <div v-if="communities.length">
-    <div class="flex items-center gap-2 mb-4" v-if="showTitle">
+    <div class="mb-4 flex items-center gap-2" v-if="showTitle">
       <Compass class="size-5 text-primary" />
-      <h2 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <h2 class="text-sm font-semibold tracking-wider text-muted-foreground uppercase">
         All Communities
       </h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-      <DiscoverCard v-for="community in communities" :key="community.id" :community="community" />
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <DiscoverCard
+        v-for="community in communities"
+        :key="community.id"
+        :community="community"
+        @join="$emit('join', $event)"
+      />
     </div>
   </div>
 </template>
@@ -25,4 +30,6 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   showTitle: true
 });
+
+defineEmits<{ join: [id: string] }>();
 </script>

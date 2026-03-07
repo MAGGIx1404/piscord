@@ -65,12 +65,19 @@ export default defineEventHandler(async (event) => {
     visibility,
     requireApproval: field("requireApproval") === "true",
     enableWelcome: field("enableWelcome") !== "false",
-    discoverable: field("discoverable") !== "false"
+    discoverable: field("discoverable") !== "false",
+    isAiPet: field("isAiPet") === "true",
+    aiAgentName: field("aiAgentName") ?? null,
+    aiAgentPetName: field("aiAgentPetName") ?? null,
+    aiAgentAvatar: field("aiAgentAvatar") ?? null,
+    aiAgentModel: field("aiAgentModel") ?? null,
+    aiAgentDescription: field("aiAgentDescription") ?? null
   };
 
   // ─── File parts ────────────────────────────────────────────────────────────
   const iconPart = parts.find((p) => p.name === "icon") ?? null;
   const bannerPart = parts.find((p) => p.name === "banner") ?? null;
+  const aiAgentAvatarPart = parts.find((p) => p.name === "aiAgentAvatarFile") ?? null;
 
   const community = await createCommunity(
     ownerId,
@@ -78,6 +85,13 @@ export default defineEventHandler(async (event) => {
     iconPart ? { data: iconPart.data, type: iconPart.type, filename: iconPart.filename } : null,
     bannerPart
       ? { data: bannerPart.data, type: bannerPart.type, filename: bannerPart.filename }
+      : null,
+    aiAgentAvatarPart
+      ? {
+          data: aiAgentAvatarPart.data,
+          type: aiAgentAvatarPart.type,
+          filename: aiAgentAvatarPart.filename
+        }
       : null
   );
 

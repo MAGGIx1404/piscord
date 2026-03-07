@@ -1,10 +1,13 @@
 export interface Community {
   id: string;
   name: string;
-  description: string;
+  slug: string;
+  description: string | null;
   totalUsers: number;
-  posterImage: string;
-  iconImage: string;
-  type: string;
+  posterImage: string | null;
+  iconImage: string | null;
+  type: string | null;
   requiresApproval?: boolean;
+  isMember?: boolean;
+  requireApproval?: boolean;
 }

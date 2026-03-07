@@ -40,5 +40,11 @@ export interface PublicCommunity {
   require_approval: boolean;
   is_discoverable: boolean;
   enable_welcome: boolean;
+  is_ai_pet: boolean;
+  ai_agent_name: string | null;
+  ai_agent_pet_name: string | null;
+  ai_agent_avatar: string | null;
+  ai_agent_model: string | null;
+  ai_agent_description: string | null;
   created_at: Date;
 }

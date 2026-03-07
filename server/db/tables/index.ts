@@ -50,6 +50,12 @@ export interface CommunitiesTable {
   require_approval: ColumnType<boolean, boolean | undefined, boolean>;
   is_discoverable: ColumnType<boolean, boolean | undefined, boolean>;
   enable_welcome: ColumnType<boolean, boolean | undefined, boolean>;
+  is_ai_pet: ColumnType<boolean, boolean | undefined, boolean>;
+  ai_agent_name: string | null;
+  ai_agent_pet_name: string | null;
+  ai_agent_avatar: string | null;
+  ai_agent_model: string | null;
+  ai_agent_description: string | null;
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, never>;
 }

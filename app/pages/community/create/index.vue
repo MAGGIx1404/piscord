@@ -48,7 +48,6 @@
             v-model:model="aiPet.model"
             v-model:use-custom-key="aiPet.useCustomKey"
             v-model:api-key="aiPet.apiKey"
-            v-model:enabled-capabilities="aiPet.enabledCapabilities"
             @update:custom-avatar-file="aiPet.customAvatarFile = $event"
           />
 
@@ -104,7 +103,6 @@ import {
   CreatePreview,
   CreateTips
 } from "~/components/community/create";
-import { Gamepad2, Code, Music, Palette, BookOpen, Briefcase, Film, Heart } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
 definePageMeta({
@@ -119,7 +117,6 @@ const currentStep = ref(1);
 const totalSteps = 5;
 const stepTitles = ["Identity", "Discovery", "Rules", "AI Pet", "Settings"];
 
-const isGenerating = ref(false);
 const isCreating = ref(false);
 const slugError = ref<string | null>(null);
 const isCheckingSlug = ref(false);
@@ -150,20 +147,8 @@ const aiPet = reactive({
   model: "gpt-4o-mini",
   useCustomKey: false,
   apiKey: "",
-  enabledCapabilities: ["chat", "welcome"] as string[],
   customAvatarFile: null as File | null
 });
-
-const categories = [
-  { value: "gaming", label: "Gaming", icon: Gamepad2 },
-  { value: "technology", label: "Technology", icon: Code },
-  { value: "music", label: "Music", icon: Music },
-  { value: "art", label: "Art & Design", icon: Palette },
-  { value: "education", label: "Education", icon: BookOpen },
-  { value: "business", label: "Business", icon: Briefcase },
-  { value: "entertainment", label: "Entertainment", icon: Film },
-  { value: "lifestyle", label: "Lifestyle", icon: Heart }
-];
 
 const canProceed = computed(() => {
   switch (currentStep.value) {
@@ -236,38 +221,6 @@ watch(
   }
 );
 
-const generateAIDescription = async () => {
-  if (!form.name.trim() || isGenerating.value) return;
-
-  isGenerating.value = true;
-
-  const categoryLabel = categories.find((c) => c.value === form.category)?.label || "";
-  const prompts = [
-    `Welcome to ${form.name}! A vibrant community where members connect, share ideas, and grow together. ${
-      categoryLabel
-        ? `Whether you're passionate about ${categoryLabel.toLowerCase()} or just getting started, you'll find a welcoming space here.`
-        : "Join us and be part of something special!"
-    }`,
-    `${form.name} is your go-to destination for ${
-      categoryLabel ? categoryLabel.toLowerCase() + " enthusiasts" : "like-minded individuals"
-    }. Connect with fellow members, share your experiences, and discover new perspectives in a friendly, supportive environment.`,
-    `Join ${form.name} – a thriving community built for connection and collaboration. ${
-      categoryLabel ? `Dive into discussions about ${categoryLabel.toLowerCase()}, ` : ""
-    }share your knowledge, and make lasting connections with people who share your interests.`
-  ];
-
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)] || "";
-
-  form.description = "";
-  for (let i = 0; i < selectedPrompt.length; i++) {
-    form.description += selectedPrompt[i];
-    await new Promise((resolve) => setTimeout(resolve, 15));
-  }
-
-  isGenerating.value = false;
-};
-
 const handleCreate = async () => {
   isCreating.value = true;
   try {
@@ -285,6 +238,20 @@ const handleCreate = async () => {
 
     if (form.iconFile) fd.append("icon", form.iconFile);
     if (form.bannerFile) fd.append("banner", form.bannerFile);
+
+    // AI Agent
+    fd.append("isAiPet", String(aiPet.enabled));
+    if (aiPet.enabled) {
+      fd.append("aiAgentName", aiPet.name);
+      fd.append("aiAgentPetName", aiPet.nickname);
+      fd.append("aiAgentModel", aiPet.model);
+      fd.append("aiAgentDescription", aiPet.personality);
+      if (aiPet.customAvatarFile) {
+        fd.append("aiAgentAvatarFile", aiPet.customAvatarFile);
+      } else {
+        fd.append("aiAgentAvatar", aiPet.avatar);
+      }
+    }
 
     const res = await api<{ community: { id: string; slug: string } }>("/api/communities", {
       method: "POST",

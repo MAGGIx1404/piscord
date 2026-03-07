@@ -2,7 +2,7 @@
   <section class="relative h-[420px] overflow-hidden">
     <!-- Banner with overlay -->
     <div class="absolute inset-0 overflow-hidden rounded-t-xl">
-      <img :src="bannerImage" alt="" class="w-full h-full object-cover" />
+      <img :src="bannerImage" alt="" class="h-full w-full object-cover" />
       <div
         class="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent"
       />
@@ -12,18 +12,21 @@
     </div>
 
     <!-- Floating community identity -->
-    <div class="absolute bottom-0 left-0 right-0 px-8 pb-8">
+    <div class="absolute right-0 bottom-0 left-0 px-8 pb-8">
       <div class="flex items-end gap-6">
         <!-- Icon with glow -->
-        <div class="relative group">
+        <div class="group relative">
           <div
-            class="relative size-28 rounded-2xl bg-card border border-border/50 flex items-center justify-center shadow-2xl"
+            class="relative flex size-28 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-card shadow-2xl"
           >
-            <component :is="icon" class="size-14 text-primary" />
+            <Avatar class="size-full rounded-none">
+              <AvatarImage :src="iconImage as string" />
+              <AvatarFallback class="text-4xl">{{ name.charAt(0) }}</AvatarFallback>
+            </Avatar>
           </div>
           <div
             v-if="verified"
-            class="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center ring-4 ring-background"
+            class="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-primary ring-4 ring-background"
           >
             <BadgeCheck class="size-4 text-white" />
           </div>
@@ -31,18 +34,18 @@
 
         <!-- Title & meta -->
         <div class="flex-1 space-y-3 pb-1">
-          <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex flex-wrap items-center gap-3">
             <h1 class="text-4xl font-bold tracking-tight">{{ name }}</h1>
-            <Badge class="bg-primary/20 text-primary border-primary/30 px-3">{{ type }}</Badge>
+            <Badge class="border-primary/30 bg-primary/20 px-3 text-primary">{{ type }}</Badge>
           </div>
-          <p class="text-muted-foreground max-w-2xl line-clamp-2">{{ description }}</p>
+          <p class="line-clamp-2 max-w-2xl text-muted-foreground">{{ description }}</p>
         </div>
 
         <!-- Quick actions - floating pills -->
-        <div class="hidden lg:flex items-center gap-2">
+        <div class="hidden items-center gap-2 lg:flex">
           <Button
             variant="outline"
-            class="rounded-full backdrop-blur-sm bg-card/50 border-border/50"
+            class="rounded-full border-border/50 bg-card/50 backdrop-blur-sm"
             @click="$emit('notify')"
           >
             <Bell class="size-4" />
@@ -50,7 +53,7 @@
           </Button>
           <Button
             variant="outline"
-            class="rounded-full backdrop-blur-sm bg-card/50 border-border/50"
+            class="rounded-full border-border/50 bg-card/50 backdrop-blur-sm"
             @click="$emit('settings')"
           >
             <Settings class="size-4" />
@@ -76,6 +79,7 @@ interface Props {
   bannerImage?: string;
   icon?: Component;
   verified?: boolean;
+  iconImage?: string;
 }
 
 withDefaults(defineProps<Props>(), {
