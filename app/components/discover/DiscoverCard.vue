@@ -73,42 +73,51 @@
           </span>
         </div>
 
-        <Button
-          size="sm"
-          :variant="community.isMember ? 'outline' : 'secondary'"
-          class="h-8 px-3"
-          :class="
-            community.isMember
-              ? 'border-emerald-500/30 text-emerald-500'
-              : community.isPendingRequest
-                ? 'cursor-not-allowed border-amber-500/30 text-amber-400 opacity-70'
-                : community.requiresApproval
-                  ? 'text-amber-500 hover:bg-amber-500/10'
-                  : 'text-primary hover:bg-primary/10'
-          "
-          :disabled="community.isMember || community.isPendingRequest || isJoining"
-          @click="handleJoin"
-        >
-          <template v-if="community.isMember">
-            <BadgeCheck class="mr-1 size-3.5" />
-            Joined
-          </template>
-          <template v-else-if="community.isPendingRequest">
-            <Clock class="mr-1 size-3.5" />
-            Pending
-          </template>
-          <template v-else-if="isJoining">
-            <Loader2 class="size-3.5 animate-spin" />
-          </template>
-          <template v-else-if="community.requiresApproval">
-            <Lock class="mr-1 size-3.5" />
-            Request
-          </template>
-          <template v-else>
-            Join
-            <ArrowRight class="size-3.5" />
-          </template>
-        </Button>
+        <div class="flex items-center justify-end gap-2">
+          <!-- View button — only when already a member -->
+          <Button v-if="community.isMember" size="sm" variant="default" class="h-8 px-3" as-child>
+            <NuxtLink :to="`/community/${community.id}`">
+              <ExternalLink class="mr-1 size-3.5" />
+              View
+            </NuxtLink>
+          </Button>
+          <Button
+            size="sm"
+            :variant="community.isMember ? 'outline' : 'secondary'"
+            class="h-8 px-3"
+            :class="
+              community.isMember
+                ? 'border-emerald-500/30 text-emerald-500'
+                : community.isPendingRequest
+                  ? 'cursor-not-allowed border-amber-500/30 text-amber-400 opacity-70'
+                  : community.requiresApproval
+                    ? 'text-amber-500 hover:bg-amber-500/10'
+                    : 'text-primary hover:bg-primary/10'
+            "
+            :disabled="community.isMember || community.isPendingRequest || isJoining"
+            @click="handleJoin"
+          >
+            <template v-if="community.isMember">
+              <BadgeCheck class="mr-1 size-3.5" />
+              Joined
+            </template>
+            <template v-else-if="community.isPendingRequest">
+              <Clock class="mr-1 size-3.5" />
+              Pending
+            </template>
+            <template v-else-if="isJoining">
+              <Loader2 class="size-3.5 animate-spin" />
+            </template>
+            <template v-else-if="community.requiresApproval">
+              <Lock class="mr-1 size-3.5" />
+              Request
+            </template>
+            <template v-else>
+              Join
+              <ArrowRight class="size-3.5" />
+            </template>
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -193,7 +202,8 @@ import {
   Loader2,
   Lock,
   Send,
-  Clock
+  Clock,
+  ExternalLink
 } from "lucide-vue-next";
 import type { Community } from "./types";
 
