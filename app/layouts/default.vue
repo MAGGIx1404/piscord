@@ -1,13 +1,8 @@
 <template>
-  <SidebarProvider>
-    <AppSidebar />
-    <SidebarInset>
-      <div class="flex w-full flex-1 flex-col p-4 pt-0">
-        <AppHeader />
-        <slot />
-      </div>
-    </SidebarInset>
-  </SidebarProvider>
+  <div class="flex min-h-screen w-full flex-col p-4 pt-0">
+    <slot />
+    <AppDock />
+  </div>
 
   <Enable2FAModal />
 </template>

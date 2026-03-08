@@ -101,7 +101,7 @@
   <Dialog v-model:open="modalOpen">
     <DialogContent class="flex max-h-[80vh] max-w-lg flex-col gap-0 overflow-hidden p-0">
       <!-- Modal header -->
-      <div class="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
+      <div class="flex items-start justify-between gap-4 border-b border-border px-5 py-4 pr-10">
         <div>
           <DialogTitle class="text-sm font-semibold">All Members</DialogTitle>
           <p class="text-xs text-muted-foreground">{{ members.length }} total</p>

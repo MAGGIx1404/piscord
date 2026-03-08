@@ -2,16 +2,19 @@
   <!-- Modal -->
   <Dialog v-model:open="open">
     <DialogTrigger as-child>
-      <Button variant="ghost" size="icon" class="relative size-10 rounded-lg" @click="open = true">
-        <Bell class="size-4.5" />
-        <!-- Unread badge -->
-        <span
-          v-if="unreadCount > 0"
-          class="absolute -top-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground"
-        >
-          {{ unreadCount > 9 ? "9+" : unreadCount }}
-        </span>
-      </Button>
+      <!-- Custom trigger slot — receives { unreadCount, open } as props -->
+      <slot name="trigger" :unread-count="unreadCount" :open="open">
+        <!-- Default bell button -->
+        <Button variant="ghost" size="icon" class="relative size-10 rounded-lg">
+          <Bell class="size-4.5" />
+          <span
+            v-if="unreadCount > 0"
+            class="absolute -top-0.5 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground"
+          >
+            {{ unreadCount > 9 ? "9+" : unreadCount }}
+          </span>
+        </Button>
+      </slot>
     </DialogTrigger>
 
     <DialogContent class="flex max-h-[80vh] max-w-md flex-col gap-0 overflow-hidden p-0">

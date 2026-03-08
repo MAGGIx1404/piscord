@@ -1,24 +1,26 @@
 <template>
   <Card>
-    <h3 class="font-semibold flex items-center gap-2">
+    <h3 class="flex items-center gap-2 font-semibold">
       <Award class="size-4" />
       Badges
     </h3>
     <div class="flex flex-wrap gap-2">
-      <Tooltip v-for="badge in badges" :key="badge.name">
-        <TooltipTrigger>
-          <div
-            class="size-12 rounded-xl flex items-center justify-center text-xl cursor-pointer hover:scale-110 transition-transform"
-            :class="badge.bg"
-          >
-            {{ badge.emoji }}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p class="font-medium">{{ badge.name }}</p>
-          <p class="text-xs" :class="badge.color">{{ badge.description }}</p>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider v-for="badge in badges" :key="badge.name">
+        <Tooltip>
+          <TooltipTrigger>
+            <div
+              class="flex size-12 cursor-pointer items-center justify-center rounded-xl text-xl transition-transform hover:scale-110"
+              :class="badge.bg"
+            >
+              {{ badge.emoji }}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p class="font-medium">{{ badge.name }}</p>
+            <p class="text-xs" :class="badge.color">{{ badge.description }}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   </Card>
 </template>

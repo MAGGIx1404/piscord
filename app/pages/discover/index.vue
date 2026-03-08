@@ -43,10 +43,6 @@ import { Sparkles, Gamepad2, Code, BookOpen, Palette, Music, Users } from "lucid
 import type { Community } from "~/components/discover/types";
 import { toast } from "vue-sonner";
 
-definePageMeta({
-  layout: "entry"
-});
-
 const api = useApi();
 const searchQuery = ref("");
 const activeFilter = ref("all");

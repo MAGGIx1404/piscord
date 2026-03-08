@@ -18,9 +18,9 @@
     />
 
     <!-- Main Content Grid -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
+    <div class="mt-6 grid w-full grid-cols-1 gap-6 px-6 lg:grid-cols-3">
       <!-- Left Column -->
-      <div class="space-y-6 sticky top-20 self-start">
+      <div class="sticky top-20 space-y-6 self-start">
         <!-- About Card -->
         <ProfileAbout
           location="San Francisco, CA"
@@ -45,7 +45,7 @@
       </div>
 
       <!-- Middle Column -->
-      <div class="lg:col-span-2 space-y-6">
+      <div class="space-y-6 lg:col-span-2">
         <!-- Communities -->
         <ProfileCommunities
           :communities="communities"

@@ -1,5 +1,5 @@
 <template>
-  <main class="relative flex h-full w-full flex-col overflow-hidden">
+  <main class="relative mt-4 flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden">
     <!-- Full Page Background -->
     <div
       class="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-br from-primary/5 via-transparent to-primary/10"
@@ -12,12 +12,6 @@
     <div
       class="absolute -right-20 -bottom-20 size-96 rounded-full bg-primary/10 opacity-50 blur-3xl"
     />
-
-    <!-- Top-right utility bar: notifications + profile -->
-    <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5">
-      <NotificationModal />
-      <NavUser />
-    </div>
 
     <!-- Main Content - Centered -->
     <div class="relative flex flex-1 items-center justify-center px-6">
@@ -96,10 +90,6 @@
 import { Plus, Link2, ArrowRight, Compass, Zap } from "lucide-vue-next";
 import NotificationModal from "~/components/NotificationModal.vue";
 import NavUser from "~/components/nav/user.vue";
-
-definePageMeta({
-  layout: "entry"
-});
 </script>
 
 <style scoped>
