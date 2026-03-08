@@ -9,7 +9,6 @@
     </SidebarInset>
   </SidebarProvider>
 
-  <!-- Global 2FA setup modal -->
   <Enable2FAModal />
 </template>
 

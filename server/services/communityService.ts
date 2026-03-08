@@ -287,6 +287,7 @@ export interface DiscoverQuery {
 
 export interface DiscoverCommunity extends PublicCommunity {
   is_member: boolean;
+  has_pending_request: boolean;
 }
 
 export async function getDiscoverableCommunities(
@@ -340,30 +341,42 @@ export async function getDiscoverableCommunities(
       .executeTakeFirstOrThrow()
   ]);
 
-  // Check membership for each community in one query
+  // Check membership and pending requests for each community in parallel
   const communityIds = rows.map((r) => r.id);
-  const memberships =
+  const [memberships, pendingRequests] = await Promise.all([
     communityIds.length > 0
-      ? await db
+      ? db
           .selectFrom("community_members")
           .select("community_id")
           .where("user_id", "=", userId)
           .where("community_id", "in", communityIds)
           .execute()
-      : [];
+      : Promise.resolve([]),
+    communityIds.length > 0
+      ? db
+          .selectFrom("community_join_requests")
+          .select("community_id")
+          .where("user_id", "=", userId)
+          .where("status", "=", "pending")
+          .where("community_id", "in", communityIds)
+          .execute()
+      : Promise.resolve([])
+  ]);
 
   const memberSet = new Set(memberships.map((m) => m.community_id));
+  const pendingSet = new Set(pendingRequests.map((r) => r.community_id));
 
   return {
     communities: rows.map((r) => ({
       ...r,
       rules: r.rules ? JSON.parse(r.rules) : [],
       tags: r.tags ?? [],
-      is_public: r.is_public as unknown as boolean,
-      member_count: r.member_count as unknown as number,
-      require_approval: r.require_approval as unknown as boolean,
-      is_ai_pet: r.is_ai_pet as unknown as boolean,
-      is_member: memberSet.has(r.id)
+      is_public: r.is_public,
+      member_count: r.member_count,
+      require_approval: r.require_approval,
+      is_ai_pet: r.is_ai_pet,
+      is_member: memberSet.has(r.id),
+      has_pending_request: pendingSet.has(r.id)
     })) as unknown as DiscoverCommunity[],
     total: Number(countRow.count)
   };
@@ -374,11 +387,11 @@ export async function getDiscoverableCommunities(
 export async function joinCommunity(
   userId: string,
   communityId: string
-): Promise<{ joined: boolean; member_count: number }> {
+): Promise<{ joined: boolean; pending: boolean; slug: string; member_count: number }> {
   // Check community exists and is joinable
   const community = await db
     .selectFrom("communities")
-    .select(["id", "require_approval", "is_public", "member_count"])
+    .select(["id", "owner_id", "slug", "name", "require_approval", "is_public", "member_count"])
     .where("id", "=", communityId)
     .executeTakeFirst();
 
@@ -399,9 +412,68 @@ export async function joinCommunity(
     .executeTakeFirst();
 
   if (existing) {
-    return { joined: false, member_count: community.member_count as unknown as number };
+    return {
+      joined: false,
+      pending: false,
+      slug: community.slug,
+      member_count: community.member_count as unknown as number
+    };
   }
 
+  // ─── Block duplicate pending request ───────────────────────────────────────
+  const existingRequest = await db
+    .selectFrom("community_join_requests")
+    .select("id")
+    .where("community_id", "=", communityId)
+    .where("user_id", "=", userId)
+    .where("status", "=", "pending")
+    .executeTakeFirst();
+
+  if (existingRequest) {
+    throw createError({
+      statusCode: 409,
+      message: "You already have a pending join request for this community"
+    });
+  }
+
+  // ─── Approval required: persist request, notify owner ──────────────────────
+  if (community.require_approval) {
+    await db
+      .insertInto("community_join_requests")
+      .values({
+        id: generateId(),
+        community_id: communityId,
+        user_id: userId,
+        note: null,
+        status: "pending",
+        reviewed_by: null,
+        reviewed_at: null
+      })
+      .execute();
+
+    // Notify community owner
+    await db
+      .insertInto("notifications")
+      .values({
+        id: generateId(),
+        user_id: community.owner_id,
+        actor_id: userId,
+        type: "community_join",
+        entity_type: "community",
+        entity_id: communityId,
+        data: { pending: true, community_name: community.name }
+      })
+      .execute();
+
+    return {
+      joined: false,
+      pending: true,
+      slug: community.slug,
+      member_count: community.member_count as unknown as number
+    };
+  }
+
+  // ─── Direct join ───────────────────────────────────────────────────────────
   await db
     .insertInto("community_members")
     .values({
@@ -420,7 +492,28 @@ export async function joinCommunity(
     .returning("member_count")
     .executeTakeFirstOrThrow();
 
-  return { joined: true, member_count: updated.member_count as unknown as number };
+  // Notify community owner that someone joined
+  if (community.owner_id !== userId) {
+    await db
+      .insertInto("notifications")
+      .values({
+        id: generateId(),
+        user_id: community.owner_id,
+        actor_id: userId,
+        type: "community_join",
+        entity_type: "community",
+        entity_id: communityId,
+        data: { pending: false, community_name: community.name }
+      })
+      .execute();
+  }
+
+  return {
+    joined: true,
+    pending: false,
+    slug: community.slug,
+    member_count: updated.member_count as unknown as number
+  };
 }
 
 // ─── Get community overview ───────────────────────────────────────────────────

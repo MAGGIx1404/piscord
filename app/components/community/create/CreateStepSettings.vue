@@ -73,13 +73,15 @@
 <script setup lang="ts">
 import { Globe, Lock, Check, UserCheck } from "lucide-vue-next";
 
-defineProps<{
-  visibility: "public" | "private";
-  requireApproval: boolean;
-}>();
-
 defineEmits<{
   "update:visibility": [value: "public" | "private"];
-  "update:requireApproval": [value: boolean];
 }>();
+
+const visibility = defineModel<"public" | "private">("visibility", {
+  default: "public"
+});
+
+const requireApproval = defineModel<boolean>("requireApproval", {
+  default: false
+});
 </script>

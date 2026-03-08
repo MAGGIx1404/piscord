@@ -10,4 +10,5 @@ export interface Community {
   requiresApproval?: boolean;
   isMember?: boolean;
   requireApproval?: boolean;
+  isPendingRequest?: boolean;
 }

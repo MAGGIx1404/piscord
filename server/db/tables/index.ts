@@ -91,6 +91,69 @@ export interface CommunityMembersTable {
 export type CommunityMember = Selectable<CommunityMembersTable>;
 export type NewCommunityMember = Insertable<CommunityMembersTable>;
 
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+export type NotificationType =
+  | "friend_request"
+  | "friend_accepted"
+  | "community_invite"
+  | "community_join"
+  | "mention"
+  | "channel_message"
+  | "system";
+
+export type NotificationEntityType = "friend_request" | "community" | "channel" | "message";
+
+export interface NotificationsTable {
+  id: Generated<string>;
+  /** Recipient user */
+  user_id: string;
+  /** User who triggered the notification – NULL for system notifications */
+  actor_id: string | null;
+  /** Discriminator for the notification kind */
+  type: NotificationType;
+  /** Polymorphic discriminator – names the source table */
+  entity_type: NotificationEntityType | null;
+  /** PK of the referenced row (no DB-level FK – polymorphic) */
+  entity_id: string | null;
+  /** Arbitrary JSON payload (previews, snapshots, etc.) */
+  data: ColumnType<
+    Record<string, unknown>,
+    Record<string, unknown> | undefined,
+    Record<string, unknown>
+  >;
+  /** NULL = unread; timestamp = when it was read */
+  read_at: Date | null;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type Notification = Selectable<NotificationsTable>;
+export type NewNotification = Insertable<NotificationsTable>;
+export type NotificationUpdate = Updateable<NotificationsTable>;
+
+// ─── Community Join Requests ──────────────────────────────────────────────────
+
+export type CommunityJoinRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
+
+export interface CommunityJoinRequestsTable {
+  id: Generated<string>;
+  community_id: string;
+  user_id: string;
+  /** Optional message from the requester */
+  note: string | null;
+  /** 'pending' | 'approved' | 'rejected' | 'cancelled' */
+  status: CommunityJoinRequestStatus;
+  /** Admin/mod who reviewed the request – NULL until actioned */
+  reviewed_by: string | null;
+  reviewed_at: Date | null;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type CommunityJoinRequest = Selectable<CommunityJoinRequestsTable>;
+export type NewCommunityJoinRequest = Insertable<CommunityJoinRequestsTable>;
+export type CommunityJoinRequestUpdate = Updateable<CommunityJoinRequestsTable>;
+
 // ─── Database ────────────────────────────────────────────────────────────────
 
 export interface Database {
@@ -99,4 +162,6 @@ export interface Database {
   communities: CommunitiesTable;
   roles: RolesTable;
   community_members: CommunityMembersTable;
+  notifications: NotificationsTable;
+  community_join_requests: CommunityJoinRequestsTable;
 }

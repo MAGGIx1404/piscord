@@ -80,16 +80,22 @@
           :class="
             community.isMember
               ? 'border-emerald-500/30 text-emerald-500'
-              : community.requiresApproval
-                ? 'text-amber-500 hover:bg-amber-500/10'
-                : 'text-primary hover:bg-primary/10'
+              : community.isPendingRequest
+                ? 'cursor-not-allowed border-amber-500/30 text-amber-400 opacity-70'
+                : community.requiresApproval
+                  ? 'text-amber-500 hover:bg-amber-500/10'
+                  : 'text-primary hover:bg-primary/10'
           "
-          :disabled="community.isMember || isJoining"
+          :disabled="community.isMember || community.isPendingRequest || isJoining"
           @click="handleJoin"
         >
           <template v-if="community.isMember">
             <BadgeCheck class="mr-1 size-3.5" />
             Joined
+          </template>
+          <template v-else-if="community.isPendingRequest">
+            <Clock class="mr-1 size-3.5" />
+            Pending
           </template>
           <template v-else-if="isJoining">
             <Loader2 class="size-3.5 animate-spin" />
@@ -186,7 +192,8 @@ import {
   ArrowRight,
   Loader2,
   Lock,
-  Send
+  Send,
+  Clock
 } from "lucide-vue-next";
 import type { Community } from "./types";
 
@@ -201,7 +208,7 @@ const isJoining = ref(false);
 const showApprovalModal = ref(false);
 
 const handleJoin = () => {
-  if (props.community.isMember || isJoining.value) return;
+  if (props.community.isMember || props.community.isPendingRequest || isJoining.value) return;
   if (props.community.requiresApproval) {
     showApprovalModal.value = true;
   } else {

@@ -260,6 +260,20 @@ function formatNumber(n: number) {
 // ─── Handlers ─────────────────────────────────────────────────────────────────
 
 const router = useRouter();
+
+// ─── Welcome toast on first join ──────────────────────────────────────────────
+onMounted(() => {
+  if (route.query.welcome === "1" && community.value) {
+    toast.success(`Welcome to ${community.value.name}! 🎉`, {
+      description:
+        "You're now a member. Start exploring channels and connecting with the community.",
+      duration: 5000
+    });
+    // Remove the query param without a page reload
+    router.replace({ query: {} });
+  }
+});
+
 const handleNotify = () => toast.info("Notifications toggled");
 const handleSettings = () => router.push(`/community/${communityId}/settings`);
 const handleInvite = () => toast.info("Invite link copied!");

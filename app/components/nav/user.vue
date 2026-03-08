@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles, Settings } from "lucide-vue-next";
+import { BadgeCheck, Bell, LogOut, Sparkles, Settings } from "lucide-vue-next";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -11,7 +11,7 @@ const userInitials = computed(() => (user.value?.username ?? "U").slice(0, 2).to
 
 <template>
   <DropdownMenu>
-    <DropdownMenuTrigger class="size-10 min-h-10 overflow-hidden">
+    <DropdownMenuTrigger class="size-10 min-h-10 cursor-pointer overflow-hidden">
       <Avatar class="size-full rounded-lg">
         <AvatarImage :src="user?.avatar_url ?? ''" :alt="user?.username" />
         <AvatarFallback class="rounded-lg">{{ userInitials }}</AvatarFallback>

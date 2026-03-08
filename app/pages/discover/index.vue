@@ -75,6 +75,7 @@ interface ApiResponse {
     member_count: number;
     require_approval: boolean;
     is_member: boolean;
+    has_pending_request: boolean;
   }[];
   total: number;
 }
@@ -90,6 +91,21 @@ const { data, pending, refresh } = await useAsyncData<ApiResponse>(
   { watch: [fetchQuery] }
 );
 
+// Track communities where the current user has a pending approval request
+// Seeded from the API on every fetch, then optimistically updated on join
+const pendingRequestIds = ref<Set<string>>(new Set());
+
+watch(
+  data,
+  (val) => {
+    if (!val) return;
+    pendingRequestIds.value = new Set(
+      val.communities.filter((c) => c.has_pending_request).map((c) => c.id)
+    );
+  },
+  { immediate: true }
+);
+
 const communities = computed<Community[]>(() =>
   (data.value?.communities ?? []).map((c) => ({
     id: c.id,
@@ -101,7 +117,8 @@ const communities = computed<Community[]>(() =>
     iconImage: c.icon_url,
     type: c.category,
     requiresApproval: c.require_approval,
-    isMember: c.is_member
+    isMember: c.is_member,
+    isPendingRequest: pendingRequestIds.value.has(c.id)
   }))
 );
 
@@ -116,17 +133,41 @@ const onlineNow = computed(() => Math.floor(totalMembers.value * 0.08));
 
 // ─── Join ──────────────────────────────────────────────────────────────────────
 
+interface JoinResult {
+  joined: boolean;
+  pending: boolean;
+  slug: string;
+  member_count: number;
+}
+
+const router = useRouter();
+
 const handleJoin = async (communityId: string, isRequest: boolean) => {
   try {
-    await api(`/api/communities/${communityId}/join`, { method: "POST" });
-    if (isRequest) {
+    const result = await api<JoinResult>(`/api/communities/${communityId}/join`, {
+      method: "POST"
+    });
+
+    if (result.joined) {
+      // Direct join → navigate to community dashboard with welcome flag
+      await router.push(`/community/${communityId}?welcome=1`);
+    } else if (result.pending) {
+      // Mark locally as pending so the button updates immediately
+      pendingRequestIds.value = new Set([...pendingRequestIds.value, communityId]);
       toast.success("Join request sent! Waiting for admin approval.");
     } else {
-      toast.success("You joined the community!");
+      // Already a member
+      refresh();
     }
-    refresh();
   } catch (err: any) {
-    toast.error(err?.data?.message ?? "Failed to join community.");
+    const status = err?.status ?? err?.statusCode;
+    if (status === 409) {
+      // Pending request already exists — sync local state so the button reflects it
+      pendingRequestIds.value = new Set([...pendingRequestIds.value, communityId]);
+      toast.info("You already have a pending request for this community.");
+    } else {
+      toast.error(err?.data?.message ?? "Failed to join community.");
+    }
   }
 };
 

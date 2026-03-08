@@ -13,6 +13,12 @@
       class="absolute -right-20 -bottom-20 size-96 rounded-full bg-primary/10 opacity-50 blur-3xl"
     />
 
+    <!-- Top-right utility bar: notifications + profile -->
+    <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+      <NotificationModal />
+      <NavUser />
+    </div>
+
     <!-- Main Content - Centered -->
     <div class="relative flex flex-1 items-center justify-center px-6">
       <div class="w-full max-w-2xl space-y-10 text-center">
@@ -88,6 +94,8 @@
 
 <script setup lang="ts">
 import { Plus, Link2, ArrowRight, Compass, Zap } from "lucide-vue-next";
+import NotificationModal from "~/components/NotificationModal.vue";
+import NavUser from "~/components/nav/user.vue";
 
 definePageMeta({
   layout: "entry"
