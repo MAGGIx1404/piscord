@@ -88,8 +88,6 @@
 
 <script setup lang="ts">
 import { Plus, Link2, ArrowRight, Compass, Zap } from "lucide-vue-next";
-import NotificationModal from "~/components/NotificationModal.vue";
-import NavUser from "~/components/nav/user.vue";
 </script>
 
 <style scoped>

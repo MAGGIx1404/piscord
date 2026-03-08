@@ -150,6 +150,11 @@ if (error.value) {
   throw createError({ statusCode: 404, statusMessage: "Community not found" });
 }
 
+// Track last visited community so the home page can redirect here
+if (import.meta.client) {
+  localStorage.setItem("lastCommunityId", communityId);
+}
+
 // ─── Derived state ────────────────────────────────────────────────────────────
 
 const community = computed(() => data.value?.community ?? null);

@@ -13,7 +13,7 @@
       <NotificationModal>
         <template #trigger="{ unreadCount }">
           <button
-            class="group relative grid h-10 w-10 place-items-center rounded-xl border border-border/60 bg-card shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:scale-[1.08] hover:border-border hover:bg-accent sm:h-11 sm:w-11"
+            class="group relative grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-border/60 bg-card shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:scale-[1.08] hover:border-border hover:bg-accent sm:h-11 sm:w-11"
             aria-label="Notifications"
           >
             <Bell
@@ -38,7 +38,7 @@
       <NavDockIcon :icon="SettingsIcon" label="Settings" to="/me/settings" />
       <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
       <button
-        class="group relative grid h-10 w-10 place-items-center rounded-xl border border-border/60 bg-card shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:scale-[1.08] hover:border-border hover:bg-accent sm:h-11 sm:w-11"
+        class="group relative grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-border/60 bg-card shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:scale-[1.08] hover:border-border hover:bg-accent sm:h-11 sm:w-11"
         :aria-label="isDark ? 'Switch to light' : 'Switch to dark'"
         @click="toggleTheme"
       >
