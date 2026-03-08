@@ -177,6 +177,7 @@
   * {
     @apply border-border outline-ring/50;
     font-family: var(--font-sans);
+    letter-spacing: var(--tracking-normal);
   }
   body {
     @apply bg-background text-foreground;
@@ -205,32 +206,7 @@
 -------------------------------- */
 
 .tiptap-prose {
-  @apply prose
-    max-w-none
-    prose-headings:font-semibold
-    prose-headings:tracking-tight
-    prose-headings:text-foreground
-    prose-h1:text-3xl
-    prose-h2:text-2xl
-    prose-h3:text-xl
-    prose-strong:text-foreground
-    prose-img:rounded-lg
-    prose-a:underline-offset-4
-    prose-a:cursor-pointer
-    prose-headings:font-inter
-    prose-p:font-inter
-    prose-table:font-inter
-    prose-code:font-inter
-    prose-pre:font-inter
-    prose-li:font-inter
-    prose-strong:font-inter
-    prose-blockquote:font-inter
-    prose-a:font-inter
-    prose-blockquote:rounded-md
-    prose-blockquote:border-muted
-    prose-blockquote:bg-muted
-    prose-pre:bg-accent
-    prose-pre:text-foreground;
+  @apply prose max-w-none prose-headings:font-inter prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-p:font-inter prose-a:cursor-pointer prose-a:font-inter prose-a:underline-offset-4 prose-blockquote:rounded-md prose-blockquote:border-muted prose-blockquote:bg-muted prose-blockquote:font-inter prose-strong:font-inter prose-strong:text-foreground prose-code:font-inter prose-pre:bg-accent prose-pre:font-inter prose-pre:text-foreground prose-li:font-inter prose-table:font-inter prose-img:rounded-lg;
 }
 
 /* Base text colors */

@@ -1,11 +1,11 @@
 <template>
-  <main class="w-full min-h-screen relative -mb-5">
+  <main class="relative -mb-5 min-h-screen w-full">
     <!-- Minimal Header Bar -->
-    <div class="sticky px-6 top-0 z-20 bg-background/90 backdrop-blur-xl border-b border-border/50">
+    <div class="sticky top-0 z-20 border-b border-border/50 bg-background/90 px-6 backdrop-blur-xl">
       <div class="flex items-center justify-between py-3">
         <!-- Left: Breadcrumb & Title -->
         <div class="flex items-center gap-3">
-          <div class="size-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+          <div class="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10">
             <FileText class="size-4 text-emerald-500" />
           </div>
           <div>
@@ -14,9 +14,9 @@
               <Badge
                 variant="outline"
                 class="text-xs"
-                :class="workspace.isPublic ? 'text-emerald-500 border-emerald-500/30' : ''"
+                :class="workspace.isPublic ? 'border-emerald-500/30 text-emerald-500' : ''"
               >
-                <component :is="workspace.isPublic ? Globe : Lock" class="size-3 mr-1" />
+                <component :is="workspace.isPublic ? Globe : Lock" class="mr-1 size-3" />
                 {{ workspace.isPublic ? "Public" : "Private" }}
               </Badge>
             </div>
@@ -25,39 +25,41 @@
         </div>
 
         <!-- Center: Active Collaborators -->
-        <div class="hidden md:flex items-center gap-2">
+        <div class="hidden items-center gap-2 md:flex">
           <div class="flex -space-x-2">
-            <Tooltip v-for="user in activeUsers.slice(0, 4)" :key="user.id">
-              <TooltipTrigger>
-                <Avatar
-                  class="size-7 ring-2 ring-background hover:ring-primary transition-all hover:z-10 cursor-pointer"
-                >
-                  <AvatarImage :src="user.avatar" />
-                  <AvatarFallback class="text-xs">{{ user.initials }}</AvatarFallback>
-                </Avatar>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p class="text-xs">{{ user.name }}</p>
-              </TooltipContent>
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip v-for="user in activeUsers.slice(0, 4)" :key="user.id">
+                <TooltipTrigger>
+                  <Avatar
+                    class="size-7 cursor-pointer ring-2 ring-background transition-all hover:z-10 hover:ring-primary"
+                  >
+                    <AvatarImage :src="user.avatar" />
+                    <AvatarFallback class="text-xs">{{ user.initials }}</AvatarFallback>
+                  </Avatar>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p class="text-xs">{{ user.name }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <div
               v-if="activeUsers.length > 4"
-              class="size-7 rounded-full bg-muted ring-2 ring-background flex items-center justify-center text-xs font-medium"
+              class="flex size-7 items-center justify-center rounded-full bg-muted text-xs font-medium ring-2 ring-background"
             >
               +{{ activeUsers.length - 4 }}
             </div>
           </div>
-          <span class="text-xs text-muted-foreground ml-1">{{ activeUsers.length }} online</span>
+          <span class="ml-1 text-xs text-muted-foreground">{{ activeUsers.length }} online</span>
         </div>
 
         <!-- Right: Actions -->
         <div class="flex items-center gap-2">
-          <Button variant="ghost" size="sm" class="hidden sm:flex gap-1.5 text-muted-foreground">
+          <Button variant="ghost" size="sm" class="hidden gap-1.5 text-muted-foreground sm:flex">
             <MessageSquare class="size-4" />
             <span>{{ workspace.comments }}</span>
           </Button>
           <Button variant="outline" size="sm" @click="handleShare">
-            <Share2 class="size-4 mr-1.5" />
+            <Share2 class="mr-1.5 size-4" />
             Share
           </Button>
           <DropdownMenu>
@@ -91,7 +93,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="relative flex justify-center py-8 pb-10 px-6">
+    <div class="relative flex justify-center px-6 py-8 pb-10">
       <!-- Editor content -->
       <ClientOnly>
         <WorkspaceEditor v-model="content" />
@@ -99,21 +101,21 @@
     </div>
 
     <!-- Bottom Status Bar -->
-    <div class="sticky bottom-0 left-0 right-0 z-20">
-      <div class="max-w-4xl mx-auto px-6">
+    <div class="sticky right-0 bottom-0 left-0 z-20">
+      <div class="mx-auto max-w-4xl px-6">
         <div
-          class="bg-card/95 backdrop-blur-xl border border-border/50 border-b-0 rounded-t-xl shadow-lg px-4 py-2 flex items-center gap-4"
+          class="flex items-center gap-4 rounded-t-xl border border-b-0 border-border/50 bg-card/95 px-4 py-2 shadow-lg backdrop-blur-xl"
         >
           <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <div class="size-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div class="size-2 animate-pulse rounded-full bg-emerald-500" />
             <span>Saved</span>
           </div>
           <Separator orientation="vertical" class="h-4" />
-          <span class="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Type class="size-3" />
             {{ documentInfo.wordCount }} words
           </span>
-          <span class="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Clock class="size-3" />
             {{ documentInfo.readingTime }} read
           </span>

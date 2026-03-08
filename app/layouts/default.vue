@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen w-full flex-col p-4 pt-0">
+  <div class="flex min-h-screen w-full flex-col p-4">
     <slot />
     <AppDock />
   </div>

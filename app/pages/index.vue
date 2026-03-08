@@ -1,5 +1,5 @@
 <template>
-  <main class="relative mt-4 flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden">
+  <main class="relative flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden">
     <!-- Full Page Background -->
     <div
       class="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-br from-primary/5 via-transparent to-primary/10"
