@@ -1,11 +1,10 @@
 export { default as CommunityAbout } from "./CommunityAbout.vue";
+export { default as CommunityActivity } from "./CommunityActivity.vue";
 export { default as CommunityAIAgent } from "./CommunityAIAgent.vue";
 export { default as CommunityBanner } from "./CommunityBanner.vue";
 export { default as CommunityChannelGrid } from "./CommunityChannelGrid.vue";
 export { default as CommunityMemberList } from "./CommunityMemberList.vue";
-export { default as CommunityOnlineNow } from "./CommunityOnlineNow.vue";
 export { default as CommunityPulse } from "./CommunityPulse.vue";
-export { default as CommunityRolesFilter } from "./CommunityRolesFilter.vue";
 export { default as CommunityRules } from "./CommunityRules.vue";
 export { default as CommunityStatsBar } from "./CommunityStatsBar.vue";
 export { default as CommunityWorkspaces } from "./CommunityWorkspaces.vue";

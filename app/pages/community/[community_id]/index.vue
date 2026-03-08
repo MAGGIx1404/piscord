@@ -50,6 +50,9 @@
 
           <!-- Center wide column -->
           <div class="col-span-12 space-y-5 lg:col-span-6">
+            <!-- Activity feed + join request moderation -->
+            <CommunityActivity :community-id="communityId" />
+
             <!-- Channels Grid -->
             <CommunityChannelGrid
               :channels="[]"
@@ -60,22 +63,11 @@
 
           <!-- Right column - members focus -->
           <div class="col-span-12 space-y-5 lg:col-span-3">
-            <!-- Online Now -->
-            <CommunityOnlineNow
-              :online-members="onlineMembers"
-              @select-member="handleSelectMember"
-            />
-
-            <!-- Roles Filter -->
-            <CommunityRolesFilter
-              :roles="memberRoles.filter((r) => r.id !== 'all')"
-              v-model:selected-role="selectedRole"
-            />
-
-            <!-- Member List -->
+            <!-- Member List (includes role filter + view-all modal) -->
             <CommunityMemberList
               :members="filteredMembers"
-              @view-all="handleViewAllMembers"
+              :roles="memberRoles"
+              :owner-id="community?.owner_id ?? ''"
               @select-member="handleSelectMember"
             />
           </div>
@@ -126,6 +118,7 @@ interface ApiMember {
   avatar_url: string | null;
   nickname: string | null;
   joined_at: string;
+  role_name: string;
 }
 
 interface ApiRole {
@@ -143,6 +136,7 @@ interface ApiOverview {
   members: ApiMember[];
   is_member: boolean;
   is_owner: boolean;
+  owner_id: string;
 }
 
 // ─── Fetch overview ───────────────────────────────────────────────────────────
@@ -212,43 +206,46 @@ const communityAbout = computed(() => ({
 // Rules
 const communityRules = computed(() => (community.value?.rules ?? []).map((r) => r.text));
 
-// Roles for filter (with "All" prepended)
-const memberRoles = computed(() => [
-  { id: "all", label: "All", count: community.value?.member_count ?? 0, dotColor: "bg-gray-500" },
-  ...roles.value.map((r) => ({
-    id: r.id,
-    label: r.name,
-    count: r.member_count,
-    dotColor: r.color ? "" : "bg-green-500",
-    color: r.color
-  }))
-]);
-
 // State
 const activeTab = ref("Overview");
-const selectedRole = ref("all");
-
-const onlineMembers = computed(() =>
-  members.value.slice(0, 5).map((m) => ({
-    id: m.user_id,
-    name: m.nickname ?? m.username,
-    avatar: m.avatar_url ?? "",
-    role: "member",
-    status: "Online",
-    online: true
-  }))
-);
 
 const filteredMembers = computed(() =>
   members.value.map((m) => ({
     id: m.user_id,
     name: m.nickname ?? m.username,
     avatar: m.avatar_url ?? "",
-    role: "member",
+    role: m.user_id === community.value?.owner_id ? "owner" : m.role_name || "member",
     status: "",
     online: false
   }))
 );
+
+// Roles for filter — counts derived from the resolved member list
+const memberRoles = computed(() => {
+  const all = filteredMembers.value;
+  const ownerCount = all.filter((m) => m.role === "owner").length;
+  return [
+    { id: "all", label: "All", count: all.length, dotColor: "bg-gray-500" },
+    ...(ownerCount > 0
+      ? [
+          {
+            id: "owner",
+            label: "Owner",
+            count: ownerCount,
+            dotColor: "bg-yellow-500",
+            color: "#eab308"
+          }
+        ]
+      : []),
+    ...roles.value.map((r) => ({
+      id: r.id,
+      label: r.name,
+      count: all.filter((m) => m.role.toLowerCase() === r.name.toLowerCase()).length,
+      dotColor: r.color ? "" : "bg-green-500",
+      color: r.color
+    }))
+  ];
+});
 
 // Helpers
 function formatNumber(n: number) {
@@ -281,6 +278,5 @@ const handleSelectWorkspace = (ws: any) => {};
 const handleCreateChannel = () => {};
 const handleSelectChannel = (ch: any) => {};
 const handleSelectMember = (m: any) => {};
-const handleViewAllMembers = () => {};
 const handleViewAgentProfile = () => {};
 </script>

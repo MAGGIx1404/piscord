@@ -525,6 +525,7 @@ export interface CommunityMemberPublic {
   avatar_url: string | null;
   nickname: string | null;
   joined_at: Date;
+  role_name: string;
 }
 
 export interface CommunityRole {
@@ -561,7 +562,7 @@ export async function getCommunityOverview(
 
   const communityId = row.id;
 
-  const [roles, memberRows, membership] = await Promise.all([
+  const [roles, memberRows, membership, memberRoleRows] = await Promise.all([
     db
       .selectFrom("roles")
       .select(["id", "name", "color", "position", "is_default"])
@@ -590,19 +591,46 @@ export async function getCommunityOverview(
       .select("id")
       .where("community_id", "=", communityId)
       .where("user_id", "=", userId)
-      .executeTakeFirst()
+      .executeTakeFirst(),
+
+    // Fetch every member→role assignment for this community
+    db
+      .selectFrom("member_roles as mr")
+      .innerJoin("roles as r", "r.id", "mr.role_id")
+      .select(["mr.member_id", "r.name as role_name", "r.is_default", "r.position"])
+      .where("r.community_id", "=", communityId)
+      .execute()
   ]);
 
-  // Count members per role (using is_default as proxy — owner = first member)
-  const totalMembers = memberRows.length;
-  const defaultRole = roles.find((r) => r.is_default);
-  const adminRole = roles.find((r) => !r.is_default);
+  // Build member_id → highest role name map, using position as priority
+  // (higher position = more privileged; Admin=1 > Member=0 in seed data)
+  const memberRolePriorityMap = new Map<string, { name: string; position: number }>();
+  for (const mr of memberRoleRows) {
+    const pos = Number(mr.position ?? 0);
+    const current = memberRolePriorityMap.get(mr.member_id as string);
+    if (!current || pos > current.position) {
+      memberRolePriorityMap.set(mr.member_id as string, {
+        name: mr.role_name as string,
+        position: pos
+      });
+    }
+  }
+  const memberRoleMap = new Map([...memberRolePriorityMap.entries()].map(([k, v]) => [k, v.name]));
+
+  // Count per role: every member who has that role assigned (direct count, not primary-only)
+  const roleMemberCount = new Map<string, number>();
+  for (const mr of memberRoleRows) {
+    const roleObj = roles.find((r) => r.name === (mr.role_name as string));
+    if (roleObj) {
+      roleMemberCount.set(roleObj.id, (roleMemberCount.get(roleObj.id) ?? 0) + 1);
+    }
+  }
 
   const rolesWithCount: CommunityRole[] = roles.map((r) => ({
     ...r,
     position: r.position as unknown as number,
     is_default: r.is_default as unknown as boolean,
-    member_count: r.is_default ? totalMembers : 1
+    member_count: roleMemberCount.get(r.id) ?? 0
   }));
 
   const community: PublicCommunity = {
@@ -618,7 +646,10 @@ export async function getCommunityOverview(
   return {
     community,
     roles: rolesWithCount,
-    members: memberRows as unknown as CommunityMemberPublic[],
+    members: memberRows.map((m) => ({
+      ...m,
+      role_name: memberRoleMap.get(m.id) ?? "member"
+    })) as unknown as CommunityMemberPublic[],
     is_member: !!membership,
     is_owner: row.owner_id === userId
   };
