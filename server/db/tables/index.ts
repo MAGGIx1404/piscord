@@ -146,6 +146,8 @@ export interface CommunityJoinRequestsTable {
   /** Admin/mod who reviewed the request – NULL until actioned */
   reviewed_by: string | null;
   reviewed_at: Date | null;
+  /** Set to now() when the user opens the notification modal and sees the result */
+  notified_at: Date | null;
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, never>;
 }

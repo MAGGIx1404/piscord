@@ -19,7 +19,7 @@
 
     <DialogContent class="flex max-h-[80vh] max-w-md flex-col gap-0 overflow-hidden p-0">
       <!-- Header -->
-      <div class="flex items-center justify-between border-b border-border px-5 py-4">
+      <div class="flex items-start justify-between border-b border-border px-5 py-4 pr-10">
         <div class="flex items-center gap-2.5">
           <div class="flex size-8 items-center justify-center rounded-lg bg-primary/10">
             <Bell class="size-4 text-primary" />
@@ -137,9 +137,14 @@ const { data, pending, refresh } = await useAsyncData<ApiResponse>(
   { server: false }
 );
 
-// Refresh when modal opens
-watch(open, (val) => {
-  if (val) refresh();
+// Refresh on open; mark as notified on close
+watch(open, async (val) => {
+  if (val) {
+    refresh();
+  } else if (unreadCount.value > 0) {
+    await api("/api/users/me/join-requests", { method: "PATCH" });
+    refresh();
+  }
 });
 
 const requests = computed(() => data.value?.requests ?? []);
@@ -207,9 +212,9 @@ const StatusBadge = defineComponent({
         Badge,
         {
           variant: "outline",
-          class: `shrink-0 gap-1 px-1.5 py-0 text-[10px] font-medium ${m.cls}`
+          class: `shrink-0 gap-1 px-1.5 py-0 text-[10px] font-medium ${m?.cls}`
         },
-        () => [h(m.icon, { class: "size-2.5" }), m.label]
+        () => [h(m?.icon, { class: "size-2.5" }), m?.label]
       );
     };
   }

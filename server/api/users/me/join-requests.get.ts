@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
       "jr.created_at",
       "jr.updated_at",
       "jr.reviewed_at",
+      "jr.notified_at",
       "c.id as community_id",
       "c.name as community_name",
       "c.slug as community_slug",
@@ -21,7 +22,9 @@ export default defineEventHandler(async (event) => {
     .orderBy("jr.updated_at", "desc")
     .execute();
 
-  const unreadCount = rows.filter((r) => r.status === "approved" || r.status === "rejected").length;
+  const unreadCount = rows.filter(
+    (r) => (r.status === "approved" || r.status === "rejected") && !r.notified_at
+  ).length;
 
   return { requests: rows, unreadCount };
 });

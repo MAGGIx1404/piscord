@@ -193,7 +193,7 @@
       </p>
       <button
         class="flex items-center gap-1 text-[11px] text-muted-foreground/60 transition-colors hover:text-foreground"
-        @click="refresh"
+        @click="handleRefresh"
       >
         <RefreshCw class="size-2.5" />
         Refresh
@@ -286,6 +286,10 @@ async function reviewRequest(requestId: string, action: "approve" | "reject") {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function handleRefresh() {
+  void refresh();
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
