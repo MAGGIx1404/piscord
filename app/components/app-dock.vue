@@ -1,14 +1,23 @@
 <template>
   <div class="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center">
     <div
-      class="flex items-center gap-2 rounded-[28px] border border-border/60 bg-card/80 px-3 py-2 shadow-lg backdrop-blur-xl sm:gap-3 sm:rounded-[48px] sm:px-4 sm:py-2.5"
+      class="flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 px-3 py-2 shadow-lg backdrop-blur-xl sm:gap-3 sm:px-4 sm:py-2.5"
     >
       <NavDockIcon :icon="LayoutDashboardIcon" label="Dashboard" to="/" />
       <NavDockIcon :icon="CompassIcon" label="Discover" to="/discover" />
       <NavDockIcon :icon="UsersIcon" label="Friends" to="/me" />
       <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
-      <NavDockIcon :icon="HashIcon" label="Channels" to="/me" />
-      <NavDockIcon :icon="LayersIcon" label="Workspaces" to="/me" />
+      <NavCommunitySwitcher />
+      <NavDockIcon
+        :icon="HashIcon"
+        label="Channels"
+        :to="currentCommunityId ? `/community/${currentCommunityId}/channels` : '/me'"
+      />
+      <NavDockIcon
+        :icon="LayersIcon"
+        label="Workspaces"
+        :to="currentCommunityId ? `/community/${currentCommunityId}/workspaces` : '/me'"
+      />
       <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
       <NotificationModal>
         <template #trigger="{ unreadCount }">
@@ -78,6 +87,8 @@ import {
 import NotificationModal from "~/components/NotificationModal.vue";
 
 const { enabled: isDark, toggleTheme } = useTheme();
+const communityStore = useCommunityStore();
+const currentCommunityId = computed(() => communityStore.currentCommunityId);
 </script>
 
 <style scoped>

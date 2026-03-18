@@ -145,6 +145,11 @@ const handleJoin = async (communityId: string, isRequest: boolean) => {
     });
 
     if (result.joined) {
+      // Refresh community store so the switcher includes the new community
+      const communityStore = useCommunityStore();
+      await communityStore.fetchCommunities();
+      communityStore.setCurrentCommunity(communityId);
+
       // Direct join → navigate to community dashboard with welcome flag
       await router.push(`/community/${communityId}?welcome=1`);
     } else if (result.pending) {

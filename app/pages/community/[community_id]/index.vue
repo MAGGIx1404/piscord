@@ -151,9 +151,8 @@ if (error.value) {
 }
 
 // Track last visited community so the home page can redirect here
-if (import.meta.client) {
-  localStorage.setItem("lastCommunityId", communityId);
-}
+const communityStore = useCommunityStore();
+communityStore.setCurrentCommunity(communityId);
 
 // ─── Derived state ────────────────────────────────────────────────────────────
 

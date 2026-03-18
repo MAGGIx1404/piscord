@@ -25,23 +25,22 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo("/auth/login");
   }
 
-  // When an authenticated user hits /, redirect to their last/first community.
+  // When an authenticated user hits /, redirect to their current/last community.
   // New users (no communities) stay on the landing page.
   if (to.path === "/" && isAuth) {
-    try {
-      const { communities } = await $fetch<{ communities: Array<{ id: string }> }>(
-        "/api/users/me/communities",
-        { headers: { Authorization: `Bearer ${userStore.accessToken}` } }
-      );
+    const communityStore = useCommunityStore();
 
-      if (communities.length > 0) {
-        const lastId = import.meta.client ? localStorage.getItem("lastCommunityId") : null;
-        const target =
-          lastId && communities.some((c) => c.id === lastId) ? lastId : communities[0].id;
-        return navigateTo(`/community/${target}`, { replace: true });
-      }
-    } catch {
-      // API error — show landing page
+    // If the store hasn't loaded yet (edge case), fetch now
+    if (!communityStore.loaded) {
+      await communityStore.fetchCommunities();
     }
+
+    if (communityStore.currentCommunityId) {
+      return navigateTo(`/community/${communityStore.currentCommunityId}`, { replace: true });
+    } else if (communityStore.communities.length > 0) {
+      communityStore.setCurrentCommunity(communityStore.communities[0].id);
+      return navigateTo(`/community/${communityStore.communities[0].id}`, { replace: true });
+    }
+    // No communities — show the landing page
   }
 });

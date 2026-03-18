@@ -156,6 +156,58 @@ export type CommunityJoinRequest = Selectable<CommunityJoinRequestsTable>;
 export type NewCommunityJoinRequest = Insertable<CommunityJoinRequestsTable>;
 export type CommunityJoinRequestUpdate = Updateable<CommunityJoinRequestsTable>;
 
+// ─── Channels ───────────────────────────────────────────────────────────────
+
+export type ChannelType = "text" | "voice" | "announcement" | "category";
+
+export interface ChannelsTable {
+  id: Generated<string>;
+  community_id: string;
+  /** Self-referencing FK — categories contain child channels */
+  parent_id: string | null;
+  type: ColumnType<ChannelType, ChannelType | undefined, ChannelType>;
+  name: string;
+  topic: string | null;
+  position: ColumnType<number, number | undefined, number>;
+  is_private: ColumnType<boolean, boolean | undefined, boolean>;
+  slowmode_seconds: ColumnType<number, number | undefined, number>;
+  last_message_at: Date | null;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type Channel = Selectable<ChannelsTable>;
+export type NewChannel = Insertable<ChannelsTable>;
+export type ChannelUpdate = Updateable<ChannelsTable>;
+
+// ─── Workspaces ─────────────────────────────────────────────────────────────
+
+export interface WorkspacesTable {
+  id: Generated<string>;
+  community_id: string;
+  created_by: string;
+  name: string;
+  emoji: string | null;
+  description: string | null;
+  is_public: ColumnType<boolean, boolean | undefined, boolean>;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type Workspace = Selectable<WorkspacesTable>;
+export type NewWorkspace = Insertable<WorkspacesTable>;
+export type WorkspaceUpdate = Updateable<WorkspacesTable>;
+
+// ─── Member Roles ───────────────────────────────────────────────────────────
+
+export interface MemberRolesTable {
+  member_id: string;
+  role_id: string;
+}
+
+export type MemberRole = Selectable<MemberRolesTable>;
+export type NewMemberRole = Insertable<MemberRolesTable>;
+
 // ─── Database ────────────────────────────────────────────────────────────────
 
 export interface Database {
@@ -166,4 +218,7 @@ export interface Database {
   community_members: CommunityMembersTable;
   notifications: NotificationsTable;
   community_join_requests: CommunityJoinRequestsTable;
+  channels: ChannelsTable;
+  workspaces: WorkspacesTable;
+  member_roles: MemberRolesTable;
 }

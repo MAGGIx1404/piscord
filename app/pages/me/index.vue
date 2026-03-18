@@ -4,10 +4,10 @@
     <div class="relative">
       <!-- Banner -->
       <div
-        class="h-40 w-full overflow-hidden bg-linear-to-br from-primary/30 via-primary/10 to-background sm:h-52"
+        class="h-40 w-full overflow-hidden rounded-xl bg-linear-to-br from-primary/30 via-primary/10 to-background sm:h-52"
       >
         <div
-          class="h-full w-full bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] [background-size:20px_20px]"
+          class="h-full w-full bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] bg-size-[20px_20px]"
         />
       </div>
 
