@@ -4,8 +4,6 @@ import type { PublicUser } from "../db/types";
 import path from "node:path";
 import fs from "node:fs/promises";
 
-// ─── Get current user ─────────────────────────────────────────────────────────
-
 export async function getCurrentUser(userId: string): Promise<PublicUser> {
   const user = await db
     .selectFrom("users")
@@ -19,8 +17,6 @@ export async function getCurrentUser(userId: string): Promise<PublicUser> {
 
   return user as PublicUser;
 }
-
-// ─── Update profile ────────────────────────────────────────────────────────────
 
 export async function updateCurrentUser(
   userId: string,
@@ -55,8 +51,6 @@ export async function updateCurrentUser(
 
   return updated as PublicUser;
 }
-
-// ─── Upload avatar ─────────────────────────────────────────────────────────────
 
 const AVATAR_DIR = path.resolve("public/images/avatar");
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);

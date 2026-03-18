@@ -1,5 +1,6 @@
 import { createChannel } from "../../../../services/channelService";
 import type { CreateChannelPayload } from "../../../../services/channelService";
+import type { ChannelType } from "../../../../db/tables";
 
 export default defineEventHandler(async (event) => {
   const userId = requireAuth(event);
@@ -19,7 +20,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Channel name must be 100 characters or less" });
   }
 
-  const validTypes = ["text", "voice", "announcement", "category"];
+  const validTypes: ChannelType[] = ["text", "voice", "announcement", "category"];
   if (body.type && !validTypes.includes(body.type)) {
     throw createError({
       statusCode: 400,

@@ -11,8 +11,8 @@ export function generateTotpSecret(): { base32: string; otpauth_url: string } {
     length: 20
   });
   return {
-    base32: secret.base32 as string,
-    otpauth_url: secret.otpauth_url as string
+    base32: secret.base32,
+    otpauth_url: secret.otpauth_url
   };
 }
 
@@ -27,7 +27,7 @@ export async function buildTotpSetupResult(
     encoding: "base32"
   });
 
-  const qr_code = await QRCode.toDataURL(otpauth as string);
+  const qr_code = await QRCode.toDataURL(otpauth);
 
   return { qr_code, secret: base32 };
 }
@@ -38,5 +38,5 @@ export function verifyTotpCode(secret: string, token: string): boolean {
     encoding: "base32",
     token,
     window: 1
-  }) as boolean;
+  });
 }

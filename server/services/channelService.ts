@@ -2,11 +2,9 @@ import { createError } from "h3";
 import { db, generateId } from "../db";
 import type { ChannelType } from "../db/tables";
 
-// ─── Permission bitmask ─────────────────────────────────────────────────────
+// Permission bitmask
 // 4 = manage_channels
 const MANAGE_CHANNELS = 4;
-
-// ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface CreateChannelPayload {
   name: string;
@@ -32,8 +30,6 @@ export interface ChannelListResult {
   channels: ChannelItem[];
   can_manage: boolean;
 }
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 async function requireMembership(communityId: string, userId: string) {
   const membership = await db
@@ -64,7 +60,6 @@ async function checkCanManage(communityId: string, userId: string): Promise<bool
 
   if (community.owner_id === userId) return true;
 
-  // Check role permissions
   const membership = await db
     .selectFrom("community_members")
     .select("id")
@@ -84,8 +79,6 @@ async function checkCanManage(communityId: string, userId: string): Promise<bool
 
   return roleRow.some((r) => ((r.permissions as number) & MANAGE_CHANNELS) !== 0);
 }
-
-// ─── Get channels by community ─────────────────────────────────────────────
 
 export async function getChannelsByCommunity(
   communityId: string,
@@ -116,13 +109,11 @@ export async function getChannelsByCommunity(
     channels: rows.map((r) => ({
       ...r,
       position: r.position as number,
-      is_private: r.is_private as unknown as boolean
+      is_private: r.is_private
     })),
     can_manage: canManage
   };
 }
-
-// ─── Create channel ─────────────────────────────────────────────────────────
 
 export async function createChannel(
   communityId: string,
@@ -134,7 +125,6 @@ export async function createChannel(
     throw createError({ statusCode: 403, message: "You don't have permission to create channels" });
   }
 
-  // Validate parent_id if provided (must be a category in the same community)
   if (payload.parent_id) {
     const parent = await db
       .selectFrom("channels")
@@ -151,7 +141,6 @@ export async function createChannel(
     }
   }
 
-  // Get max position for ordering
   const maxPos = await db
     .selectFrom("channels")
     .select(db.fn.max("position").as("max_pos"))
@@ -194,6 +183,6 @@ export async function createChannel(
   return {
     ...channel,
     position: channel.position as number,
-    is_private: channel.is_private as unknown as boolean
+    is_private: channel.is_private
   };
 }
