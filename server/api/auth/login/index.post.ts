@@ -1,9 +1,5 @@
 import { loginUser } from "../../../services/authService";
 
-/**
- * POST /api/auth/login
- * Body: { email, password }
- */
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email?: string; password?: string }>(event);
   const { email, password } = body ?? {};
@@ -18,11 +14,9 @@ export default defineEventHandler(async (event) => {
   const result = await loginUser(email.trim().toLowerCase(), password);
 
   if ("requires2FA" in result) {
-    // Tell the client to call /api/auth/2fa/verify next
     return { requires_2fa: true, user_id: result.userId };
   }
 
-  // Set refresh token as HTTP-only cookie
   setCookie(event, "refresh_token", result.refresh_token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

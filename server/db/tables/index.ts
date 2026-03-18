@@ -1,7 +1,5 @@
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from "kysely";
 
-// ─── Users ──────────────────────────────────────────────────────────────────
-
 export interface UsersTable {
   id: Generated<string>;
   username: string;
@@ -18,8 +16,6 @@ export type User = Selectable<UsersTable>;
 export type NewUser = Insertable<UsersTable>;
 export type UserUpdate = Updateable<UsersTable>;
 
-// ─── Refresh Sessions ────────────────────────────────────────────────────────
-
 export interface RefreshSessionsTable {
   id: Generated<string>;
   user_id: string;
@@ -30,8 +26,6 @@ export interface RefreshSessionsTable {
 
 export type RefreshSession = Selectable<RefreshSessionsTable>;
 export type NewRefreshSession = Insertable<RefreshSessionsTable>;
-
-// ─── Communities ─────────────────────────────────────────────────────────────
 
 export interface CommunitiesTable {
   id: Generated<string>;
@@ -62,8 +56,6 @@ export type Community = Selectable<CommunitiesTable>;
 export type NewCommunity = Insertable<CommunitiesTable>;
 export type CommunityUpdate = Updateable<CommunitiesTable>;
 
-// ─── Roles ───────────────────────────────────────────────────────────────────
-
 export interface RolesTable {
   id: Generated<string>;
   community_id: string;
@@ -78,8 +70,6 @@ export interface RolesTable {
 export type Role = Selectable<RolesTable>;
 export type NewRole = Insertable<RolesTable>;
 
-// ─── Community Members ────────────────────────────────────────────────────────
-
 export interface CommunityMembersTable {
   id: Generated<string>;
   community_id: string;
@@ -90,8 +80,6 @@ export interface CommunityMembersTable {
 
 export type CommunityMember = Selectable<CommunityMembersTable>;
 export type NewCommunityMember = Insertable<CommunityMembersTable>;
-
-// ─── Notifications ───────────────────────────────────────────────────────────
 
 export type NotificationType =
   | "friend_request"
@@ -131,8 +119,6 @@ export type Notification = Selectable<NotificationsTable>;
 export type NewNotification = Insertable<NotificationsTable>;
 export type NotificationUpdate = Updateable<NotificationsTable>;
 
-// ─── Community Join Requests ──────────────────────────────────────────────────
-
 export type CommunityJoinRequestStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export interface CommunityJoinRequestsTable {
@@ -156,8 +142,6 @@ export type CommunityJoinRequest = Selectable<CommunityJoinRequestsTable>;
 export type NewCommunityJoinRequest = Insertable<CommunityJoinRequestsTable>;
 export type CommunityJoinRequestUpdate = Updateable<CommunityJoinRequestsTable>;
 
-// ─── Channels ───────────────────────────────────────────────────────────────
-
 export type ChannelType = "text" | "voice" | "announcement" | "category";
 
 export interface ChannelsTable {
@@ -179,8 +163,6 @@ export interface ChannelsTable {
 export type Channel = Selectable<ChannelsTable>;
 export type NewChannel = Insertable<ChannelsTable>;
 export type ChannelUpdate = Updateable<ChannelsTable>;
-
-// ─── Workspaces ─────────────────────────────────────────────────────────────
 
 export interface WorkspacesTable {
   id: Generated<string>;
@@ -207,8 +189,6 @@ export interface MemberRolesTable {
 
 export type MemberRole = Selectable<MemberRolesTable>;
 export type NewMemberRole = Insertable<MemberRolesTable>;
-
-// ─── Database ────────────────────────────────────────────────────────────────
 
 export interface Database {
   users: UsersTable;

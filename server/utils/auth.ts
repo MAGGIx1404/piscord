@@ -1,11 +1,6 @@
 import { getHeader, createError, type H3Event } from "h3";
 import { verifyAccessToken } from "./jwt";
 
-/**
- * Reads the Bearer token from the Authorization header,
- * verifies it, and returns the userId.
- * Throws 401 if missing or invalid.
- */
 export function requireAuth(event: H3Event): string {
   const header = getHeader(event, "authorization") ?? "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : null;

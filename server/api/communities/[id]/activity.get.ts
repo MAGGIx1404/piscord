@@ -8,7 +8,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Community ID is required" });
   }
 
-  // Verify community exists and grab ownership info
   const community = await db
     .selectFrom("communities")
     .select(["id", "owner_id", "require_approval"])
@@ -21,7 +20,6 @@ export default defineEventHandler(async (event) => {
 
   const isOwner = community.owner_id === userId;
 
-  // ─── Recent activity: latest 30 members who joined ────────────────────────
   const recentJoins = await db
     .selectFrom("community_members as cm")
     .innerJoin("users as u", "u.id", "cm.user_id")
@@ -31,7 +29,6 @@ export default defineEventHandler(async (event) => {
     .limit(30)
     .execute();
 
-  // ─── Pending join requests (owner only) ───────────────────────────────────
   const joinRequests =
     isOwner && community.require_approval
       ? await db
