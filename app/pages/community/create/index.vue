@@ -85,8 +85,6 @@
           <CreateTips :current-step="currentStep" />
         </div>
       </div>
-
-      {{ form.visibility + " " + form.requireApproval }}
     </div>
   </main>
 </template>
