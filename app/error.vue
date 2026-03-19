@@ -1,5 +1,5 @@
 <template>
-  <div class="relative flex h-screen items-center justify-center overflow-hidden bg-background">
+  <div class="relative flex h-screen items-center justify-center overflow-hidden bg-black">
     <Card class="relative z-3 max-w-5xl">
       <video
         src="/video/error.mp4"

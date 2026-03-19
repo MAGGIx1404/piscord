@@ -3,10 +3,10 @@
     <PopoverTrigger as-child>
       <button
         class="group relative grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-border/60 bg-card shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:scale-[1.08] hover:border-border hover:bg-accent sm:h-11 sm:w-11"
-        :class="currentCommunity ? 'border-primary/40 bg-primary/10' : ''"
         aria-label="Switch community"
+        :disabled="communities.length === 0"
       >
-        <Avatar v-if="currentCommunity" class="size-6 rounded-lg">
+        <Avatar v-if="currentCommunity" class="size-8 rounded-lg">
           <AvatarImage :src="currentCommunity.icon_url ?? ''" />
           <AvatarFallback class="rounded-lg text-[10px] font-semibold">
             {{ currentCommunity.name.charAt(0).toUpperCase() }}

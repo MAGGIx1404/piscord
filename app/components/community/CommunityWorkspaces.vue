@@ -9,7 +9,7 @@
     </div>
 
     <!-- List -->
-    <div class="space-y-1">
+    <div class="w-full space-y-1">
       <button
         v-for="workspace in workspaces"
         :key="workspace.id"

@@ -45,7 +45,7 @@
             <CommunityRules :rules="communityRules" />
 
             <!-- Workspaces -->
-            <CommunityWorkspaces :workspaces="[]" @select="handleSelectWorkspace" />
+            <CommunityWorkspaces :workspaces="mappedWorkspaces" @select="handleSelectWorkspace" />
           </div>
 
           <!-- Center wide column -->
@@ -55,7 +55,7 @@
 
             <!-- Channels Grid -->
             <CommunityChannelGrid
-              :channels="[]"
+              :channels="mappedChannels"
               @create="handleCreateChannel"
               @select="handleSelectChannel"
             />
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { Users, MessageSquare, Hash, Layers } from "lucide-vue-next";
+import { Users, MessageSquare, Hash, Layers, Mic, Megaphone, FolderOpen } from "lucide-vue-next";
 import { markRaw as markRawVue } from "vue";
 import { toast } from "vue-sonner";
 
@@ -150,6 +150,40 @@ if (error.value) {
   throw createError({ statusCode: 404, statusMessage: "Community not found" });
 }
 
+// ─── Fetch channels & workspaces ─────────────────────────────────────────────
+
+interface ApiChannel {
+  id: string;
+  name: string;
+  type: string;
+  topic: string | null;
+  position: number;
+  is_private: boolean;
+  parent_id: string | null;
+  last_message_at: string | null;
+  created_at: string;
+}
+
+interface ApiWorkspace {
+  id: string;
+  name: string;
+  emoji: string | null;
+  description: string | null;
+  is_public: boolean;
+  created_by: string;
+  created_at: string;
+}
+
+const { data: channelsData } = await useAsyncData(`community-channels-${communityId}`, () =>
+  api<{ channels: ApiChannel[]; can_manage: boolean }>(`/api/communities/${communityId}/channels`)
+);
+
+const { data: workspacesData } = await useAsyncData(`community-workspaces-${communityId}`, () =>
+  api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
+    `/api/communities/${communityId}/workspaces`
+  )
+);
+
 // Track last visited community so the home page can redirect here
 const communityStore = useCommunityStore();
 communityStore.setCurrentCommunity(communityId);
@@ -159,6 +193,58 @@ communityStore.setCurrentCommunity(communityId);
 const community = computed(() => data.value?.community ?? null);
 const members = computed(() => data.value?.members ?? []);
 const roles = computed(() => data.value?.roles ?? []);
+
+// Channel type → icon/color mapping
+const defaultChannelStyle = {
+  icon: markRawVue(Hash),
+  bg: "bg-blue-500/20",
+  color: "text-blue-500"
+};
+
+function getChannelStyle(type: string) {
+  const styles: Record<string, typeof defaultChannelStyle> = {
+    text: defaultChannelStyle,
+    voice: { icon: markRawVue(Mic), bg: "bg-green-500/20", color: "text-green-500" },
+    announcement: { icon: markRawVue(Megaphone), bg: "bg-amber-500/20", color: "text-amber-500" },
+    category: { icon: markRawVue(FolderOpen), bg: "bg-purple-500/20", color: "text-purple-500" }
+  };
+  return styles[type] ?? defaultChannelStyle;
+}
+
+// Map API channels → CommunityChannelGrid format
+const mappedChannels = computed(() =>
+  (channelsData.value?.channels ?? []).map((ch) => {
+    const s = getChannelStyle(ch.type);
+    return {
+      id: ch.id,
+      name: ch.name,
+      icon: s.icon,
+      iconBg: s.bg,
+      iconColor: s.color,
+      lastActivity: ch.last_message_at ? "Active" : "",
+      messageCount: "--"
+    };
+  })
+);
+
+// Workspace color palette
+const wsColors = [
+  "bg-primary/20 text-primary",
+  "bg-blue-500/20 text-blue-500",
+  "bg-purple-500/20 text-purple-500",
+  "bg-amber-500/20 text-amber-500"
+] as const;
+
+// Map API workspaces → CommunityWorkspaces format
+const mappedWorkspaces = computed(() =>
+  (workspacesData.value?.workspaces ?? []).map((ws, i) => ({
+    id: ws.id,
+    name: ws.name,
+    icon: markRawVue(Layers),
+    color: wsColors[i % wsColors.length] as string,
+    channelCount: 0
+  }))
+);
 
 // Banner/header props
 const communityBannerProps = computed(() => ({
@@ -177,8 +263,16 @@ const quickStats = computed(() => [
     label: "Members"
   },
   { icon: markRawVue(MessageSquare), value: "—", label: "Messages" },
-  { icon: markRawVue(Hash), value: "—", label: "Channels" },
-  { icon: markRawVue(Layers), value: "—", label: "Workspaces" }
+  {
+    icon: markRawVue(Hash),
+    value: formatNumber(channelsData.value?.channels?.length ?? 0),
+    label: "Channels"
+  },
+  {
+    icon: markRawVue(Layers),
+    value: formatNumber(workspacesData.value?.workspaces?.length ?? 0),
+    label: "Workspaces"
+  }
 ]);
 
 // AI Agent
@@ -278,9 +372,10 @@ onMounted(() => {
 const handleNotify = () => toast.info("Notifications toggled");
 const handleSettings = () => router.push(`/community/${communityId}/settings`);
 const handleInvite = () => toast.info("Invite link copied!");
-const handleSelectWorkspace = (ws: any) => {};
-const handleCreateChannel = () => {};
-const handleSelectChannel = (ch: any) => {};
+const handleSelectWorkspace = (ws: any) =>
+  router.push(`/community/${communityId}/workspaces/${ws.id}`);
+const handleCreateChannel = () => router.push(`/community/${communityId}/channels`);
+const handleSelectChannel = (ch: any) => router.push(`/community/${communityId}/channels/${ch.id}`);
 const handleSelectMember = (m: any) => {};
 const handleViewAgentProfile = () => {};
 </script>
