@@ -3,9 +3,17 @@
     class="group cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card/50 p-2 transition-all hover:border-border hover:shadow-lg hover:shadow-black/5"
     @click="$emit('select', channel)"
   >
-    <!-- Poster image placeholder -->
-    <div class="relative h-44 w-full overflow-hidden rounded-xl" :class="posterBg">
-      <div class="absolute inset-0 flex items-center justify-center">
+    <!-- Poster image / placeholder -->
+    <div class="relative h-44 w-full overflow-hidden rounded-xl" :class="!channel.banner_url ? posterBg : ''">
+      <!-- Actual banner image -->
+      <img
+        v-if="channel.banner_url"
+        :src="channel.banner_url"
+        :alt="channel.name"
+        class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+      <!-- Fallback icon -->
+      <div v-else class="absolute inset-0 flex items-center justify-center">
         <component :is="icon" class="size-10" :class="iconColor" />
       </div>
 
@@ -64,7 +72,7 @@
         <!-- Message count -->
         <div class="flex items-center gap-1 text-muted-foreground/50">
           <MessageSquare class="size-3.5" />
-          <span class="text-[11px] font-medium">--</span>
+          <span class="text-[11px] font-medium tabular-nums">{{ formatCount(channel.message_count) }}</span>
         </div>
       </div>
     </div>
@@ -75,16 +83,25 @@
 import { Lock, MoreVertical, MessageSquare } from "lucide-vue-next";
 import type { Component } from "vue";
 
+function formatCount(count: number): string {
+  if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+  if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+  return String(count);
+}
+
 export interface ChannelCardItem {
   id: string;
   name: string;
   type: string;
   topic: string | null;
+  description: string | null;
+  banner_url: string | null;
   position: number;
   is_private: boolean;
   parent_id: string | null;
   last_message_at: string | null;
   created_at: string;
+  message_count: number;
 }
 
 defineProps<{

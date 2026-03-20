@@ -44,6 +44,12 @@ export default defineNuxtConfig({
     priority: ["google"]
   },
 
+  nitro: {
+    experimental: {
+      websocket: true
+    }
+  },
+
   css: ["@/assets/css/main.css"],
 
   vite: {

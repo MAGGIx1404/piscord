@@ -122,19 +122,33 @@
         class="absolute -top-3 right-4 flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
       >
         <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="size-7"
-                @click="$emit('addReaction', message)"
-              >
-                <SmilePlus class="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">Add Reaction</TooltipContent>
-          </Tooltip>
+          <!-- Emoji Reaction Picker -->
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" class="size-7">
+                    <SmilePlus class="size-4" />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="top">Add Reaction</TooltipContent>
+            </Tooltip>
+            <PopoverContent class="w-auto p-2" side="top" align="start">
+              <div class="grid grid-cols-6 gap-1">
+                <button
+                  v-for="emoji in quickEmojis"
+                  :key="emoji"
+                  class="flex size-8 items-center justify-center rounded-md text-lg transition-colors hover:bg-accent"
+                  @click="
+                    $emit('react', { message, reaction: { emoji, count: 0, reacted: false } })
+                  "
+                >
+                  {{ emoji }}
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" class="size-7" @click="$emit('reply', message)">
@@ -219,7 +233,7 @@ interface Message {
   createdAt: string;
   isReply: boolean;
   messageId?: string;
-  reactions?: Reaction[];
+  reactions: Reaction[];
   isBot: boolean;
   workspaces?: ChatWorkspace[];
 }
@@ -254,4 +268,25 @@ const formattedTime = computed(() => {
     minute: "2-digit"
   });
 });
+
+const quickEmojis = [
+  "👍",
+  "👎",
+  "❤️",
+  "😂",
+  "😮",
+  "😢",
+  "🔥",
+  "🎉",
+  "👀",
+  "💯",
+  "✅",
+  "❌",
+  "🚀",
+  "💡",
+  "⭐",
+  "🙏",
+  "👏",
+  "🤔"
+];
 </script>

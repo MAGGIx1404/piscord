@@ -1,8 +1,9 @@
 import { logoutUser } from "../../../services/authService";
+import { clearAuthCookies } from "../../../utils/cookies";
 
 /**
  * POST /api/auth/logout
- * Reads refresh_token from cookie, revokes the session.
+ * Reads refresh_token from cookie, revokes the session, clears auth cookies.
  */
 export default defineEventHandler(async (event) => {
   const refreshToken = getCookie(event, "refresh_token");
@@ -11,7 +12,7 @@ export default defineEventHandler(async (event) => {
     await logoutUser(refreshToken);
   }
 
-  deleteCookie(event, "refresh_token", { path: "/" });
+  clearAuthCookies(event);
 
   return { success: true };
 });

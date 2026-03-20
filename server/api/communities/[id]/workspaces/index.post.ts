@@ -25,6 +25,7 @@ export default defineEventHandler(async (event) => {
   return createWorkspace(communityId, userId, {
     name: body.name.trim(),
     emoji: body.emoji?.trim(),
-    description: body.description?.trim()
+    description: body.description?.trim(),
+    banner_url: body.banner_url?.trim()
   });
 });

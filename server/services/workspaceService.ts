@@ -11,6 +11,7 @@ export interface CreateWorkspacePayload {
   name: string;
   emoji?: string;
   description?: string;
+  banner_url?: string;
 }
 
 export interface WorkspaceItem {
@@ -18,6 +19,7 @@ export interface WorkspaceItem {
   name: string;
   emoji: string | null;
   description: string | null;
+  banner_url: string | null;
   is_public: boolean;
   created_by: string;
   created_at: Date;
@@ -89,7 +91,7 @@ export async function getWorkspacesByCommunity(
 
   const rows = await db
     .selectFrom("workspaces")
-    .select(["id", "name", "emoji", "description", "is_public", "created_by", "created_at"])
+    .select(["id", "name", "emoji", "description", "banner_url", "is_public", "created_by", "created_at"])
     .where("community_id", "=", communityId)
     .orderBy("created_at", "asc")
     .execute();
@@ -127,13 +129,14 @@ export async function createWorkspace(
       created_by: userId,
       name: payload.name,
       emoji: payload.emoji ?? null,
-      description: payload.description ?? null
+      description: payload.description ?? null,
+      banner_url: payload.banner_url ?? null
     })
     .execute();
 
   const workspace = await db
     .selectFrom("workspaces")
-    .select(["id", "name", "emoji", "description", "is_public", "created_by", "created_at"])
+    .select(["id", "name", "emoji", "description", "banner_url", "is_public", "created_by", "created_at"])
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
 

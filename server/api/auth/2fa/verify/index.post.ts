@@ -1,4 +1,5 @@
 import { verify2FA } from "../../../../services/authService";
+import { setAccessTokenCookie, setRefreshTokenCookie } from "../../../../utils/cookies";
 
 /**
  * POST /api/auth/2fa/verify
@@ -18,16 +19,8 @@ export default defineEventHandler(async (event) => {
 
   const result = await verify2FA(user_id, code.trim());
 
-  setCookie(event, "refresh_token", result.refresh_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 30,
-    path: "/"
-  });
+  setAccessTokenCookie(event, result.access_token);
+  setRefreshTokenCookie(event, result.refresh_token);
 
-  return {
-    access_token: result.access_token,
-    user: result.user
-  };
+  return { user: result.user };
 });

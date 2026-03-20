@@ -168,6 +168,8 @@ export interface ChannelsTable {
   type: ColumnType<ChannelType, ChannelType | undefined, ChannelType>;
   name: string;
   topic: string | null;
+  description: string | null;
+  banner_url: string | null;
   position: ColumnType<number, number | undefined, number>;
   is_private: ColumnType<boolean, boolean | undefined, boolean>;
   slowmode_seconds: ColumnType<number, number | undefined, number>;
@@ -189,6 +191,7 @@ export interface WorkspacesTable {
   name: string;
   emoji: string | null;
   description: string | null;
+  banner_url: string | null;
   is_public: ColumnType<boolean, boolean | undefined, boolean>;
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, never>;
@@ -197,6 +200,55 @@ export interface WorkspacesTable {
 export type Workspace = Selectable<WorkspacesTable>;
 export type NewWorkspace = Insertable<WorkspacesTable>;
 export type WorkspaceUpdate = Updateable<WorkspacesTable>;
+
+// ─── Messages ──────────────────────────────────────────────────────────────
+
+export type MessageType = "default" | "system" | "ai";
+
+export interface MessagesTable {
+  id: Generated<string>;
+  channel_id: string;
+  author_id: string;
+  reply_to_id: string | null;
+  content: string | null;
+  type: ColumnType<MessageType, MessageType | undefined, MessageType>;
+  is_edited: ColumnType<boolean, boolean | undefined, boolean>;
+  is_pinned: ColumnType<boolean, boolean | undefined, boolean>;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type Message = Selectable<MessagesTable>;
+export type NewMessage = Insertable<MessagesTable>;
+export type MessageUpdate = Updateable<MessagesTable>;
+
+// ─── Message Attachments ───────────────────────────────────────────────────
+
+export interface MessageAttachmentsTable {
+  id: Generated<string>;
+  message_id: string;
+  url: string;
+  filename: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type MessageAttachment = Selectable<MessageAttachmentsTable>;
+export type NewMessageAttachment = Insertable<MessageAttachmentsTable>;
+
+// ─── Reactions ─────────────────────────────────────────────────────────────
+
+export interface ReactionsTable {
+  id: Generated<string>;
+  message_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type Reaction = Selectable<ReactionsTable>;
+export type NewReaction = Insertable<ReactionsTable>;
 
 // ─── Member Roles ───────────────────────────────────────────────────────────
 
@@ -221,4 +273,7 @@ export interface Database {
   channels: ChannelsTable;
   workspaces: WorkspacesTable;
   member_roles: MemberRolesTable;
+  messages: MessagesTable;
+  message_attachments: MessageAttachmentsTable;
+  reactions: ReactionsTable;
 }

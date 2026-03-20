@@ -12,6 +12,8 @@ export interface CreateChannelPayload {
   name: string;
   type?: ChannelType;
   topic?: string;
+  description?: string;
+  banner_url?: string;
   parent_id?: string;
   is_private?: boolean;
 }
@@ -21,11 +23,14 @@ export interface ChannelItem {
   name: string;
   type: string;
   topic: string | null;
+  description: string | null;
+  banner_url: string | null;
   position: number;
   is_private: boolean;
   parent_id: string | null;
   last_message_at: Date | null;
   created_at: Date;
+  message_count: number;
 }
 
 export interface ChannelListResult {
@@ -95,28 +100,38 @@ export async function getChannelsByCommunity(
   const canManage = await checkCanManage(communityId, userId);
 
   const rows = await db
-    .selectFrom("channels")
+    .selectFrom("channels as c")
     .select([
-      "id",
-      "name",
-      "type",
-      "topic",
-      "position",
-      "is_private",
-      "parent_id",
-      "last_message_at",
-      "created_at"
+      "c.id",
+      "c.name",
+      "c.type",
+      "c.topic",
+      "c.description",
+      "c.banner_url",
+      "c.position",
+      "c.is_private",
+      "c.parent_id",
+      "c.last_message_at",
+      "c.created_at"
     ])
-    .where("community_id", "=", communityId)
-    .orderBy("position", "asc")
-    .orderBy("created_at", "asc")
+    .select(
+      db
+        .selectFrom("messages")
+        .select(db.fn.countAll().as("count"))
+        .whereRef("messages.channel_id", "=", "c.id")
+        .as("message_count")
+    )
+    .where("c.community_id", "=", communityId)
+    .orderBy("c.position", "asc")
+    .orderBy("c.created_at", "asc")
     .execute();
 
   return {
     channels: rows.map((r) => ({
       ...r,
       position: r.position as number,
-      is_private: r.is_private as unknown as boolean
+      is_private: r.is_private as unknown as boolean,
+      message_count: Number(r.message_count) || 0
     })),
     can_manage: canManage
   };
@@ -169,6 +184,8 @@ export async function createChannel(
       name: payload.name,
       type: payload.type ?? "text",
       topic: payload.topic ?? null,
+      description: payload.description ?? null,
+      banner_url: payload.banner_url ?? null,
       parent_id: payload.parent_id ?? null,
       is_private: payload.is_private ?? false,
       position
@@ -182,6 +199,8 @@ export async function createChannel(
       "name",
       "type",
       "topic",
+      "description",
+      "banner_url",
       "position",
       "is_private",
       "parent_id",

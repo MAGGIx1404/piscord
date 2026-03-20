@@ -1,8 +1,9 @@
 import { refreshSession } from "../../../services/authService";
+import { setAccessTokenCookie, setRefreshTokenCookie } from "../../../utils/cookies";
 
 /**
  * POST /api/auth/refresh
- * Reads refresh_token cookie, rotates it, returns a new access token.
+ * Reads refresh_token cookie, rotates both tokens via httpOnly cookies.
  */
 export default defineEventHandler(async (event) => {
   const refreshToken = getCookie(event, "refresh_token");
@@ -13,13 +14,8 @@ export default defineEventHandler(async (event) => {
 
   const tokens = await refreshSession(refreshToken);
 
-  setCookie(event, "refresh_token", tokens.refresh_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 30,
-    path: "/"
-  });
+  setAccessTokenCookie(event, tokens.access_token);
+  setRefreshTokenCookie(event, tokens.refresh_token);
 
-  return { access_token: tokens.access_token };
+  return { success: true };
 });

@@ -20,7 +20,7 @@
       />
 
       <!-- Sticky Stats Bar -->
-      <CommunityStatsBar :stats="quickStats" v-model:active-tab="activeTab" />
+      <CommunityStatsBar :stats="quickStats" />
 
       <!-- Main content - asymmetric bento -->
       <div class="w-full px-8 py-8">
@@ -143,7 +143,8 @@ interface ApiOverview {
 
 const { data, pending, error } = await useAsyncData<ApiOverview>(
   `community-overview-${communityId}`,
-  () => api<ApiOverview>(`/api/communities/${communityId}`)
+  () => api<ApiOverview>(`/api/communities/${communityId}`),
+  { server: false }
 );
 
 if (error.value) {
@@ -174,14 +175,18 @@ interface ApiWorkspace {
   created_at: string;
 }
 
-const { data: channelsData } = await useAsyncData(`community-channels-${communityId}`, () =>
-  api<{ channels: ApiChannel[]; can_manage: boolean }>(`/api/communities/${communityId}/channels`)
+const { data: channelsData } = await useAsyncData(
+  `community-channels-${communityId}`,
+  () => api<{ channels: ApiChannel[]; can_manage: boolean }>(`/api/communities/${communityId}/channels`),
+  { server: false }
 );
 
-const { data: workspacesData } = await useAsyncData(`community-workspaces-${communityId}`, () =>
-  api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
+const { data: workspacesData } = await useAsyncData(
+  `community-workspaces-${communityId}`,
+  () => api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
     `/api/communities/${communityId}/workspaces`
-  )
+  ),
+  { server: false }
 );
 
 // Track last visited community so the home page can redirect here
@@ -303,9 +308,6 @@ const communityAbout = computed(() => ({
 
 // Rules
 const communityRules = computed(() => (community.value?.rules ?? []).map((r) => r.text));
-
-// State
-const activeTab = ref("Overview");
 
 const filteredMembers = computed(() =>
   members.value.map((m) => ({

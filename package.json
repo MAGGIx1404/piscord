@@ -12,6 +12,7 @@
     "create-migration": "npx tsx ./scripts/create-migration.ts"
   },
   "dependencies": {
+    "@heyputer/puter.js": "^2.2.14",
     "@nuxt/eslint": "^1.10.0",
     "@nuxt/fonts": "^0.12.1",
     "@nuxt/hints": "^1.0.0-alpha.2",
@@ -58,6 +59,7 @@
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dompurify": "^3.3.3",
     "dotenv": "^17.2.3",
     "embla-carousel-vue": "^8.6.0",
     "eslint": "^9.39.1",
@@ -66,6 +68,7 @@
     "kysely": "^0.28.11",
     "lowlight": "^3.3.0",
     "lucide-vue-next": "^0.554.0",
+    "marked": "^17.0.4",
     "motion-v": "^1.7.4",
     "nuxt": "^4.2.1",
     "pg": "^8.20.0",
@@ -89,6 +92,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@types/bcrypt": "^6.0.0",
+    "@types/dompurify": "^3.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.18.0",

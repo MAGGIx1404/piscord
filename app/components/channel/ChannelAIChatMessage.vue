@@ -65,8 +65,8 @@
             </span>
           </div>
 
-          <!-- Message -->
-          <p class="text-sm leading-relaxed text-foreground">{{ message.content }}</p>
+          <!-- Message (rendered as markdown) -->
+          <div class="ai-prose text-sm leading-relaxed text-foreground" v-html="renderedContent" />
         </div>
       </div>
     </div>
@@ -76,6 +76,8 @@
 <script setup lang="ts">
 import { CornerUpRight, Sparkles, Bot } from "lucide-vue-next";
 import { computed } from "vue";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 interface Author {
   id: string;
@@ -96,7 +98,7 @@ interface Message {
   createdAt: string;
   isReply: boolean;
   messageId?: string;
-  reactions?: Reaction[];
+  reactions: Reaction[];
   isBot: boolean;
 }
 
@@ -112,7 +114,10 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 defineEmits<{
-  feedback: [payload: { message: Message; type: "positive" | "negative" }];
+  reply: [message: Message];
+  copy: [message: Message];
+  regenerate: [message: Message];
+  feedback: [type: "positive" | "negative"];
 }>();
 
 const formattedTime = computed(() => {
@@ -121,4 +126,131 @@ const formattedTime = computed(() => {
     minute: "2-digit"
   });
 });
+
+const renderedContent = computed(() => {
+  if (!props.message.content) return "";
+  const html = marked.parse(props.message.content, { breaks: true, gfm: true }) as string;
+  return DOMPurify.sanitize(html);
+});
 </script>
+
+<style scoped>
+.ai-prose :deep(p) {
+  margin: 0.25rem 0;
+}
+
+.ai-prose :deep(p:first-child) {
+  margin-top: 0;
+}
+
+.ai-prose :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.ai-prose :deep(pre) {
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--accent);
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.ai-prose :deep(pre code) {
+  background: transparent;
+  padding: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--foreground);
+  white-space: pre;
+}
+
+.ai-prose :deep(:not(pre) > code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  padding: 0.125rem 0.35rem;
+  border-radius: 0.25rem;
+  background-color: var(--accent);
+  color: var(--foreground);
+}
+
+.ai-prose :deep(ul),
+.ai-prose :deep(ol) {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
+
+.ai-prose :deep(ul) {
+  list-style-type: disc;
+}
+
+.ai-prose :deep(ol) {
+  list-style-type: decimal;
+}
+
+.ai-prose :deep(li) {
+  margin: 0.125rem 0;
+}
+
+.ai-prose :deep(h1),
+.ai-prose :deep(h2),
+.ai-prose :deep(h3),
+.ai-prose :deep(h4) {
+  font-weight: 600;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.ai-prose :deep(h1) {
+  font-size: 1.125rem;
+}
+
+.ai-prose :deep(h2) {
+  font-size: 1rem;
+}
+
+.ai-prose :deep(h3) {
+  font-size: 0.9375rem;
+}
+
+.ai-prose :deep(blockquote) {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  margin: 0.375rem 0;
+  color: var(--muted-foreground);
+}
+
+.ai-prose :deep(a) {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ai-prose :deep(strong) {
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.ai-prose :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  font-size: 0.8125rem;
+}
+
+.ai-prose :deep(th),
+.ai-prose :deep(td) {
+  border: 1px solid var(--border);
+  padding: 0.375rem 0.625rem;
+  text-align: left;
+}
+
+.ai-prose :deep(th) {
+  background-color: var(--muted);
+  font-weight: 600;
+}
+
+.ai-prose :deep(hr) {
+  border-color: var(--border);
+  margin: 0.5rem 0;
+}
+</style>

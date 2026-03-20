@@ -14,7 +14,6 @@ export interface RegisterResponse {
 }
 
 export interface LoginResponse {
-  access_token: string;
   user: MeResponse;
 }
 
@@ -24,7 +23,7 @@ export interface Login2FARequiredResponse {
 }
 
 export interface RefreshResponse {
-  access_token: string;
+  success: boolean;
 }
 
 export interface CheckUsernameResponse {

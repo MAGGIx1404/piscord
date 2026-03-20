@@ -1,15 +1,19 @@
-import { getHeader, createError, type H3Event } from "h3";
+import { createError, getCookie, type H3Event } from "h3";
 import { verifyAccessToken } from "./jwt";
 
 /**
- * Reads the Bearer token from the Authorization header,
- * verifies it, and returns the userId.
- * Throws 401 if missing or invalid.
+ * Returns the authenticated userId from event context (set by server middleware)
+ * or falls back to reading the access_token cookie directly.
+ * Throws 401 if not authenticated.
  */
 export function requireAuth(event: H3Event): string {
-  const header = getHeader(event, "authorization") ?? "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  // Prefer middleware-set context (already verified)
+  if (event.context.userId) {
+    return event.context.userId;
+  }
 
+  // Fallback: read cookie directly (for routes not covered by middleware)
+  const token = getCookie(event, "access_token");
   if (!token) {
     throw createError({ statusCode: 401, message: "Missing access token" });
   }

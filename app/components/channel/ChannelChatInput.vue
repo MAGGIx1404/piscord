@@ -1,193 +1,134 @@
 <template>
-  <div class="w-full sticky bottom-0 left-0 bg-background z-10 -mb-4 p-4 flex flex-col gap-2">
+  <div class="sticky bottom-0 left-0 z-10 -mb-4 flex w-full flex-col gap-2 bg-background p-4">
     <Textarea
       ref="textarea"
       v-model="text"
-      placeholder="Type a message… Use @ to mention, # to tag workspace"
-      class="min-h-28 resize-none"
+      placeholder="Type a message… Use @ to mention"
+      class="min-h-20 resize-none"
       @input="onInput"
-      @scroll="syncScroll"
       @keydown.down.prevent="next"
       @keydown.up.prevent="prev"
-      @keydown.enter.prevent="select"
+      @keydown.enter.prevent="onEnter"
       @keydown.escape="closePanel"
-      @keydown="onKeydown"
       @click="onCursorMove"
       @blur="onBlur"
     />
 
     <div class="ml-auto space-x-2">
-      <Button variant="outline"> <ImagePlus /> </Button>
-      <Button class="text-sm h-9"> <Send /> Send </Button>
+      <Button class="h-9 text-sm" @click="submitMessage">
+        <Send class="size-4" />
+        Send
+      </Button>
     </div>
 
-    <!-- User mention list -->
+    <!-- Mention autocomplete panel -->
     <div
-      v-if="open && mentionType === 'user'"
-      ref="panelRef"
-      class="absolute bottom-full left-2 z-50 mb-2 w-56 rounded-md border bg-popover shadow-md"
-    >
-      <div
-        v-for="(user, i) in filteredUsers"
-        :key="user.id"
-        @mousedown.prevent="insertUser(user)"
-        class="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-        :class="{ 'bg-accent': i === index }"
-      >
-        <img :src="user.avatar" class="h-6 w-6 rounded-full" />
-        <span>{{ user.name }}</span>
-      </div>
-    </div>
-
-    <!-- Workspace mention list -->
-    <div
-      v-if="open && mentionType === 'workspace'"
+      v-if="open"
       ref="panelRef"
       class="absolute bottom-full left-2 z-50 mb-2 w-64 rounded-md border bg-popover shadow-md"
     >
+      <!-- AI Agent option -->
       <div
-        class="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b"
+        v-if="showAiOption"
+        class="flex cursor-pointer items-center gap-2 border-b px-3 py-2 text-sm hover:bg-accent"
+        :class="{ 'bg-accent': index === 0 && aiAgentInList }"
+        @mousedown.prevent="insertAiMention"
       >
-        Workspaces
-      </div>
-      <div
-        v-for="(ws, i) in filteredWorkspaces"
-        :key="ws.id"
-        @mousedown.prevent="insertWorkspace(ws)"
-        class="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-        :class="{ 'bg-accent': i === index }"
-      >
-        <span class="text-base">{{ ws.emoji }}</span>
-        <div class="flex flex-col min-w-0">
-          <span class="truncate font-medium">{{ ws.name }}</span>
-          <span v-if="ws.parentName" class="text-xs text-muted-foreground truncate">{{
-            ws.parentName
-          }}</span>
+        <div class="relative">
+          <img v-if="aiAgent?.avatar" :src="aiAgent.avatar" class="size-6 rounded-full" />
+          <div v-else class="flex size-6 items-center justify-center rounded-full bg-violet-600">
+            <Bot class="size-3 text-white" />
+          </div>
+          <Sparkles class="absolute -right-0.5 -bottom-0.5 size-2.5 text-violet-400" />
+        </div>
+        <div class="flex flex-col">
+          <span class="font-medium text-violet-400">{{ aiAgent?.name || "AI Agent" }}</span>
+          <span class="text-xs text-muted-foreground">AI Assistant</span>
         </div>
       </div>
+
+      <!-- User list -->
       <div
-        v-if="filteredWorkspaces.length === 0"
-        class="px-3 py-3 text-sm text-muted-foreground text-center"
+        v-for="(user, i) in filteredUsers"
+        :key="user.id"
+        class="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
+        :class="{ 'bg-accent': i + (aiAgentInList ? 1 : 0) === index }"
+        @mousedown.prevent="insertUser(user)"
       >
-        No workspaces found
+        <img :src="user.avatar_url || '/images/avatar/default.png'" class="size-6 rounded-full" />
+        <span>{{ user.username }}</span>
+      </div>
+
+      <div
+        v-if="filteredUsers.length === 0 && !showAiOption"
+        class="px-3 py-3 text-center text-sm text-muted-foreground"
+      >
+        No users found
       </div>
     </div>
   </div>
 </template>
 
-<script setup>
-import { Send, ImagePlus } from "lucide-vue-next";
+<script setup lang="ts">
+import { Send, Bot, Sparkles } from "lucide-vue-next";
 import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
+import type { ChannelMember, AIAgent } from "~/composables/useChannelChat";
 
-const textarea = ref(null);
-const panelRef = ref(null);
+interface Props {
+  members: ChannelMember[];
+  aiAgent: AIAgent | null;
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  send: [content: string];
+  typing: [];
+}>();
+
+const textarea = ref<HTMLTextAreaElement | null>(null);
+const panelRef = ref<HTMLElement | null>(null);
 const text = ref("");
 const open = ref(false);
 const query = ref("");
 const index = ref(0);
-const mentionType = ref("user"); // 'user' | 'workspace'
 
-/* Dummy users */
-const users = [
-  { id: "u1", name: "Alice", avatar: "/images/avatar/1.png" },
-  { id: "u2", name: "Bob", avatar: "/images/avatar/2.png" },
-  { id: "u3", name: "Charlie", avatar: "/images/avatar/3.png" },
-  { id: "u4", name: "Daisy", avatar: "/images/avatar/4.png" }
-];
-
-/* Workspace pages (flattened from sidebar data) */
-const workspacePages = [
-  {
-    id: "ws_1",
-    name: "Daily Journal & Reflection",
-    emoji: "📔",
-    url: "/community/orion_group/workspaces/1",
-    parentName: "Personal Life Management",
-    description: "Track your daily thoughts, gratitude, and reflections."
-  },
-  {
-    id: "ws_2",
-    name: "Health & Wellness Tracker",
-    emoji: "🍏",
-    url: "/community/orion_group/workspaces/2",
-    parentName: "Personal Life Management",
-    description: "Monitor health goals, workouts, and nutrition."
-  },
-  {
-    id: "ws_3",
-    name: "Personal Growth & Learning Goals",
-    emoji: "🌟",
-    url: "/community/orion_group/workspaces/3",
-    parentName: "Personal Life Management",
-    description: "Set and track personal development milestones."
-  },
-  {
-    id: "ws_4",
-    name: "Career Objectives & Milestones",
-    emoji: "🎯",
-    url: "/community/orion_group/workspaces/4",
-    parentName: "Professional Development",
-    description: "Plan career goals and track progress."
-  },
-  {
-    id: "ws_5",
-    name: "Skill Acquisition & Training Log",
-    emoji: "🧠",
-    url: "/community/orion_group/workspaces/5",
-    parentName: "Professional Development",
-    description: "Log new skills learned and training completed."
-  },
-  {
-    id: "ws_6",
-    name: "Writing Ideas & Story Outlines",
-    emoji: "✍️",
-    url: "/community/orion_group/workspaces/6",
-    parentName: "Creative Projects",
-    description: "Brainstorm writing ideas and create story outlines."
-  },
-  {
-    id: "ws_7",
-    name: "Art & Design Portfolio",
-    emoji: "🖼️",
-    url: "/community/orion_group/workspaces/7",
-    parentName: "Creative Projects",
-    description: "Showcase and organize your design work."
+function getTextarea(): HTMLTextAreaElement | null {
+  const el = textarea.value as unknown;
+  if (!el) return null;
+  // shadcn Textarea wraps a native textarea — try $el first
+  if (typeof el === "object" && el !== null && "$el" in el) {
+    return (el as { $el: HTMLTextAreaElement }).$el;
   }
-];
+  return el as HTMLTextAreaElement;
+}
 
 /* Filter users */
 const filteredUsers = computed(() =>
-  users.filter((u) => u.name.toLowerCase().startsWith(query.value.toLowerCase()))
+  props.members.filter((u) => u.username.toLowerCase().startsWith(query.value.toLowerCase()))
 );
 
-/* Filter workspaces */
-const filteredWorkspaces = computed(() =>
-  workspacePages.filter((w) => w.name.toLowerCase().includes(query.value.toLowerCase()))
-);
+/* Check if AI agent matches query */
+const showAiOption = computed(() => {
+  if (!props.aiAgent?.name) return false;
+  if (!query.value) return true;
+  return props.aiAgent.name.toLowerCase().startsWith(query.value.toLowerCase());
+});
 
-const currentList = computed(() =>
-  mentionType.value === "user" ? filteredUsers.value : filteredWorkspaces.value
-);
+const aiAgentInList = computed(() => showAiOption.value);
 
-function onInput(e) {
-  const cursor = e.target.selectionStart;
+const totalItems = computed(() => filteredUsers.value.length + (aiAgentInList.value ? 1 : 0));
+
+function onInput() {
+  emit("typing");
+  const ta = getTextarea();
+  if (!ta) return;
+  const cursor = ta.selectionStart;
   const before = text.value.slice(0, cursor);
 
-  // Check for # (workspace mention)
-  const wsMatch = before.match(/#([\w\s]*)$/);
-  if (wsMatch) {
-    query.value = wsMatch[1].trim();
-    mentionType.value = "workspace";
-    open.value = true;
-    index.value = 0;
-    return;
-  }
-
-  // Check for @ (user mention)
   const userMatch = before.match(/@(\w*)$/);
   if (userMatch) {
-    query.value = userMatch[1];
-    mentionType.value = "user";
+    query.value = userMatch[1] ?? "";
     open.value = true;
     index.value = 0;
     return;
@@ -196,8 +137,9 @@ function onInput(e) {
   open.value = false;
 }
 
-function insertUser(user) {
-  const ta = textarea.value;
+function insertMentionText(name: string) {
+  const ta = getTextarea();
+  if (!ta) return;
   const cursor = ta.selectionStart;
   const full = text.value;
   const atIndex = full.lastIndexOf("@", cursor - 1);
@@ -208,7 +150,7 @@ function insertUser(user) {
 
     const before = full.slice(0, atIndex);
     const after = full.slice(end);
-    const inserted = `@${user.name} `;
+    const inserted = `@${name} `;
 
     text.value = before + inserted + after;
     open.value = false;
@@ -221,7 +163,7 @@ function insertUser(user) {
     return;
   }
 
-  text.value = full + ` @${user.name} `;
+  text.value = full + ` @${name} `;
   open.value = false;
   nextTick(() => {
     ta.focus();
@@ -230,67 +172,71 @@ function insertUser(user) {
   });
 }
 
-function insertWorkspace(ws) {
-  const ta = textarea.value;
-  const cursor = ta.selectionStart;
-  const full = text.value;
-  const hashIndex = full.lastIndexOf("#", cursor - 1);
+function insertUser(user: ChannelMember) {
+  insertMentionText(user.username);
+}
 
-  if (hashIndex !== -1) {
-    // consume all chars after # until cursor (workspace names can have spaces)
-    const before = full.slice(0, hashIndex);
-    const after = full.slice(cursor);
-    const inserted = `#[${ws.name}](${ws.id}) `;
-
-    text.value = before + inserted + after;
-    open.value = false;
-
-    nextTick(() => {
-      const pos = before.length + inserted.length;
-      ta.focus();
-      ta.setSelectionRange(pos, pos);
-    });
-    return;
-  }
-
-  text.value = full + ` #[${ws.name}](${ws.id}) `;
-  open.value = false;
-  nextTick(() => {
-    ta.focus();
-    const pos = text.value.length;
-    ta.setSelectionRange(pos, pos);
-  });
+function insertAiMention() {
+  if (!props.aiAgent?.name) return;
+  insertMentionText(props.aiAgent.name);
 }
 
 function next() {
-  if (!open.value || currentList.value.length === 0) return;
-  index.value = (index.value + 1) % currentList.value.length;
+  if (!open.value || totalItems.value === 0) return;
+  index.value = (index.value + 1) % totalItems.value;
 }
 
 function prev() {
-  if (!open.value || currentList.value.length === 0) return;
-  index.value = (index.value - 1 + currentList.value.length) % currentList.value.length;
+  if (!open.value || totalItems.value === 0) return;
+  index.value = (index.value - 1 + totalItems.value) % totalItems.value;
 }
 
-function select() {
-  if (!open.value || currentList.value.length === 0) return;
-  const item = currentList.value[index.value];
-  if (mentionType.value === "user") {
-    insertUser(item);
-  } else {
-    insertWorkspace(item);
+function selectItem() {
+  if (!open.value || totalItems.value === 0) return;
+
+  if (aiAgentInList.value && index.value === 0) {
+    insertAiMention();
+    return;
   }
+
+  const userIndex = index.value - (aiAgentInList.value ? 1 : 0);
+  const user = filteredUsers.value[userIndex];
+  if (user) insertUser(user);
 }
 
-function syncScroll() {
-  textarea.value.previousElementSibling.scrollTop = textarea.value.scrollTop;
+function onEnter(e: KeyboardEvent) {
+  if (open.value && totalItems.value > 0) {
+    selectItem();
+    return;
+  }
+
+  // Shift+Enter for newline
+  if (e.shiftKey) {
+    const ta = getTextarea();
+    if (!ta) return;
+    const cursor = ta.selectionStart;
+    text.value = text.value.slice(0, cursor) + "\n" + text.value.slice(cursor);
+    nextTick(() => {
+      ta.setSelectionRange(cursor + 1, cursor + 1);
+    });
+    return;
+  }
+
+  submitMessage();
+}
+
+function submitMessage() {
+  const content = text.value.trim();
+  if (!content) return;
+  emit("send", content);
+  text.value = "";
 }
 
 function closePanel() {
   open.value = false;
 }
 
-function onBlur(e) {
+function onBlur() {
   setTimeout(() => {
     if (!panelRef.value?.contains(document.activeElement)) {
       open.value = false;
@@ -299,24 +245,14 @@ function onBlur(e) {
 }
 
 function onCursorMove() {
-  const ta = textarea.value;
+  const ta = getTextarea();
   if (!ta) return;
   const cursor = ta.selectionStart;
   const before = text.value.slice(0, cursor);
 
-  const wsMatch = before.match(/#([\w\s]*)$/);
-  if (wsMatch) {
-    query.value = wsMatch[1].trim();
-    mentionType.value = "workspace";
-    open.value = true;
-    index.value = 0;
-    return;
-  }
-
   const userMatch = before.match(/@(\w*)$/);
   if (userMatch) {
-    query.value = userMatch[1];
-    mentionType.value = "user";
+    query.value = userMatch[1] ?? "";
     open.value = true;
     index.value = 0;
     return;
@@ -325,38 +261,11 @@ function onCursorMove() {
   open.value = false;
 }
 
-function onKeydown(e) {
-  if (e.ctrlKey && e.code === "Space") {
-    e.preventDefault();
-    const ta = textarea.value;
-    if (!ta) return;
-    const cursor = ta.selectionStart;
-    const before = text.value.slice(0, cursor);
-
-    const wsMatch = before.match(/#([\w\s]*)$/);
-    if (wsMatch) {
-      query.value = wsMatch[1].trim();
-      mentionType.value = "workspace";
-      open.value = true;
-      index.value = 0;
-      return;
-    }
-
-    const userMatch = before.match(/@(\w*)$/);
-    if (userMatch) {
-      query.value = userMatch[1];
-      mentionType.value = "user";
-      open.value = true;
-      index.value = 0;
-    }
-  }
-}
-
-function onClickOutside(e) {
+function onClickOutside(e: MouseEvent) {
   if (!open.value) return;
   const panel = panelRef.value;
-  const ta = textarea.value;
-  if (panel && !panel.contains(e.target) && ta && !ta.contains(e.target)) {
+  const ta = getTextarea();
+  if (panel && !panel.contains(e.target as Node) && ta && !ta.contains(e.target as Node)) {
     open.value = false;
   }
 }

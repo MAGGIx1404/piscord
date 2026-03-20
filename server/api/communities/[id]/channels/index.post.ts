@@ -31,6 +31,8 @@ export default defineEventHandler(async (event) => {
     name: body.name.trim(),
     type: body.type,
     topic: body.topic?.trim(),
+    description: body.description?.trim(),
+    banner_url: body.banner_url?.trim(),
     parent_id: body.parent_id,
     is_private: body.is_private
   });

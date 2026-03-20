@@ -1,4 +1,5 @@
 import { loginUser } from "../../../services/authService";
+import { setAccessTokenCookie, setRefreshTokenCookie } from "../../../utils/cookies";
 
 /**
  * POST /api/auth/login
@@ -22,17 +23,8 @@ export default defineEventHandler(async (event) => {
     return { requires_2fa: true, user_id: result.userId };
   }
 
-  // Set refresh token as HTTP-only cookie
-  setCookie(event, "refresh_token", result.refresh_token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-    path: "/"
-  });
+  setAccessTokenCookie(event, result.access_token);
+  setRefreshTokenCookie(event, result.refresh_token);
 
-  return {
-    access_token: result.access_token,
-    user: result.user
-  };
+  return { user: result.user };
 });

@@ -4,7 +4,6 @@ import type {
   Login2FARequiredResponse,
   CheckUsernameResponse,
   MeResponse,
-  RefreshResponse,
   TwoFactorSetupResponse
 } from "~/types/api";
 
@@ -34,7 +33,7 @@ export function useAuth() {
     });
 
     if (!("requires_2fa" in data)) {
-      userStore.setAuth(data.user, data.access_token);
+      userStore.setUser(data.user);
     }
 
     return data;
@@ -47,7 +46,7 @@ export function useAuth() {
       method: "POST",
       body: { user_id: userId, code }
     });
-    userStore.setAuth(data.user, data.access_token);
+    userStore.setUser(data.user);
     return data;
   }
 
@@ -62,23 +61,20 @@ export function useAuth() {
 
   // ─── Refresh access token ──────────────────────────────────────────────────
 
-  async function refreshToken(): Promise<string | null> {
+  async function refreshToken(): Promise<boolean> {
     try {
-      const data = await $fetch<RefreshResponse>("/api/auth/refresh", { method: "POST" });
-      userStore.setAccessToken(data.access_token);
-      return data.access_token;
+      await $fetch("/api/auth/refresh", { method: "POST" });
+      return true;
     } catch {
-      return null;
+      return false;
     }
   }
 
   // ─── Fetch /api/users/me ───────────────────────────────────────────────────
 
-  async function fetchMe(token: string): Promise<MeResponse | null> {
+  async function fetchMe(): Promise<MeResponse | null> {
     try {
-      const data = await $fetch<{ user: MeResponse }>("/api/users/me", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const data = await $fetch<{ user: MeResponse }>("/api/users/me");
       return data.user;
     } catch {
       return null;
@@ -86,28 +82,24 @@ export function useAuth() {
   }
 
   // ─── Init auth (called on app startup) ────────────────────────────────────
-  // Validates the persisted token; falls back to refresh cookie if expired.
+  // Validates via httpOnly cookie; falls back to refresh if expired.
 
   async function initAuth(): Promise<void> {
-    let token = userStore.accessToken;
-
-    // Try persisted token first
-    if (token) {
-      const me = await fetchMe(token);
-      if (me) {
-        userStore.setUser(me);
-        return;
-      }
+    // Try current access token cookie
+    let me = await fetchMe();
+    if (me) {
+      userStore.setUser(me);
+      return;
     }
 
-    // Access token missing or expired — attempt silent refresh via cookie
-    const newToken = await refreshToken();
-    if (!newToken) {
+    // Access cookie may be expired — attempt silent refresh
+    const refreshed = await refreshToken();
+    if (!refreshed) {
       userStore.reset();
       return;
     }
 
-    const me = await fetchMe(newToken);
+    me = await fetchMe();
     if (me) {
       userStore.setUser(me);
     } else {
@@ -128,8 +120,7 @@ export function useAuth() {
   // ─── 2FA setup ─────────────────────────────────────────────────────────────
 
   async function setup2FA(): Promise<TwoFactorSetupResponse> {
-    const api = useApi();
-    return api<TwoFactorSetupResponse>("/api/auth/2fa/setup", { method: "POST" });
+    return $fetch<TwoFactorSetupResponse>("/api/auth/2fa/setup", { method: "POST" });
   }
 
   return {
