@@ -51,6 +51,9 @@ export default defineEventHandler(async (event) => {
       "ai_agent_name",
       "ai_agent_pet_name",
       "ai_agent_avatar",
+      "ai_provider",
+      "ai_agent_model",
+      "ai_ollama_model",
       "ai_agent_description"
     ])
     .where("id", "=", channel.community_id)
@@ -80,6 +83,9 @@ export default defineEventHandler(async (event) => {
           name: community.ai_agent_name,
           pet_name: community.ai_agent_pet_name,
           avatar: community.ai_agent_avatar,
+          provider: community.ai_provider,
+          model: community.ai_agent_model,
+          ollama_model: community.ai_ollama_model,
           description: community.ai_agent_description
         }
       : null

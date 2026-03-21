@@ -65,10 +65,12 @@ export default defineEventHandler(async (event) => {
     visibility,
     requireApproval: field("requireApproval") === "true",
     isAiPet: field("isAiPet") === "true",
+    aiProvider: (field("aiProvider") as "puter" | "ollama" | undefined) ?? "puter",
     aiAgentName: field("aiAgentName") ?? null,
     aiAgentPetName: field("aiAgentPetName") ?? null,
     aiAgentAvatar: field("aiAgentAvatar") ?? null,
     aiAgentModel: field("aiAgentModel") ?? null,
+    aiOllamaModel: field("aiOllamaModel") ?? null,
     aiAgentDescription: field("aiAgentDescription") ?? null
   };
 

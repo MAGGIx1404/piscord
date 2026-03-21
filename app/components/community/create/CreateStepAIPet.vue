@@ -138,10 +138,44 @@
         </p>
       </div>
 
+      <!-- Provider Selection -->
+      <div class="space-y-3">
+        <Label class="text-sm font-medium">AI Provider</Label>
+        <div class="grid gap-3 md:grid-cols-2">
+          <button
+            v-for="providerOption in providerOptions"
+            :key="providerOption.value"
+            @click="provider = providerOption.value"
+            class="relative rounded-xl border-2 p-4 text-left transition-all"
+            :class="[
+              provider === providerOption.value
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            ]"
+          >
+            <div
+              v-if="provider === providerOption.value"
+              class="absolute top-3 right-3 flex size-5 items-center justify-center rounded-full bg-primary"
+            >
+              <Check class="size-3 text-white" />
+            </div>
+            <div class="mb-2 flex items-center gap-3">
+              <component
+                :is="providerOption.icon"
+                class="size-5"
+                :class="providerOption.iconColor"
+              />
+              <span class="font-medium">{{ providerOption.label }}</span>
+            </div>
+            <p class="text-xs text-muted-foreground">{{ providerOption.description }}</p>
+          </button>
+        </div>
+      </div>
+
       <!-- AI Model Selection -->
       <div class="space-y-3">
-        <Label class="text-sm font-medium">AI Model</Label>
-        <div class="grid gap-3 md:grid-cols-2">
+        <Label class="text-sm font-medium">Model</Label>
+        <div v-if="provider === 'puter'" class="grid gap-3 md:grid-cols-2">
           <button
             v-for="modelOption in aiModels"
             :key="modelOption.value"
@@ -166,10 +200,23 @@
             <p class="text-xs text-muted-foreground">{{ modelOption.description }}</p>
           </button>
         </div>
+        <div v-else class="space-y-2">
+          <Input
+            v-model="ollamaModel"
+            placeholder="e.g., llama3.2:latest"
+            class="h-12 font-mono text-sm"
+          />
+          <p class="text-xs text-muted-foreground">
+            Enter your local Ollama model tag. Example: llama3.2:latest
+          </p>
+        </div>
       </div>
 
       <!-- API Key Section -->
-      <div class="space-y-4 rounded-2xl border border-border/50 bg-card/50 p-5">
+      <div
+        v-if="provider === 'puter'"
+        class="space-y-4 rounded-2xl border border-border/50 bg-card/50 p-5"
+      >
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="flex size-10 items-center justify-center rounded-xl bg-amber-500/20">
@@ -229,15 +276,13 @@ import {
   Check,
   Upload,
   Key,
+  Server,
   Eye,
   EyeOff,
   AlertTriangle,
   Sparkles,
   Zap,
   Brain,
-  MessageCircle,
-  Shield,
-  HelpCircle,
   Wand2
 } from "lucide-vue-next";
 
@@ -249,11 +294,12 @@ interface AIModel {
   iconColor: string;
 }
 
-interface Capability {
-  id: string;
+interface ProviderOption {
+  value: "puter" | "ollama";
   label: string;
   description: string;
   icon: any;
+  iconColor: string;
 }
 
 const enabled = defineModel<boolean>("enabled", { required: true });
@@ -261,7 +307,9 @@ const avatar = defineModel<string>("avatar", { required: true });
 const petName = defineModel<string>("name", { required: true });
 const nickname = defineModel<string>("nickname", { required: true });
 const personality = defineModel<string>("personality", { required: true });
+const provider = defineModel<"puter" | "ollama">("provider", { required: true });
 const aiModel = defineModel<string>("model", { required: true });
+const ollamaModel = defineModel<string>("ollamaModel", { required: true });
 const useCustomKey = defineModel<boolean>("useCustomKey", { required: true });
 const apiKey = defineModel<string>("apiKey", { required: true });
 
@@ -273,6 +321,23 @@ const showApiKey = ref(false);
 const customAvatarPreview = ref<string | null>(null);
 
 const avatarOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+
+const providerOptions: ProviderOption[] = [
+  {
+    value: "puter",
+    label: "Puter Cloud",
+    description: "Hosted model access with native tool-calling",
+    icon: Sparkles,
+    iconColor: "text-emerald-500"
+  },
+  {
+    value: "ollama",
+    label: "Ollama",
+    description: "Run your own local or self-hosted model",
+    icon: Server,
+    iconColor: "text-blue-500"
+  }
+];
 
 const aiModels: AIModel[] = [
   {
@@ -304,41 +369,6 @@ const aiModels: AIModel[] = [
     iconColor: "text-amber-500"
   }
 ];
-
-const capabilities: Capability[] = [
-  {
-    id: "chat",
-    label: "Chat & Conversation",
-    description: "Engage in natural conversations with members",
-    icon: MessageCircle
-  },
-  {
-    id: "moderation",
-    label: "Auto-Moderation",
-    description: "Help moderate content and enforce rules",
-    icon: Shield
-  },
-  {
-    id: "qa",
-    label: "Q&A Assistant",
-    description: "Answer frequently asked questions",
-    icon: HelpCircle
-  },
-  {
-    id: "welcome",
-    label: "Welcome New Members",
-    description: "Greet and onboard new community members",
-    icon: Sparkles
-  }
-];
-
-const toggleCapability = (id: string, isEnabled: boolean) => {
-  if (isEnabled) {
-    enabledCapabilities.value = [...enabledCapabilities.value, id];
-  } else {
-    enabledCapabilities.value = enabledCapabilities.value.filter((c) => c !== id);
-  }
-};
 
 const handleCustomAvatarUpload = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0];

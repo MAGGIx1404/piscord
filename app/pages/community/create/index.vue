@@ -45,7 +45,9 @@
             v-model:name="aiPet.name"
             v-model:nickname="aiPet.nickname"
             v-model:personality="aiPet.personality"
+            v-model:provider="aiPet.provider"
             v-model:model="aiPet.model"
+            v-model:ollama-model="aiPet.ollamaModel"
             v-model:use-custom-key="aiPet.useCustomKey"
             v-model:api-key="aiPet.apiKey"
             @update:custom-avatar-file="aiPet.customAvatarFile = $event"
@@ -140,7 +142,9 @@ const aiPet = reactive({
   name: "",
   nickname: "",
   personality: "",
+  provider: "puter" as "puter" | "ollama",
   model: "gpt-4o-mini",
+  ollamaModel: "llama3.2:latest",
   useCustomKey: false,
   apiKey: "",
   customAvatarFile: null as File | null
@@ -236,9 +240,13 @@ const handleCreate = async () => {
     // AI Agent
     fd.append("isAiPet", String(aiPet.enabled));
     if (aiPet.enabled) {
+      fd.append("aiProvider", aiPet.provider);
       fd.append("aiAgentName", aiPet.name);
       fd.append("aiAgentPetName", aiPet.nickname);
       fd.append("aiAgentModel", aiPet.model);
+      if (aiPet.provider === "ollama") {
+        fd.append("aiOllamaModel", aiPet.ollamaModel);
+      }
       fd.append("aiAgentDescription", aiPet.personality);
       if (aiPet.customAvatarFile) {
         fd.append("aiAgentAvatarFile", aiPet.customAvatarFile);

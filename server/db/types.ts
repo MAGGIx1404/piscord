@@ -40,7 +40,9 @@ export interface PublicCommunity {
   ai_agent_name: string | null;
   ai_agent_pet_name: string | null;
   ai_agent_avatar: string | null;
+  ai_provider: "puter" | "ollama";
   ai_agent_model: string | null;
+  ai_ollama_model: string | null;
   ai_agent_description: string | null;
   created_at: Date;
 }

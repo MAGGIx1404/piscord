@@ -46,7 +46,9 @@ export interface CommunitiesTable {
   ai_agent_name: string | null;
   ai_agent_pet_name: string | null;
   ai_agent_avatar: string | null;
+  ai_provider: ColumnType<"puter" | "ollama", "puter" | "ollama" | undefined, "puter" | "ollama">;
   ai_agent_model: string | null;
+  ai_ollama_model: string | null;
   ai_agent_description: string | null;
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, never>;

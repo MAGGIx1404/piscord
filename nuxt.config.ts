@@ -57,7 +57,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    JWT_SECRET: process.env.JWT_SECRET
+    JWT_SECRET: process.env.JWT_SECRET,
+    OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434",
+    OLLAMA_DEFAULT_MODEL: process.env.OLLAMA_DEFAULT_MODEL || "llama3.2:latest"
   },
 
   app: {

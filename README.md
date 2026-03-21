@@ -85,6 +85,10 @@ DB_MAX_POOL_SIZE=10
 # JWT Secrets (generate random strings)
 JWT_SECRET=your_jwt_secret_here
 JWT_REFRESH_SECRET=your_refresh_secret_here
+
+# Optional: local/self-hosted Ollama for AI pets
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_DEFAULT_MODEL=llama3.2:latest
 ```
 
 4. **Start PostgreSQL**

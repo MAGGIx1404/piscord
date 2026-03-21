@@ -24,10 +24,12 @@ export interface CreateCommunityPayload {
   visibility: "public" | "private";
   requireApproval?: boolean;
   isAiPet?: boolean;
+  aiProvider?: "puter" | "ollama";
   aiAgentName?: string | null;
   aiAgentPetName?: string | null;
   aiAgentAvatar?: string | null;
   aiAgentModel?: string | null;
+  aiOllamaModel?: string | null;
   aiAgentDescription?: string | null;
 }
 
@@ -92,10 +94,12 @@ export async function createCommunity(
     visibility,
     requireApproval = false,
     isAiPet = false,
+    aiProvider = "puter",
     aiAgentName = null,
     aiAgentPetName = null,
     aiAgentAvatar = null,
     aiAgentModel = null,
+    aiOllamaModel = null,
     aiAgentDescription = null
   } = payload;
 
@@ -149,7 +153,9 @@ export async function createCommunity(
       ai_agent_name: aiAgentName ?? null,
       ai_agent_pet_name: aiAgentPetName ?? null,
       ai_agent_avatar: resolvedAiAgentAvatar,
-      ai_agent_model: aiAgentModel ?? null,
+      ai_provider: aiProvider,
+      ai_agent_model: aiProvider === "puter" ? (aiAgentModel ?? null) : null,
+      ai_ollama_model: aiProvider === "ollama" ? (aiOllamaModel ?? null) : null,
       ai_agent_description: aiAgentDescription ?? null
     })
     .returning([
@@ -170,7 +176,9 @@ export async function createCommunity(
       "ai_agent_name",
       "ai_agent_pet_name",
       "ai_agent_avatar",
+      "ai_provider",
       "ai_agent_model",
+      "ai_ollama_model",
       "ai_agent_description",
       "created_at"
     ])
@@ -244,7 +252,9 @@ export async function getUserCommunities(userId: string): Promise<PublicCommunit
       "ai_agent_name",
       "ai_agent_pet_name",
       "ai_agent_avatar",
+      "ai_provider",
       "ai_agent_model",
+      "ai_ollama_model",
       "ai_agent_description",
       "created_at"
     ])
@@ -297,7 +307,9 @@ export async function getDiscoverableCommunities(
       "ai_agent_name",
       "ai_agent_pet_name",
       "ai_agent_avatar",
+      "ai_provider",
       "ai_agent_model",
+      "ai_ollama_model",
       "ai_agent_description",
       "created_at"
     ])

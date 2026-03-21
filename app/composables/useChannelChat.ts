@@ -28,6 +28,9 @@ export interface AIAgent {
   name: string | null;
   pet_name: string | null;
   avatar: string | null;
+  provider: "puter" | "ollama";
+  model: string | null;
+  ollama_model: string | null;
   description: string | null;
 }
 

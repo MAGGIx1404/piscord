@@ -99,6 +99,26 @@ export function useAIAgent() {
   const api = useApi();
   const processing = ref(false);
 
+  async function generateWithOllama(
+    systemPrompt: string,
+    userContent: string,
+    aiAgent: AIAgent
+  ): Promise<string> {
+    const preferredModel = aiAgent.ollama_model || aiAgent.model || "llama3.2:latest";
+    const data = await api<{ message: string }>("/api/ai/chat", {
+      method: "POST",
+      body: {
+        provider: "ollama",
+        model: preferredModel,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userContent }
+        ]
+      }
+    });
+    return data.message;
+  }
+
   function buildSystemPrompt(
     aiAgent: AIAgent,
     communityName?: string,
@@ -149,6 +169,19 @@ Be concise, helpful, and developer-friendly.`;
         return;
       }
 
+      const systemPrompt = buildSystemPrompt(aiAgent, undefined, canManage);
+
+      if (aiAgent.provider === "ollama") {
+        const content = await generateWithOllama(systemPrompt, userContent, aiAgent);
+        const msg = await postAIMessage(
+          channelId,
+          content || "I couldn't generate a response from Ollama.",
+          userMessage.id
+        );
+        addMessage(msg);
+        return;
+      }
+
       // Check if puter.ai is available
       if (!puter?.ai) {
         const msg = await postAIMessage(
@@ -176,8 +209,6 @@ Be concise, helpful, and developer-friendly.`;
           return;
         }
       }
-
-      const systemPrompt = buildSystemPrompt(aiAgent, undefined, canManage);
 
       // Call Puter.js AI with native tool calling
       // Per docs: puter.ai.chat(messages, testMode, options)
@@ -217,9 +248,7 @@ Be concise, helpful, and developer-friendly.`;
       // OpenAI format: tool_calls array with { id, function: { name, arguments } }
       const message = response?.message;
       const contentBlocks = Array.isArray(message?.content) ? message.content : [];
-      const toolUseBlock = contentBlocks.find(
-        (b: { type: string }) => b.type === "tool_use"
-      );
+      const toolUseBlock = contentBlocks.find((b: { type: string }) => b.type === "tool_use");
       const openaiToolCall = message?.tool_calls?.[0];
 
       if (toolUseBlock || openaiToolCall) {
@@ -299,10 +328,11 @@ Be concise, helpful, and developer-friendly.`;
       }
     } catch (error) {
       console.error("[AI Agent Error]", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
       try {
         const msg = await postAIMessage(
           channelId,
-          "Sorry, I encountered an error processing your request. Please try again.",
+          `Sorry, I encountered an error processing your request. ${message}`,
           userMessage.id
         );
         addMessage(msg);
