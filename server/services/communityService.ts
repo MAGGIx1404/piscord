@@ -1,8 +1,8 @@
-import { createError } from "h3";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { db, generateId } from "../db";
 import type { PublicCommunity } from "../db/types";
+import { broadcastToCommunity } from "../routes/_ws";
 
 const COMMUNITY_IMAGES_DIR = path.resolve("public/images/communities");
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -412,10 +412,11 @@ export async function joinCommunity(
   }
 
   if (community.require_approval) {
+    const requestId = generateId();
     await db
       .insertInto("community_join_requests")
       .values({
-        id: generateId(),
+        id: requestId,
         community_id: communityId,
         user_id: userId,
         note: null,
@@ -424,6 +425,12 @@ export async function joinCommunity(
         reviewed_at: null
       })
       .execute();
+
+    const user = await db
+      .selectFrom("users")
+      .select(["username", "avatar_url"])
+      .where("id", "=", userId)
+      .executeTakeFirst();
 
     await db
       .insertInto("notifications")
@@ -438,6 +445,19 @@ export async function joinCommunity(
       })
       .execute();
 
+    broadcastToCommunity(communityId, {
+      type: "community:join_request",
+      request: {
+        id: requestId,
+        user_id: userId,
+        username: user?.username ?? "",
+        avatar_url: user?.avatar_url ?? null,
+        note: null,
+        created_at: new Date().toISOString(),
+        status: "pending"
+      }
+    });
+
     return {
       joined: false,
       pending: true,
@@ -446,10 +466,11 @@ export async function joinCommunity(
     };
   }
 
+  const memberId = generateId();
   await db
     .insertInto("community_members")
     .values({
-      id: generateId(),
+      id: memberId,
       community_id: communityId,
       user_id: userId,
       nickname: null
@@ -462,6 +483,12 @@ export async function joinCommunity(
     .where("id", "=", communityId)
     .returning("member_count")
     .executeTakeFirstOrThrow();
+
+  const user = await db
+    .selectFrom("users")
+    .select(["username", "avatar_url"])
+    .where("id", "=", userId)
+    .executeTakeFirst();
 
   if (community.owner_id !== userId) {
     await db
@@ -477,6 +504,18 @@ export async function joinCommunity(
       })
       .execute();
   }
+
+  broadcastToCommunity(communityId, {
+    type: "community:member_join",
+    member: {
+      id: memberId,
+      user_id: userId,
+      username: user?.username ?? "",
+      avatar_url: user?.avatar_url ?? null,
+      joined_at: new Date().toISOString()
+    },
+    member_count: updated.member_count
+  });
 
   return {
     joined: true,

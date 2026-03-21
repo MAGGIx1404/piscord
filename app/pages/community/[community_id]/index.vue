@@ -51,7 +51,11 @@
           <!-- Center wide column -->
           <div class="col-span-12 space-y-5 lg:col-span-6">
             <!-- Activity feed + join request moderation -->
-            <CommunityActivity :community-id="communityId" />
+            <CommunityActivity
+              :community-id="communityId"
+              @member-count-update="handleMemberCountUpdate"
+              @member-join="handleMemberJoin"
+            />
 
             <!-- Channels Grid -->
             <CommunityChannelGrid
@@ -81,6 +85,7 @@
 import { Users, MessageSquare, Hash, Layers, Mic, Megaphone, FolderOpen } from "lucide-vue-next";
 import { markRaw as markRawVue } from "vue";
 import { toast } from "vue-sonner";
+import type { LiveActivityItem } from "~/composables/useCommunityLive";
 
 const route = useRoute();
 const api = useApi();
@@ -144,7 +149,6 @@ interface ApiOverview {
 const { data, pending, error } = await useAsyncData<ApiOverview>(
   `community-overview-${communityId}`,
   () => api<ApiOverview>(`/api/communities/${communityId}`),
-  { server: false }
 );
 
 if (error.value) {
@@ -177,16 +181,18 @@ interface ApiWorkspace {
 
 const { data: channelsData } = await useAsyncData(
   `community-channels-${communityId}`,
-  () => api<{ channels: ApiChannel[]; can_manage: boolean }>(`/api/communities/${communityId}/channels`),
-  { server: false }
+  () =>
+    api<{ channels: ApiChannel[]; can_manage: boolean }>(
+      `/api/communities/${communityId}/channels`
+    )
 );
 
 const { data: workspacesData } = await useAsyncData(
   `community-workspaces-${communityId}`,
-  () => api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
-    `/api/communities/${communityId}/workspaces`
-  ),
-  { server: false }
+  () =>
+    api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
+      `/api/communities/${communityId}/workspaces`
+    )
 );
 
 // Track last visited community so the home page can redirect here
@@ -352,6 +358,31 @@ function formatNumber(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
   if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
   return String(n);
+}
+
+// ─── Real-time event handlers ─────────────────────────────────────────────────
+
+function handleMemberCountUpdate(count: number) {
+  if (data.value?.community) {
+    data.value.community.member_count = count;
+  }
+}
+
+function handleMemberJoin(member: LiveActivityItem) {
+  if (data.value) {
+    data.value.members = [
+      ...data.value.members,
+      {
+        id: member.id,
+        user_id: member.user_id,
+        username: member.username,
+        avatar_url: member.avatar_url,
+        nickname: null,
+        joined_at: member.joined_at,
+        role_name: "member"
+      }
+    ];
+  }
 }
 
 // ─── Handlers ─────────────────────────────────────────────────────────────────

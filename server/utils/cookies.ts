@@ -1,8 +1,8 @@
-import type { H3Event } from "h3";
-
 const IS_PROD = process.env.NODE_ENV === "production";
 
-export function setAccessTokenCookie(event: H3Event, token: string) {
+type ServerEvent = Parameters<typeof setCookie>[0];
+
+export function setAccessTokenCookie(event: ServerEvent, token: string) {
   setCookie(event, "access_token", token, {
     httpOnly: true,
     secure: IS_PROD,
@@ -12,7 +12,7 @@ export function setAccessTokenCookie(event: H3Event, token: string) {
   });
 }
 
-export function setRefreshTokenCookie(event: H3Event, token: string) {
+export function setRefreshTokenCookie(event: ServerEvent, token: string) {
   setCookie(event, "refresh_token", token, {
     httpOnly: true,
     secure: IS_PROD,
@@ -22,7 +22,7 @@ export function setRefreshTokenCookie(event: H3Event, token: string) {
   });
 }
 
-export function clearAuthCookies(event: H3Event) {
+export function clearAuthCookies(event: ServerEvent) {
   deleteCookie(event, "access_token", { path: "/" });
   deleteCookie(event, "refresh_token", { path: "/" });
 }

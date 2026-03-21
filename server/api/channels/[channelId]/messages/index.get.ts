@@ -1,4 +1,3 @@
-import { createError, getRouterParam, getQuery } from "h3";
 import { getMessagesByChannel } from "../../../../services/messageService";
 
 export default defineEventHandler(async (event) => {

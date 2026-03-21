@@ -1,7 +1,6 @@
-import { createError, getCookie, type H3Event } from "h3";
 import { verifyAccessToken } from "./jwt";
 
-export function requireAuth(event: H3Event): string {
+export function requireAuth(event: Parameters<typeof getCookie>[0]): string {
   // Prefer middleware-set context (already verified)
   if (event.context.userId) {
     return event.context.userId;

@@ -7,17 +7,19 @@
       <NavDockIcon :icon="CompassIcon" label="Discover" to="/discover" />
       <NavDockIcon :icon="UsersIcon" label="Friends" to="/me" />
       <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
-      <NavCommunitySwitcher />
-      <NavDockIcon
-        :icon="HashIcon"
-        label="Channels"
-        :to="currentCommunityId ? `/community/${currentCommunityId}/channels` : '/me'"
-      />
-      <NavDockIcon
-        :icon="LayersIcon"
-        label="Workspaces"
-        :to="currentCommunityId ? `/community/${currentCommunityId}/workspaces` : '/me'"
-      />
+      <NavDockIcon :icon="Building2Icon" label="Communities" to="/my-communities" />
+      <template v-if="currentCommunityId">
+        <NavDockIcon
+          :icon="HashIcon"
+          label="Channels"
+          :to="`/community/${currentCommunityId}/channels`"
+        />
+        <NavDockIcon
+          :icon="LayersIcon"
+          label="Workspaces"
+          :to="`/community/${currentCommunityId}/workspaces`"
+        />
+      </template>
       <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
       <NotificationModal>
         <template #trigger="{ unreadCount }">
@@ -76,6 +78,7 @@ import {
   LayoutDashboard as LayoutDashboardIcon,
   Compass as CompassIcon,
   Users as UsersIcon,
+  Building2 as Building2Icon,
   Hash as HashIcon,
   Layers as LayersIcon,
   Bell,
