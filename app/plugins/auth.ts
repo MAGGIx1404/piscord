@@ -33,8 +33,15 @@ export default defineNuxtPlugin(async () => {
   }
 
   if (import.meta.client) {
-    // ── Client-side: if store wasn't hydrated from SSR, try to init ─────────
-    if (!userStore.isAuthenticated) {
+    // ── Client-side: validate session against the server ───────────────────
+    // On guest routes (/auth/*) the SSR routeGuard already confirmed the user
+    // is unauthenticated — just clear any stale localStorage data.
+    // On protected routes, always call initAuth() so we don't trust stale
+    // localStorage blindly (e.g. DB wiped, token revoked, user deleted).
+    const route = useRoute();
+    if (route.path.startsWith("/auth/")) {
+      userStore.reset();
+    } else {
       const { initAuth } = useAuth();
       await initAuth();
     }

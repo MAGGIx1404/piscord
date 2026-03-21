@@ -57,8 +57,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    JWT_SECRET: process.env.JWT_SECRET,
-    MINIO_HOST: process.env.MINIO_HOST
+    JWT_SECRET: process.env.JWT_SECRET
   },
 
   app: {
