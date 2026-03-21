@@ -1,6 +1,7 @@
 import type { Peer } from "crossws";
 import { verifyAccessToken } from "../utils/jwt";
 import { parse as parseCookies } from "cookie-es";
+import { getFriendIds } from "../services/friendService";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -16,7 +17,12 @@ interface CommunityPeer {
   communityId: string;
 }
 
-type AuthenticatedPeer = ChannelPeer | CommunityPeer;
+interface UserPeer {
+  userId: string;
+  scope: "user";
+}
+
+type AuthenticatedPeer = ChannelPeer | CommunityPeer | UserPeer;
 
 // ─── State ──────────────────────────────────────────────────────────────────
 
@@ -26,6 +32,8 @@ const peerAuth = new Map<Peer, AuthenticatedPeer>();
 const channelPeers = new Map<string, Set<Peer>>();
 // Map of communityId → Set of peers watching the community overview
 const communityPeers = new Map<string, Set<Peer>>();
+// Map of userId → Set of peers (user can have multiple tabs)
+const userPeers = new Map<string, Set<Peer>>();
 // Map of channelId → Set of userIds currently typing
 const typingUsers = new Map<string, Set<string>>();
 
@@ -53,6 +61,17 @@ function broadcastToCommunity(communityId: string, data: unknown, excludePeer?: 
   }
 }
 
+function broadcastToUser(userId: string, data: unknown, excludePeer?: Peer) {
+  const peers = userPeers.get(userId);
+  if (!peers) return;
+  const payload = JSON.stringify(data);
+  for (const peer of peers) {
+    if (peer !== excludePeer) {
+      peer.send(payload);
+    }
+  }
+}
+
 function getOnlineUsers(channelId: string): string[] {
   const peers = channelPeers.get(channelId);
   if (!peers) return [];
@@ -64,14 +83,21 @@ function getOnlineUsers(channelId: string): string[] {
   return [...userIds];
 }
 
+function isUserOnline(userId: string): boolean {
+  return (userPeers.get(userId)?.size ?? 0) > 0;
+}
+
 // ─── Export for use by API routes ───────────────────────────────────────────
 
 export {
   broadcastToChannel,
   broadcastToCommunity,
+  broadcastToUser,
   getOnlineUsers,
+  isUserOnline,
   channelPeers,
   communityPeers,
+  userPeers,
   peerAuth
 };
 
@@ -97,6 +123,7 @@ export default defineWebSocketHandler({
     if (type === "auth") {
       const channelId = data.channelId as string | undefined;
       const communityId = data.communityId as string | undefined;
+      const scope = data.scope as string | undefined;
 
       // Token can come from the message payload or from the httpOnly cookie
       // (cookie is sent with the WebSocket upgrade request)
@@ -111,9 +138,12 @@ export default defineWebSocketHandler({
         }
       }
 
-      if (!token || (!channelId && !communityId)) {
+      if (!token || (!channelId && !communityId && scope !== "user")) {
         peer.send(
-          JSON.stringify({ type: "error", message: "Missing token or channelId/communityId" })
+          JSON.stringify({
+            type: "error",
+            message: "Missing token or channelId/communityId/scope"
+          })
         );
         return;
       }
@@ -157,6 +187,27 @@ export default defineWebSocketHandler({
           communityPeers.get(communityId)!.add(peer);
 
           peer.send(JSON.stringify({ type: "auth:success", userId: payload.userId }));
+        } else if (scope === "user") {
+          // User-level subscription (for DMs and friend events)
+          peerAuth.set(peer, { userId: payload.userId, scope: "user" });
+
+          const wasOnline = (userPeers.get(payload.userId)?.size ?? 0) > 0;
+
+          if (!userPeers.has(payload.userId)) {
+            userPeers.set(payload.userId, new Set());
+          }
+          userPeers.get(payload.userId)!.add(peer);
+
+          peer.send(JSON.stringify({ type: "auth:success", userId: payload.userId }));
+
+          // Broadcast online status to friends (only if user just came online)
+          if (!wasOnline) {
+            getFriendIds(payload.userId).then((friendIds) => {
+              for (const fid of friendIds) {
+                broadcastToUser(fid, { type: "friend:online", userId: payload.userId });
+              }
+            });
+          }
         }
       } catch {
         peer.send(JSON.stringify({ type: "error", message: "Invalid token" }));
@@ -171,36 +222,67 @@ export default defineWebSocketHandler({
       return;
     }
 
-    // ── Typing (channel-only) ─────────────────────────────────────────────
-    if (auth.scope !== "channel") return;
-
-    if (type === "typing:start") {
-      if (!typingUsers.has(auth.channelId)) {
-        typingUsers.set(auth.channelId, new Set());
+    // ── Channel typing ──────────────────────────────────────────────────
+    if (auth.scope === "channel") {
+      if (type === "typing:start") {
+        if (!typingUsers.has(auth.channelId)) {
+          typingUsers.set(auth.channelId, new Set());
+        }
+        typingUsers.get(auth.channelId)!.add(auth.userId);
+        broadcastToChannel(
+          auth.channelId,
+          {
+            type: "typing:update",
+            typingUsers: [...(typingUsers.get(auth.channelId) ?? [])]
+          },
+          peer
+        );
+        return;
       }
-      typingUsers.get(auth.channelId)!.add(auth.userId);
-      broadcastToChannel(
-        auth.channelId,
-        {
-          type: "typing:update",
-          typingUsers: [...(typingUsers.get(auth.channelId) ?? [])]
-        },
-        peer
-      );
-      return;
+
+      if (type === "typing:stop") {
+        typingUsers.get(auth.channelId)?.delete(auth.userId);
+        broadcastToChannel(
+          auth.channelId,
+          {
+            type: "typing:update",
+            typingUsers: [...(typingUsers.get(auth.channelId) ?? [])]
+          },
+          peer
+        );
+        return;
+      }
     }
 
-    if (type === "typing:stop") {
-      typingUsers.get(auth.channelId)?.delete(auth.userId);
-      broadcastToChannel(
-        auth.channelId,
-        {
-          type: "typing:update",
-          typingUsers: [...(typingUsers.get(auth.channelId) ?? [])]
-        },
-        peer
-      );
-      return;
+    // ── DM typing (user scope) ──────────────────────────────────────────
+    if (auth.scope === "user") {
+      if (type === "dm:typing:start") {
+        const recipientId = data.recipientId as string;
+        const conversationId = data.conversationId as string;
+        if (recipientId && conversationId) {
+          broadcastToUser(recipientId, {
+            type: "dm:typing:update",
+            conversationId,
+            userId: auth.userId,
+            typing: true
+          });
+        }
+        return;
+      }
+
+      if (type === "dm:typing:stop") {
+        const recipientId = data.recipientId as string;
+        const conversationId = data.conversationId as string;
+        if (recipientId && conversationId) {
+          broadcastToUser(recipientId, {
+            type: "dm:typing:update",
+            conversationId,
+            userId: auth.userId,
+            typing: false
+          });
+        }
+        return;
+      }
     }
   },
 
@@ -225,6 +307,18 @@ export default defineWebSocketHandler({
         if (communityPeers.get(auth.communityId)?.size === 0) {
           communityPeers.delete(auth.communityId);
         }
+      } else if (auth.scope === "user") {
+        userPeers.get(auth.userId)?.delete(peer);
+        if (userPeers.get(auth.userId)?.size === 0) {
+          userPeers.delete(auth.userId);
+
+          // Broadcast offline status to friends
+          getFriendIds(auth.userId).then((friendIds) => {
+            for (const fid of friendIds) {
+              broadcastToUser(fid, { type: "friend:offline", userId: auth.userId });
+            }
+          });
+        }
       }
 
       peerAuth.delete(peer);
@@ -240,6 +334,11 @@ export default defineWebSocketHandler({
         typingUsers.get(auth.channelId)?.delete(auth.userId);
       } else if (auth.scope === "community") {
         communityPeers.get(auth.communityId)?.delete(peer);
+      } else if (auth.scope === "user") {
+        userPeers.get(auth.userId)?.delete(peer);
+        if (userPeers.get(auth.userId)?.size === 0) {
+          userPeers.delete(auth.userId);
+        }
       }
       peerAuth.delete(peer);
     }

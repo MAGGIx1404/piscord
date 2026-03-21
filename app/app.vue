@@ -3,7 +3,7 @@
     <NuxtRouteAnnouncer />
     <NuxtPage />
   </NuxtLayout>
-  <Toaster position="top-center" />
+  <Toaster position="top-center" rich-colors />
 </template>
 
 <script setup>

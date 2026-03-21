@@ -5,7 +5,7 @@
     >
       <NavDockIcon :icon="LayoutDashboardIcon" label="Dashboard" to="/" />
       <NavDockIcon :icon="CompassIcon" label="Discover" to="/discover" />
-      <NavDockIcon :icon="UsersIcon" label="Friends" to="/me" />
+      <NavDockIcon :icon="UsersIcon" label="Friends" to="/friends" />
       <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
       <NavDockIcon :icon="Building2Icon" label="Communities" to="/my-communities" />
       <template v-if="currentCommunityId">

@@ -44,20 +44,16 @@
       <div class="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
         <!-- Banner header -->
         <div v-if="channelBanner" class="relative h-28 w-full overflow-hidden">
-          <img
-            :src="channelBanner"
-            :alt="channelName"
-            class="h-full w-full object-cover"
+          <img :src="channelBanner" :alt="channelName" class="h-full w-full object-cover" />
+          <div
+            class="absolute inset-0 bg-linear-to-t from-background via-background/30 to-transparent"
           />
-          <div class="absolute inset-0 bg-linear-to-t from-background via-background/30 to-transparent" />
 
           <div class="absolute bottom-0 left-0 flex w-full items-end justify-between px-4 pb-2.5">
             <div class="flex items-center gap-2">
               <Hash class="size-5 text-white/80" />
               <h2 class="font-bold text-white drop-shadow-sm">{{ channelName }}</h2>
-              <span v-if="channelTopic" class="text-sm text-white/60">
-                — {{ channelTopic }}
-              </span>
+              <span v-if="channelTopic" class="text-sm text-white/60"> — {{ channelTopic }} </span>
             </div>
             <div class="flex items-center gap-2">
               <Popover v-if="aiAgent?.name">
@@ -76,7 +72,9 @@
                 </PopoverContent>
               </Popover>
 
-              <div class="flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white/80 backdrop-blur-sm">
+              <div
+                class="flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white/80 backdrop-blur-sm"
+              >
                 <div
                   class="size-2 rounded-full"
                   :class="connected ? 'bg-green-400' : 'bg-red-400'"
@@ -114,10 +112,7 @@
             </Popover>
 
             <div class="flex items-center gap-1 text-xs text-muted-foreground">
-              <div
-                class="size-2 rounded-full"
-                :class="connected ? 'bg-green-500' : 'bg-red-500'"
-              />
+              <div class="size-2 rounded-full" :class="connected ? 'bg-green-500' : 'bg-red-500'" />
               {{ onlineUsers.length }} online
             </div>
           </div>
@@ -167,6 +162,8 @@
             @react="handleReact"
             @add-reaction="handleAddReaction"
             @copy="handleCopy"
+            @message="handleMessage"
+            @add-friend="handleAddFriend"
           />
         </template>
       </div>
@@ -174,9 +171,7 @@
       <!-- Typing Indicator -->
       <div v-if="typingUsernames.length || aiProcessing" class="px-4 py-1">
         <span class="text-xs text-muted-foreground italic">
-          <template v-if="aiProcessing">
-            {{ aiAgent?.name || "AI" }} is thinking...
-          </template>
+          <template v-if="aiProcessing"> {{ aiAgent?.name || "AI" }} is thinking... </template>
           <template v-else>
             {{ typingLabel }}
           </template>
@@ -218,8 +213,10 @@ import {
   MessageSquare as MessageSquareIcon
 } from "lucide-vue-next";
 import { ref, computed, onMounted, nextTick, watch } from "vue";
+import { toast } from "vue-sonner";
 
 const route = useRoute();
+const router = useRouter();
 const api = useApi();
 
 const channelId = computed(() => route.params.channel_id as string);
@@ -369,6 +366,23 @@ async function handleAddReaction(message: FormattedMessage) {
 
 function handleCopy(message: FormattedMessage) {
   navigator.clipboard.writeText(message.content);
+}
+
+function handleMessage(author: { id: string; name: string; avatar: string }) {
+  router.push(`/friends?dm=${author.id}`);
+}
+
+async function handleAddFriend(author: { id: string; name: string; avatar: string }) {
+  try {
+    await api("/api/friends/requests", {
+      method: "POST",
+      body: { receiverId: author.id }
+    });
+    toast.success(`Friend request sent to ${author.name}`);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Failed to send friend request";
+    toast.error(msg);
+  }
 }
 
 function cancelReply() {

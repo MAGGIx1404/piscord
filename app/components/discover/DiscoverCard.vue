@@ -39,7 +39,7 @@
     <div class="p-5">
       <!-- Header -->
       <div class="mb-3 flex items-start gap-3">
-        <Avatar class="-mt-8 size-12 shrink-0 ring-4 ring-card">
+        <Avatar class="-mt-8 size-12 shrink-0 rounded-lg ring-4 ring-card">
           <AvatarImage :src="community.iconImage as string" />
           <AvatarFallback class="text-lg">{{ community.name.charAt(0) }}</AvatarFallback>
         </Avatar>
