@@ -1,4 +1,3 @@
-import { createError, getRouterParam } from "h3";
 import { db } from "../../../../db";
 
 const MANAGE_CHANNELS = 4;

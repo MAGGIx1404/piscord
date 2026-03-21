@@ -205,9 +205,15 @@
 <script setup lang="ts">
 import { Activity, UserPlus, ClipboardList, Check, X, Loader2, RefreshCw } from "lucide-vue-next";
 import { toast } from "vue-sonner";
+import type { LiveActivityItem, LiveJoinRequest } from "~/composables/useCommunityLive";
 
 const props = defineProps<{
   communityId: string;
+}>();
+
+const emit = defineEmits<{
+  memberCountUpdate: [count: number];
+  memberJoin: [member: LiveActivityItem];
 }>();
 
 const api = useApi();
@@ -246,8 +252,7 @@ interface ApiResponse {
 
 const { data, pending, refresh } = await useAsyncData<ApiResponse>(
   `community-activity-${props.communityId}`,
-  () => api<ApiResponse>(`/api/communities/${props.communityId}/activity`),
-  { server: false }
+  () => api<ApiResponse>(`/api/communities/${props.communityId}/activity`)
 );
 
 const recentActivity = computed(() => data.value?.recentActivity ?? []);
@@ -263,6 +268,42 @@ watch(data, (val) => {
   }
 });
 
+// ─── Real-time updates ───────────────────────────────────────────────────────
+
+const { connected, connect } = useCommunityLive(
+  computed(() => props.communityId),
+  {
+    onJoinRequest(request: LiveJoinRequest) {
+      if (!data.value) return;
+      data.value.joinRequests = [request as JoinRequestItem, ...data.value.joinRequests];
+    },
+
+    onMemberJoin(member: LiveActivityItem, memberCount: number) {
+      if (!data.value) return;
+      data.value.recentActivity = [member as ActivityItem, ...data.value.recentActivity].slice(
+        0,
+        10
+      );
+      emit("memberCountUpdate", memberCount);
+      emit("memberJoin", member);
+    },
+
+    onRequestReviewed(requestId: string, _status: string, _userId: string, memberCount: number) {
+      if (!data.value) return;
+      data.value.joinRequests = data.value.joinRequests.filter((r) => r.id !== requestId);
+      emit("memberCountUpdate", memberCount);
+    }
+  }
+);
+
+watch(
+  data,
+  (val) => {
+    if (val && !connected.value) connect();
+  },
+  { immediate: true }
+);
+
 // ─── Review action ────────────────────────────────────────────────────────────
 
 async function reviewRequest(requestId: string, action: "approve" | "reject") {
@@ -276,7 +317,8 @@ async function reviewRequest(requestId: string, action: "approve" | "reject") {
     toast.success(
       action === "approve" ? "Request approved — user added as member." : "Request declined."
     );
-    await refresh();
+    // WS will update the list in real-time; refresh as fallback
+    if (!connected.value) await refresh();
   } catch (err: any) {
     toast.error(err?.data?.message ?? "Failed to process request.");
   } finally {

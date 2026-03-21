@@ -1,4 +1,3 @@
-import { createError, getRouterParam, readBody } from "h3";
 import { createMessage } from "../../../../services/messageService";
 import type { CreateMessagePayload } from "../../../../services/messageService";
 import { broadcastToChannel } from "../../../../routes/_ws";

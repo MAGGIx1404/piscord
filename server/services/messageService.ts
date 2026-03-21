@@ -1,4 +1,3 @@
-import { createError } from "h3";
 import { db, generateId } from "../db";
 import type { MessageType } from "../db/tables";
 

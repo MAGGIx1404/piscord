@@ -1,4 +1,3 @@
-import { createError, readMultipartFormData, type H3Event } from "h3";
 import { db, generateId } from "../db";
 import type { PublicUser } from "../db/types";
 import path from "node:path";
@@ -62,8 +61,10 @@ const MIME_TO_EXT: Record<string, string> = {
 };
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
+type ServerEvent = Parameters<typeof readMultipartFormData>[0];
+
 export async function uploadAvatar(
-  event: H3Event,
+  event: ServerEvent,
   userId: string
 ): Promise<{ avatar_url: string }> {
   const parts = await readMultipartFormData(event);

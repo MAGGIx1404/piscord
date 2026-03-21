@@ -8,8 +8,7 @@
  *        populates the Pinia store so the first render already has the
  *        correct auth state — no login-page flicker.
  *
- * Client: On hydration the store is already populated from SSR.
- *         Only bootstraps the community store and validates persisted IDs.
+ * Client: On hydration validates the session against the server.
  */
 export default defineNuxtPlugin(async () => {
   const userStore = useUserStore();
@@ -44,31 +43,6 @@ export default defineNuxtPlugin(async () => {
     } else {
       const { initAuth } = useAuth();
       await initAuth();
-    }
-
-    // Bootstrap community store for authenticated users
-    if (userStore.isAuthenticated) {
-      const communityStore = useCommunityStore();
-      await communityStore.fetchCommunities();
-
-      // Validate persisted currentCommunityId still exists in the list
-      if (communityStore.currentCommunityId) {
-        const exists = communityStore.communities.some(
-          (c) => c.id === communityStore.currentCommunityId
-        );
-        if (!exists && communityStore.communities.length > 0) {
-          communityStore.setCurrentCommunity(communityStore.communities[0]!.id);
-        } else if (!exists) {
-          communityStore.currentCommunityId = null;
-        }
-      } else if (communityStore.communities.length > 0) {
-        const lastId = localStorage.getItem("lastCommunityId");
-        const target =
-          lastId && communityStore.communities.some((c) => c.id === lastId)
-            ? lastId
-            : communityStore.communities[0]!.id;
-        communityStore.setCurrentCommunity(target);
-      }
     }
   }
 });

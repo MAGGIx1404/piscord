@@ -1,4 +1,3 @@
-import { createError } from "h3";
 import { db, generateId } from "../db";
 
 // Permission bitmask
@@ -85,7 +84,16 @@ export async function getWorkspacesByCommunity(
 
   const rows = await db
     .selectFrom("workspaces")
-    .select(["id", "name", "emoji", "description", "banner_url", "is_public", "created_by", "created_at"])
+    .select([
+      "id",
+      "name",
+      "emoji",
+      "description",
+      "banner_url",
+      "is_public",
+      "created_by",
+      "created_at"
+    ])
     .where("community_id", "=", communityId)
     .orderBy("created_at", "asc")
     .execute();
@@ -128,7 +136,16 @@ export async function createWorkspace(
 
   const workspace = await db
     .selectFrom("workspaces")
-    .select(["id", "name", "emoji", "description", "banner_url", "is_public", "created_by", "created_at"])
+    .select([
+      "id",
+      "name",
+      "emoji",
+      "description",
+      "banner_url",
+      "is_public",
+      "created_by",
+      "created_at"
+    ])
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
 

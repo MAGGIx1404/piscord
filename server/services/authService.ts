@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import { createError } from "h3";
 import { db, generateId } from "../db";
 import type { AccessTokenPayload, AuthTokens, PublicUser } from "../db/types";
 import type { User } from "../db/tables";
