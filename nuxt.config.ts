@@ -44,6 +44,12 @@ export default defineNuxtConfig({
     priority: ["google"]
   },
 
+  nitro: {
+    experimental: {
+      websocket: true
+    }
+  },
+
   css: ["@/assets/css/main.css"],
 
   vite: {
@@ -51,8 +57,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    JWT_SECRET: process.env.JWT_SECRET,
-    MINIO_HOST: process.env.MINIO_HOST
+    JWT_SECRET: process.env.JWT_SECRET
   },
 
   app: {

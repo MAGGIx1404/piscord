@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { LogOut } from "lucide-vue-next";
 
-const router = useRouter();
-
-async function handleLogout() {
-  await $fetch("/api/auth/logout");
-  router.push("/auth/login");
-}
+const { logout } = useAuth();
 </script>
 
 <template>
-  <button class="w-full flex items-center gap-2" @click="handleLogout">
+  <Button variant="destructive" @click="logout">
     <LogOut />
     Log out
-  </button>
+  </Button>
 </template>

@@ -1,42 +1,33 @@
-import { getSessionById } from "../service/session";
-import { clearSessionCookies } from "../utils/cookie";
+import { verifyAccessToken } from "../utils/jwt";
 
-const authPages = ["/auth/login", "/auth/register"];
-const excludedApiRoutes = [
-  "/api/auth/signin",
-  "/api/auth/signup",
-  "/api/user/username-available",
-  "/api/auth/logout"
+const PUBLIC_PREFIXES = [
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/refresh",
+  "/api/auth/logout",
+  "/api/auth/check-username",
+  "/api/auth/2fa/verify"
 ];
 
-export default defineEventHandler(async (event) => {
-  const sessionId = getCookie(event, "session_id");
-  const sessionToken = getCookie(event, "session_token");
-  const isValidSessionRequest = sessionId && sessionToken;
-  const pathname = getRequestURL(event).pathname;
+export default defineEventHandler((event) => {
+  const path = getRequestURL(event).pathname;
 
-  if (excludedApiRoutes.includes(pathname)) {
-    return;
+  // Only apply to /api/ routes
+  if (!path.startsWith("/api/")) return;
+
+  // Skip public auth routes
+  if (PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix))) return;
+
+  // Read access token from httpOnly cookie
+  const token = getCookie(event, "access_token");
+  if (!token) {
+    throw createError({ statusCode: 401, message: "Missing access token" });
   }
 
-  if (!isValidSessionRequest) {
-    if (authPages.includes(pathname)) {
-      return;
-    }
-
-    clearSessionCookies(event);
-    return sendRedirect(event, "/auth/login", 302);
+  try {
+    const payload = verifyAccessToken(token);
+    event.context.userId = payload.userId;
+  } catch {
+    throw createError({ statusCode: 401, message: "Invalid or expired token" });
   }
-
-  const session = await getSessionById(sessionId);
-  if (!session || session.token !== sessionToken) {
-    clearSessionCookies(event);
-    return sendRedirect(event, "/auth/login", 302);
-  }
-
-  if (authPages.includes(pathname)) {
-    return sendRedirect(event, "/", 302);
-  }
-
-  event.context.session = session;
 });

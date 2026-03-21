@@ -1,0 +1,623 @@
+import { createError } from "h3";
+import path from "node:path";
+import fs from "node:fs/promises";
+import { db, generateId } from "../db";
+import type { PublicCommunity } from "../db/types";
+
+const COMMUNITY_IMAGES_DIR = path.resolve("public/images/communities");
+const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "image/gif": ".gif"
+};
+const MAX_SIZE = 8 * 1024 * 1024; // 8 MB
+
+export interface CreateCommunityPayload {
+  name: string;
+  slug: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  rules?: Array<{ id: number; text: string }>;
+  visibility: "public" | "private";
+  requireApproval?: boolean;
+  isAiPet?: boolean;
+  aiAgentName?: string | null;
+  aiAgentPetName?: string | null;
+  aiAgentAvatar?: string | null;
+  aiAgentModel?: string | null;
+  aiAgentDescription?: string | null;
+}
+
+export interface FilePart {
+  data: Buffer;
+  type?: string;
+  filename?: string;
+}
+
+async function saveImage(
+  communityId: string,
+  kind: "icon" | "banner" | "ai-avatar",
+  part: FilePart
+): Promise<string> {
+  const mime = part.type ?? "image/png";
+
+  if (!ALLOWED_MIMES.has(mime)) {
+    throw createError({ statusCode: 400, message: `Invalid ${kind} file type: ${mime}` });
+  }
+  if (part.data.length > MAX_SIZE) {
+    throw createError({ statusCode: 400, message: `${kind} exceeds 8 MB limit` });
+  }
+
+  await fs.mkdir(COMMUNITY_IMAGES_DIR, { recursive: true });
+  const ext = MIME_TO_EXT[mime] ?? ".png";
+  const filename = `${communityId}-${kind}${ext}`;
+  await fs.writeFile(path.join(COMMUNITY_IMAGES_DIR, filename), part.data);
+  return `/images/communities/${filename}`;
+}
+
+function toCommunitySlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 30);
+}
+
+export async function checkCommunitySlug(slug: string): Promise<boolean> {
+  const existing = await db
+    .selectFrom("communities")
+    .select("id")
+    .where("slug", "=", slug)
+    .executeTakeFirst();
+  return !existing;
+}
+
+export async function createCommunity(
+  ownerId: string,
+  payload: CreateCommunityPayload,
+  iconPart?: FilePart | null,
+  bannerPart?: FilePart | null,
+  aiAgentAvatarPart?: FilePart | null
+): Promise<PublicCommunity> {
+  const {
+    name,
+    description,
+    category,
+    tags = [],
+    rules = [],
+    visibility,
+    requireApproval = false,
+    isAiPet = false,
+    aiAgentName = null,
+    aiAgentPetName = null,
+    aiAgentAvatar = null,
+    aiAgentModel = null,
+    aiAgentDescription = null
+  } = payload;
+
+  const slug = payload.slug || toCommunitySlug(name);
+
+  const taken = await db
+    .selectFrom("communities")
+    .select("id")
+    .where("slug", "=", slug)
+    .executeTakeFirst();
+
+  if (taken) {
+    throw createError({ statusCode: 409, message: "Community URL (slug) is already taken" });
+  }
+
+  const id = generateId();
+
+  let icon_url: string | null = null;
+  let banner_url: string | null = null;
+
+  if (iconPart?.data?.length) {
+    icon_url = await saveImage(id, "icon", iconPart);
+  }
+  if (bannerPart?.data?.length) {
+    banner_url = await saveImage(id, "banner", bannerPart);
+  }
+
+  // Resolve AI agent avatar: uploaded file takes precedence over preset key
+  let resolvedAiAgentAvatar = aiAgentName ? (aiAgentAvatar ?? null) : null;
+  if (aiAgentAvatarPart?.data?.length) {
+    resolvedAiAgentAvatar = await saveImage(id, "ai-avatar", aiAgentAvatarPart);
+  }
+
+  const community = await db
+    .insertInto("communities")
+    .values({
+      id,
+      owner_id: ownerId,
+      name: name.trim(),
+      slug,
+      description: description?.trim() ?? null,
+      icon_url,
+      banner_url,
+      rules: rules.length ? JSON.stringify(rules) : null,
+      is_public: visibility === "public",
+      member_count: 1,
+      category: category ?? null,
+      tags,
+      require_approval: requireApproval,
+      is_ai_pet: isAiPet,
+      ai_agent_name: aiAgentName ?? null,
+      ai_agent_pet_name: aiAgentPetName ?? null,
+      ai_agent_avatar: resolvedAiAgentAvatar,
+      ai_agent_model: aiAgentModel ?? null,
+      ai_agent_description: aiAgentDescription ?? null
+    })
+    .returning([
+      "id",
+      "owner_id",
+      "name",
+      "slug",
+      "description",
+      "icon_url",
+      "banner_url",
+      "rules",
+      "is_public",
+      "member_count",
+      "category",
+      "tags",
+      "require_approval",
+      "is_ai_pet",
+      "ai_agent_name",
+      "ai_agent_pet_name",
+      "ai_agent_avatar",
+      "ai_agent_model",
+      "ai_agent_description",
+      "created_at"
+    ])
+    .executeTakeFirstOrThrow();
+
+  const memberRoleId = generateId();
+  const adminRoleId = generateId();
+
+  await db
+    .insertInto("roles")
+    .values([
+      {
+        id: memberRoleId,
+        community_id: id,
+        name: "Member",
+        color: null,
+        permissions: 3, // view + send
+        position: 0,
+        is_default: true
+      },
+      {
+        id: adminRoleId,
+        community_id: id,
+        name: "Admin",
+        color: "#f59e0b",
+        permissions: 63, // all bits
+        position: 1,
+        is_default: false
+      }
+    ])
+    .execute();
+
+  await db
+    .insertInto("community_members")
+    .values({
+      id: generateId(),
+      community_id: id,
+      user_id: ownerId,
+      nickname: null
+    })
+    .execute();
+
+  return {
+    ...community,
+    rules: community.rules ? JSON.parse(community.rules) : [],
+    tags: community.tags ?? [],
+    is_public: community.is_public,
+    member_count: community.member_count,
+    require_approval: community.require_approval
+  };
+}
+
+export async function getUserCommunities(userId: string): Promise<PublicCommunity[]> {
+  const rows = await db
+    .selectFrom("communities")
+    .select([
+      "id",
+      "owner_id",
+      "name",
+      "slug",
+      "description",
+      "icon_url",
+      "banner_url",
+      "rules",
+      "is_public",
+      "member_count",
+      "category",
+      "tags",
+      "require_approval",
+      "is_ai_pet",
+      "ai_agent_name",
+      "ai_agent_pet_name",
+      "ai_agent_avatar",
+      "ai_agent_model",
+      "ai_agent_description",
+      "created_at"
+    ])
+    .where("owner_id", "=", userId)
+    .orderBy("created_at", "desc")
+    .execute();
+
+  return rows.map((r) => ({
+    ...r,
+    rules: r.rules ? JSON.parse(r.rules) : [],
+    tags: r.tags ?? []
+  })) as unknown as PublicCommunity[];
+}
+
+export interface DiscoverQuery {
+  search?: string;
+  category?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface DiscoverCommunity extends PublicCommunity {
+  is_member: boolean;
+  has_pending_request: boolean;
+}
+
+export async function getDiscoverableCommunities(
+  userId: string,
+  query: DiscoverQuery = {}
+): Promise<{ communities: DiscoverCommunity[]; total: number }> {
+  const { search, category, limit = 24, offset = 0 } = query;
+
+  let q = db
+    .selectFrom("communities")
+    .select([
+      "id",
+      "owner_id",
+      "name",
+      "slug",
+      "description",
+      "icon_url",
+      "banner_url",
+      "rules",
+      "is_public",
+      "member_count",
+      "category",
+      "tags",
+      "require_approval",
+      "is_ai_pet",
+      "ai_agent_name",
+      "ai_agent_pet_name",
+      "ai_agent_avatar",
+      "ai_agent_model",
+      "ai_agent_description",
+      "created_at"
+    ])
+    .where("is_public", "=", true);
+
+  if (search) {
+    q = q.where((eb) =>
+      eb.or([eb("name", "ilike", `%${search}%`), eb("description", "ilike", `%${search}%`)])
+    );
+  }
+
+  if (category && category !== "all") {
+    q = q.where("category", "=", category);
+  }
+
+  const [rows, countRow] = await Promise.all([
+    q.limit(limit).offset(offset).execute(),
+    db
+      .selectFrom("communities")
+      .select((eb) => eb.fn.countAll<number>().as("count"))
+      .where("is_public", "=", true)
+      .executeTakeFirstOrThrow()
+  ]);
+
+  const communityIds = rows.map((r) => r.id);
+  const [memberships, pendingRequests] = await Promise.all([
+    communityIds.length > 0
+      ? db
+          .selectFrom("community_members")
+          .select("community_id")
+          .where("user_id", "=", userId)
+          .where("community_id", "in", communityIds)
+          .execute()
+      : Promise.resolve([]),
+    communityIds.length > 0
+      ? db
+          .selectFrom("community_join_requests")
+          .select("community_id")
+          .where("user_id", "=", userId)
+          .where("status", "=", "pending")
+          .where("community_id", "in", communityIds)
+          .execute()
+      : Promise.resolve([])
+  ]);
+
+  const memberSet = new Set(memberships.map((m) => m.community_id));
+  const pendingSet = new Set(pendingRequests.map((r) => r.community_id));
+
+  return {
+    communities: rows.map((r) => ({
+      ...r,
+      rules: r.rules ? JSON.parse(r.rules) : [],
+      tags: r.tags ?? [],
+      is_public: r.is_public,
+      member_count: r.member_count,
+      require_approval: r.require_approval,
+      is_ai_pet: r.is_ai_pet,
+      is_member: memberSet.has(r.id),
+      has_pending_request: pendingSet.has(r.id)
+    })) as unknown as DiscoverCommunity[],
+    total: Number(countRow.count)
+  };
+}
+
+export async function joinCommunity(
+  userId: string,
+  communityId: string
+): Promise<{ joined: boolean; pending: boolean; slug: string; member_count: number }> {
+  const community = await db
+    .selectFrom("communities")
+    .select(["id", "owner_id", "slug", "name", "require_approval", "is_public", "member_count"])
+    .where("id", "=", communityId)
+    .executeTakeFirst();
+
+  if (!community) {
+    throw createError({ statusCode: 404, message: "Community not found" });
+  }
+
+  if (!community.is_public) {
+    throw createError({ statusCode: 403, message: "This community is private" });
+  }
+
+  const existing = await db
+    .selectFrom("community_members")
+    .select("id")
+    .where("community_id", "=", communityId)
+    .where("user_id", "=", userId)
+    .executeTakeFirst();
+
+  if (existing) {
+    return {
+      joined: false,
+      pending: false,
+      slug: community.slug,
+      member_count: community.member_count
+    };
+  }
+
+  const existingRequest = await db
+    .selectFrom("community_join_requests")
+    .select("id")
+    .where("community_id", "=", communityId)
+    .where("user_id", "=", userId)
+    .where("status", "=", "pending")
+    .executeTakeFirst();
+
+  if (existingRequest) {
+    throw createError({
+      statusCode: 409,
+      message: "You already have a pending join request for this community"
+    });
+  }
+
+  if (community.require_approval) {
+    await db
+      .insertInto("community_join_requests")
+      .values({
+        id: generateId(),
+        community_id: communityId,
+        user_id: userId,
+        note: null,
+        status: "pending",
+        reviewed_by: null,
+        reviewed_at: null
+      })
+      .execute();
+
+    await db
+      .insertInto("notifications")
+      .values({
+        id: generateId(),
+        user_id: community.owner_id,
+        actor_id: userId,
+        type: "community_join",
+        entity_type: "community",
+        entity_id: communityId,
+        data: { pending: true, community_name: community.name }
+      })
+      .execute();
+
+    return {
+      joined: false,
+      pending: true,
+      slug: community.slug,
+      member_count: community.member_count
+    };
+  }
+
+  await db
+    .insertInto("community_members")
+    .values({
+      id: generateId(),
+      community_id: communityId,
+      user_id: userId,
+      nickname: null
+    })
+    .execute();
+
+  const updated = await db
+    .updateTable("communities")
+    .set((eb) => ({ member_count: eb("member_count", "+", 1) }))
+    .where("id", "=", communityId)
+    .returning("member_count")
+    .executeTakeFirstOrThrow();
+
+  if (community.owner_id !== userId) {
+    await db
+      .insertInto("notifications")
+      .values({
+        id: generateId(),
+        user_id: community.owner_id,
+        actor_id: userId,
+        type: "community_join",
+        entity_type: "community",
+        entity_id: communityId,
+        data: { pending: false, community_name: community.name }
+      })
+      .execute();
+  }
+
+  return {
+    joined: true,
+    pending: false,
+    slug: community.slug,
+    member_count: updated.member_count
+  };
+}
+
+export interface CommunityMemberPublic {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  nickname: string | null;
+  joined_at: Date;
+  role_name: string;
+}
+
+export interface CommunityRole {
+  id: string;
+  name: string;
+  color: string | null;
+  position: number;
+  is_default: boolean;
+  member_count: number;
+}
+
+export interface CommunityOverview {
+  community: PublicCommunity;
+  roles: CommunityRole[];
+  members: CommunityMemberPublic[];
+  is_member: boolean;
+  is_owner: boolean;
+}
+
+export async function getCommunityOverview(
+  slugOrId: string,
+  userId: string
+): Promise<CommunityOverview> {
+  // Try slug first, fallback to id
+  const row = await db
+    .selectFrom("communities")
+    .selectAll()
+    .where((eb) => eb.or([eb("slug", "=", slugOrId), eb("id", "=", slugOrId)]))
+    .executeTakeFirst();
+
+  if (!row) {
+    throw createError({ statusCode: 404, message: "Community not found" });
+  }
+
+  const communityId = row.id;
+
+  const [roles, memberRows, membership, memberRoleRows] = await Promise.all([
+    db
+      .selectFrom("roles")
+      .select(["id", "name", "color", "position", "is_default"])
+      .where("community_id", "=", communityId)
+      .orderBy("position", "asc")
+      .execute(),
+
+    db
+      .selectFrom("community_members")
+      .innerJoin("users", "users.id", "community_members.user_id")
+      .select([
+        "community_members.id",
+        "community_members.user_id",
+        "community_members.nickname",
+        "community_members.joined_at",
+        "users.username",
+        "users.avatar_url"
+      ])
+      .where("community_members.community_id", "=", communityId)
+      .orderBy("community_members.joined_at", "asc")
+      .limit(50)
+      .execute(),
+
+    db
+      .selectFrom("community_members")
+      .select("id")
+      .where("community_id", "=", communityId)
+      .where("user_id", "=", userId)
+      .executeTakeFirst(),
+
+    db
+      .selectFrom("member_roles as mr")
+      .innerJoin("roles as r", "r.id", "mr.role_id")
+      .select(["mr.member_id", "r.name as role_name", "r.is_default", "r.position"])
+      .where("r.community_id", "=", communityId)
+      .execute()
+  ]);
+
+  // When a member has multiple roles, surface the most privileged one by position
+  // (higher position = more privileged; e.g. Admin=1 > Member=0).
+  const memberRolePriorityMap = new Map<string, { name: string; position: number }>();
+  for (const mr of memberRoleRows) {
+    const pos = Number(mr.position ?? 0);
+    const current = memberRolePriorityMap.get(mr.member_id as string);
+    if (!current || pos > current.position) {
+      memberRolePriorityMap.set(mr.member_id as string, {
+        name: mr.role_name as string,
+        position: pos
+      });
+    }
+  }
+  const memberRoleMap = new Map([...memberRolePriorityMap.entries()].map(([k, v]) => [k, v.name]));
+
+  // Count per role: every member who has that role assigned (direct count, not primary-only)
+  const roleMemberCount = new Map<string, number>();
+  for (const mr of memberRoleRows) {
+    const roleObj = roles.find((r) => r.name === (mr.role_name as string));
+    if (roleObj) {
+      roleMemberCount.set(roleObj.id, (roleMemberCount.get(roleObj.id) ?? 0) + 1);
+    }
+  }
+
+  const rolesWithCount: CommunityRole[] = roles.map((r) => ({
+    ...r,
+    position: r.position,
+    is_default: r.is_default,
+    member_count: roleMemberCount.get(r.id) ?? 0
+  }));
+
+  const community: PublicCommunity = {
+    ...row,
+    rules: row.rules ? JSON.parse(row.rules) : [],
+    tags: row.tags ?? [],
+    is_public: row.is_public,
+    member_count: row.member_count,
+    require_approval: row.require_approval,
+    is_ai_pet: row.is_ai_pet
+  };
+
+  return {
+    community,
+    roles: rolesWithCount,
+    members: memberRows.map((m) => ({
+      ...m,
+      role_name: memberRoleMap.get(m.id) ?? "member"
+    })) as unknown as CommunityMemberPublic[],
+    is_member: !!membership,
+    is_owner: row.owner_id === userId
+  };
+}

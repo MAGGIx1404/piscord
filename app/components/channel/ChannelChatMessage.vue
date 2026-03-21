@@ -3,7 +3,7 @@
     <!-- Reply Reference (if replying) -->
     <div
       v-if="message.isReply && replyMessage"
-      class="flex items-center gap-2 ml-14 mb-1 text-xs text-muted-foreground"
+      class="mb-1 ml-14 flex items-center gap-2 text-xs text-muted-foreground"
     >
       <div class="flex items-center gap-1">
         <CornerUpRight class="size-3" />
@@ -14,14 +14,14 @@
           {{ replyMessage.author.name }}
         </span>
       </div>
-      <span class="truncate max-w-xs opacity-70">
+      <span class="max-w-xs truncate opacity-70">
         {{ replyMessage.content || "Message deleted" }}
       </span>
     </div>
 
     <!-- Message Content -->
     <div
-      class="flex items-start gap-3 px-4 py-2 hover:bg-accent/30 transition-colors rounded-lg mx-2"
+      class="mx-2 flex items-start gap-3 rounded-lg px-4 py-2 transition-colors hover:bg-accent/30"
       :class="{ 'mt-0': stacked }"
     >
       <!-- Avatar (hide if stacked) -->
@@ -30,7 +30,7 @@
           <HoverCard>
             <HoverCardTrigger asChild>
               <Avatar
-                class="size-10 cursor-pointer ring-2 ring-transparent hover:ring-primary transition-all"
+                class="size-10 cursor-pointer ring-2 ring-transparent transition-all hover:ring-primary"
               >
                 <AvatarImage :src="message.author.avatar" :alt="message.author.name" />
                 <AvatarFallback class="text-sm">{{ message.author.name.charAt(0) }}</AvatarFallback>
@@ -46,7 +46,7 @@
                     }}</AvatarFallback>
                   </Avatar>
                   <span
-                    class="absolute bottom-0 right-0 size-4 bg-green-500 rounded-full ring-2 ring-card"
+                    class="absolute right-0 bottom-0 size-4 rounded-full bg-green-500 ring-2 ring-card"
                   />
                 </div>
                 <div class="flex-1 space-y-2">
@@ -75,7 +75,7 @@
         </template>
         <template v-else>
           <span
-            class="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity pt-1 block text-center"
+            class="block pt-1 text-center text-[10px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
           >
             {{ formattedTime }}
           </span>
@@ -83,10 +83,10 @@
       </div>
 
       <!-- Message Body -->
-      <div class="flex-1 min-w-0">
+      <div class="min-w-0 flex-1">
         <!-- Author & Time (hide if stacked) -->
-        <div v-if="!stacked" class="flex items-center gap-2 mb-1">
-          <span class="font-semibold text-sm hover:underline cursor-pointer">
+        <div v-if="!stacked" class="mb-1 flex items-center gap-2">
+          <span class="cursor-pointer text-sm font-semibold hover:underline">
             {{ message.author.name }}
           </span>
           <span class="text-xs text-muted-foreground">
@@ -97,13 +97,18 @@
         <!-- Message Text -->
         <p class="text-sm leading-relaxed wrap-break-word">{{ message.content }}</p>
 
+        <!-- Workspace Cards -->
+        <div v-if="message.workspaces?.length" class="grid w-full grid-cols-4 gap-2.5">
+          <ChannelWorkspaceCard v-for="ws in message.workspaces" :key="ws.id" :workspace="ws" />
+        </div>
+
         <!-- Reactions -->
-        <div v-if="message.reactions?.length" class="flex items-center gap-1.5 mt-2">
+        <div v-if="message.reactions?.length" class="mt-2 flex items-center gap-1.5">
           <button
             v-for="reaction in message.reactions"
             :key="reaction.emoji"
-            class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/50 hover:bg-accent text-xs transition-colors"
-            :class="{ 'ring-1 ring-primary bg-primary/10': reaction.reacted }"
+            class="flex items-center gap-1 rounded-full bg-accent/50 px-2 py-0.5 text-xs transition-colors hover:bg-accent"
+            :class="{ 'bg-primary/10 ring-1 ring-primary': reaction.reacted }"
             @click="$emit('react', { message, reaction })"
           >
             <span>{{ reaction.emoji }}</span>
@@ -114,37 +119,53 @@
 
       <!-- Action Buttons (show on hover) -->
       <div
-        class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5 bg-card border border-border rounded-lg p-0.5 shadow-lg absolute right-4 -top-3"
+        class="absolute -top-3 right-4 flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
       >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="size-7"
-              @click="$emit('addReaction', message)"
-            >
-              <SmilePlus class="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Add Reaction</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" class="size-7" @click="$emit('reply', message)">
-              <Reply class="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Reply</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="ghost" size="icon" class="size-7" @click="$emit('pin', message)">
-              <Pin class="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top">Pin Message</TooltipContent>
-        </Tooltip>
+        <TooltipProvider>
+          <!-- Emoji Reaction Picker -->
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="icon" class="size-7">
+                    <SmilePlus class="size-4" />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent side="top">Add Reaction</TooltipContent>
+            </Tooltip>
+            <PopoverContent class="w-auto p-2" side="top" align="start">
+              <div class="grid grid-cols-6 gap-1">
+                <button
+                  v-for="emoji in quickEmojis"
+                  :key="emoji"
+                  class="flex size-8 items-center justify-center rounded-md text-lg transition-colors hover:bg-accent"
+                  @click="
+                    $emit('react', { message, reaction: { emoji, count: 0, reacted: false } })
+                  "
+                >
+                  {{ emoji }}
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" class="size-7" @click="$emit('reply', message)">
+                <Reply class="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">Reply</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" class="size-7" @click="$emit('pin', message)">
+                <Pin class="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">Pin Message</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" class="size-7">
@@ -191,6 +212,7 @@ import {
   Trash2
 } from "lucide-vue-next";
 import { computed } from "vue";
+import type { ChatWorkspace } from "./ChannelWorkspaceCard.vue";
 
 interface Author {
   id: string;
@@ -211,7 +233,9 @@ interface Message {
   createdAt: string;
   isReply: boolean;
   messageId?: string;
-  reactions?: Reaction[];
+  reactions: Reaction[];
+  isBot: boolean;
+  workspaces?: ChatWorkspace[];
 }
 
 interface Props {
@@ -244,4 +268,25 @@ const formattedTime = computed(() => {
     minute: "2-digit"
   });
 });
+
+const quickEmojis = [
+  "👍",
+  "👎",
+  "❤️",
+  "😂",
+  "😮",
+  "😢",
+  "🔥",
+  "🎉",
+  "👀",
+  "💯",
+  "✅",
+  "❌",
+  "🚀",
+  "💡",
+  "⭐",
+  "🙏",
+  "👏",
+  "🤔"
+];
 </script>

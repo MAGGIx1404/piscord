@@ -1,185 +1,176 @@
 <template>
-  <main class="w-full space-y-10 px-4 pb-10">
-    <!-- Hero Section -->
-    <DiscoverHero />
-
-    <!-- Search and Filter Section -->
-    <DiscoverSearch
-      v-model:searchQuery="searchQuery"
-      v-model:activeFilter="activeFilter"
-      v-model:sortBy="sortBy"
+  <main class="min-h-screen w-full">
+    <!-- Header with Search -->
+    <DiscoverHeader
+      v-model:search-query="searchQuery"
+      v-model:active-filter="activeFilter"
       :filters="communityFilters"
-      :sort-options="sortOptions"
-      :results-count="filteredCommunities.length"
-      @clear-filters="clearFilters"
+      :total-communities="totalCommunities"
+      :total-members="totalMembers"
+      :online-now="onlineNow"
     />
 
-    <!-- Community list -->
-    <div
-      v-if="filteredCommunities.length"
-      class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-    >
-      <DiscoverCommunityCard
-        v-for="community in filteredCommunities"
-        :key="community.id"
-        :community="community"
+    <!-- Main Content -->
+    <div class="px-6 py-10">
+      <!-- Community Grid -->
+      <DiscoverCommunityGrid
+        v-if="!pending && filteredCommunities.length"
+        :communities="filteredCommunities"
+        :show-title="!searchQuery && activeFilter === 'all'"
+        @join="handleJoin"
       />
-    </div>
 
-    <!-- Empty State -->
-    <DiscoverEmptyState v-else @reset="clearFilters" />
+      <!-- Loading skeleton -->
+      <div v-else-if="pending" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div
+          v-for="n in 6"
+          :key="n"
+          class="h-64 animate-pulse rounded-2xl border border-border/50 bg-card/30"
+        />
+      </div>
+
+      <!-- Empty State -->
+      <DiscoverEmptyState v-else @reset="clearFilters" />
+
+      <!-- Create CTA -->
+      <DiscoverCreateCTA />
+    </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import {
-  Sparkles,
-  Gamepad2,
-  Code,
-  BookOpen,
-  Palette,
-  Music,
-  Users,
-  TrendingUp,
-  ArrowUpDown
-} from "lucide-vue-next";
+import { Sparkles, Gamepad2, Code, BookOpen, Palette, Music, Users } from "lucide-vue-next";
+import type { Community } from "~/components/discover/types";
+import { toast } from "vue-sonner";
 
+const api = useApi();
 const searchQuery = ref("");
 const activeFilter = ref("all");
-const sortBy = ref("popular");
 
 const communityFilters = [
-  { value: "all", label: "All", icon: Sparkles, count: null },
-  { value: "gaming", label: "Gaming", icon: Gamepad2, count: 12 },
-  { value: "tech", label: "Tech", icon: Code, count: 8 },
-  { value: "study", label: "Study", icon: BookOpen, count: 5 },
-  { value: "art", label: "Art & Design", icon: Palette, count: 6 },
-  { value: "music", label: "Music", icon: Music, count: 4 },
-  { value: "fun", label: "Fun & Memes", icon: Users, count: 10 }
+  { value: "all", label: "All", icon: Sparkles },
+  { value: "gaming", label: "Gaming", icon: Gamepad2 },
+  { value: "tech", label: "Tech", icon: Code },
+  { value: "study", label: "Study", icon: BookOpen },
+  { value: "art", label: "Art", icon: Palette },
+  { value: "music", label: "Music", icon: Music },
+  { value: "fun", label: "Fun", icon: Users }
 ];
 
-const sortOptions = [
-  { value: "popular", label: "Most Popular", icon: TrendingUp },
-  { value: "newest", label: "Newest", icon: Sparkles },
-  { value: "members", label: "Most Members", icon: Users },
-  { value: "name", label: "Name (A-Z)", icon: ArrowUpDown }
-];
+// ─── Fetch from API ────────────────────────────────────────────────────────────
 
-const communities = ref([
-  {
-    id: "c1",
-    name: "Pixel Raiders",
-    description: "A fun place for gamers who love competition and teamwork.",
-    totalUsers: 18420,
-    posterImage: "/images/servers/p-1.jpg",
-    iconImage: "https://api.dicebear.com/7.x/bottts/png?seed=PixelRaiders",
-    type: "gaming",
-    requiresApproval: false
-  },
-  {
-    id: "c2",
-    name: "Tech Toon Hub",
-    description: "Technology discussions with a playful twist.",
-    totalUsers: 25680,
-    posterImage: "/images/servers/p-2.jpg",
-    iconImage: "https://api.dicebear.com/7.x/adventurer/png?seed=TechToon",
-    type: "tech",
-    requiresApproval: true
-  },
-  {
-    id: "c3",
-    name: "Study Squad",
-    description: "Study together, stay motivated, and grow smarter.",
-    totalUsers: 14230,
-    posterImage: "/images/servers/p-3.jpg",
-    iconImage: "https://api.dicebear.com/7.x/fun-emoji/png?seed=StudySquad",
-    type: "study",
-    requiresApproval: false
-  },
-  {
-    id: "c4",
-    name: "Meme Town",
-    description: "Memes, jokes, and unlimited fun.",
-    totalUsers: 39210,
-    posterImage: "/images/servers/p-4.jpg",
-    iconImage: "https://api.dicebear.com/7.x/thumbs/png?seed=MemeTown",
-    type: "fun"
-  },
-  {
-    id: "c5",
-    name: "Code Cartoons",
-    description: "Coding concepts explained in a fun and simple way.",
-    totalUsers: 22150,
-    posterImage: "/images/servers/p-5.jpg",
-    iconImage: "https://api.dicebear.com/7.x/bottts/png?seed=CodeCartoon",
-    type: "tech",
-    requiresApproval: true
-  },
-  {
-    id: "c6",
-    name: "Digital Artists",
-    description: "Share your art, get feedback, and improve together.",
-    totalUsers: 15890,
-    posterImage: "/images/servers/p-1.jpg",
-    iconImage: "https://api.dicebear.com/7.x/shapes/png?seed=DigitalArt",
-    type: "art",
-    requiresApproval: false
-  },
-  {
-    id: "c7",
-    name: "Beat Makers",
-    description: "Music production, beats, and audio engineering community.",
-    totalUsers: 9450,
-    posterImage: "/images/servers/p-2.jpg",
-    iconImage: "https://api.dicebear.com/7.x/identicon/png?seed=BeatMakers",
-    type: "music",
-    requiresApproval: true
-  },
-  {
-    id: "c8",
-    name: "Esports Arena",
-    description: "Competitive gaming tournaments and team building.",
-    totalUsers: 31200,
-    posterImage: "/images/servers/p-3.jpg",
-    iconImage: "https://api.dicebear.com/7.x/bottts/png?seed=EsportsArena",
-    type: "gaming",
-    requiresApproval: false
-  }
-]);
+interface ApiResponse {
+  communities: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    icon_url: string | null;
+    banner_url: string | null;
+    category: string | null;
+    member_count: number;
+    require_approval: boolean;
+    is_member: boolean;
+    has_pending_request: boolean;
+  }[];
+  total: number;
+}
 
-const filteredCommunities = computed(() => {
-  let result = [...communities.value];
+const fetchQuery = computed(() => ({
+  search: searchQuery.value || undefined,
+  category: activeFilter.value !== "all" ? activeFilter.value : undefined
+}));
 
-  // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    result = result.filter(
-      (c) => c.name.toLowerCase().includes(query) || c.description.toLowerCase().includes(query)
+const { data, pending, refresh } = await useAsyncData<ApiResponse>(
+  "discover-communities",
+  () => api<ApiResponse>("/api/communities", { query: fetchQuery.value }),
+  { watch: [fetchQuery] }
+);
+
+// Track communities where the current user has a pending approval request
+// Seeded from the API on every fetch, then optimistically updated on join
+const pendingRequestIds = ref<Set<string>>(new Set());
+
+watch(
+  data,
+  (val) => {
+    if (!val) return;
+    pendingRequestIds.value = new Set(
+      val.communities.filter((c) => c.has_pending_request).map((c) => c.id)
     );
-  }
+  },
+  { immediate: true }
+);
 
-  // Apply type filter
-  if (activeFilter.value !== "all") {
-    result = result.filter((c) => c.type === activeFilter.value);
-  }
+const communities = computed<Community[]>(() =>
+  (data.value?.communities ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description,
+    totalUsers: c.member_count,
+    posterImage: c.banner_url,
+    iconImage: c.icon_url,
+    type: c.category,
+    requiresApproval: c.require_approval,
+    isMember: c.is_member,
+    isPendingRequest: pendingRequestIds.value.has(c.id)
+  }))
+);
 
-  // Apply sorting
-  switch (sortBy.value) {
-    case "popular":
-    case "members":
-      result.sort((a, b) => b.totalUsers - a.totalUsers);
-      break;
-    case "name":
-      result.sort((a, b) => a.name.localeCompare(b.name));
-      break;
-    case "newest":
-      // For demo, reverse the array
-      result.reverse();
-      break;
-  }
+const filteredCommunities = computed(() => communities.value);
 
-  return result;
-});
+// Stats
+const totalCommunities = computed(() => data.value?.total ?? 0);
+const totalMembers = computed(() =>
+  (data.value?.communities ?? []).reduce((sum, c) => sum + c.member_count, 0)
+);
+const onlineNow = computed(() => Math.floor(totalMembers.value * 0.08));
+
+// ─── Join ──────────────────────────────────────────────────────────────────────
+
+interface JoinResult {
+  joined: boolean;
+  pending: boolean;
+  slug: string;
+  member_count: number;
+}
+
+const router = useRouter();
+
+const handleJoin = async (communityId: string, isRequest: boolean) => {
+  try {
+    const result = await api<JoinResult>(`/api/communities/${communityId}/join`, {
+      method: "POST"
+    });
+
+    if (result.joined) {
+      // Refresh community store so the switcher includes the new community
+      const communityStore = useCommunityStore();
+      await communityStore.fetchCommunities();
+      communityStore.setCurrentCommunity(communityId);
+
+      // Direct join → navigate to community dashboard with welcome flag
+      await router.push(`/community/${communityId}?welcome=1`);
+    } else if (result.pending) {
+      // Mark locally as pending so the button updates immediately
+      pendingRequestIds.value = new Set([...pendingRequestIds.value, communityId]);
+      toast.success("Join request sent! Waiting for admin approval.");
+    } else {
+      // Already a member
+      refresh();
+    }
+  } catch (err: any) {
+    const status = err?.status ?? err?.statusCode;
+    if (status === 409) {
+      // Pending request already exists — sync local state so the button reflects it
+      pendingRequestIds.value = new Set([...pendingRequestIds.value, communityId]);
+      toast.info("You already have a pending request for this community.");
+    } else {
+      toast.error(err?.data?.message ?? "Failed to join community.");
+    }
+  }
+};
 
 const clearFilters = () => {
   searchQuery.value = "";

@@ -2,7 +2,7 @@
   <div
     v-if="showMenu"
     ref="menuRef"
-    class="fixed z-50 flex items-center gap-1 p-1.5 rounded-lg border border-input bg-popover shadow-xl animate-in fade-in-0 zoom-in-95"
+    class="fixed z-50 flex animate-in items-center gap-1 rounded-lg border border-input bg-popover p-1.5 shadow-xl fade-in-0 zoom-in-95"
     :style="{ top: `${position.y}px`, left: `${position.x}px` }"
   >
     <!-- Text Style Dropdown -->
@@ -11,7 +11,7 @@
         <Button variant="ghost" size="sm" class="h-8 gap-1 px-2">
           <component :is="currentBlockIcon" class="size-4" />
           <span class="text-xs">{{ currentBlockLabel }}</span>
-          <ChevronDown class="size-3 ml-1" />
+          <ChevronDown class="ml-1 size-3" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" class="w-48">
@@ -21,7 +21,7 @@
           @click="block.action"
           :class="{ 'bg-accent': block.isActive() }"
         >
-          <component :is="block.icon" class="size-4 mr-2" />
+          <component :is="block.icon" class="mr-2 size-4" />
           {{ block.label }}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -31,22 +31,24 @@
 
     <!-- Formatting Buttons -->
     <div class="flex items-center gap-0.5">
-      <Tooltip v-for="btn in formattingButtons" :key="btn.label">
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="size-8"
-            @click="btn.action"
-            :class="{ 'bg-accent text-accent-foreground': btn.isActive() }"
-          >
-            <component :is="btn.icon" class="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent side="top" :sideOffset="8">
-          <p class="text-xs">{{ btn.label }}</p>
-        </TooltipContent>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip v-for="btn in formattingButtons" :key="btn.label">
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="size-8"
+              @click="btn.action"
+              :class="{ 'bg-accent text-accent-foreground': btn.isActive() }"
+            >
+              <component :is="btn.icon" class="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" :sideOffset="8">
+            <p class="text-xs">{{ btn.label }}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
 
     <Separator orientation="vertical" class="h-6" />
@@ -69,7 +71,7 @@
             <Label>Link URL</Label>
             <Input v-model="linkUrl" placeholder="https://example.com" @keydown.enter="setLink" />
           </div>
-          <div class="w-full flex items-center justify-end gap-2">
+          <div class="flex w-full items-center justify-end gap-2">
             <Button v-if="editor?.isActive('link')" variant="destructive" @click="removeLink">
               Remove
             </Button>
@@ -87,39 +89,41 @@
         <Button
           variant="ghost"
           size="icon"
-          class="size-8 relative"
+          class="relative size-8"
           :class="{ 'bg-accent text-accent-foreground': currentTextColor }"
         >
           <Palette class="size-4" />
           <span
             v-if="currentTextColor"
-            class="absolute bottom-1 left-1/2 -translate-x-1/2 h-0.5 w-4 rounded-full"
+            class="absolute bottom-1 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full"
             :style="{ backgroundColor: currentTextColor }"
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent class="w-48 p-2" align="start">
         <div class="space-y-2">
-          <p class="text-xs font-medium text-muted-foreground px-1">Text Color</p>
+          <p class="px-1 text-xs font-medium text-muted-foreground">Text Color</p>
           <div class="grid grid-cols-5 gap-1">
-            <Tooltip v-for="color in colorPresets" :key="color.name">
-              <TooltipTrigger asChild>
-                <button
-                  @click="setTextColor(color.value)"
-                  class="size-7 rounded-md border border-input flex items-center justify-center hover:scale-110 transition-transform"
-                  :class="{
-                    'ring-2 ring-primary ring-offset-1':
-                      currentTextColor === color.value || (!currentTextColor && !color.value)
-                  }"
-                  :style="color.value ? { backgroundColor: color.value } : {}"
-                >
-                  <RotateCcw v-if="!color.value" class="size-3.5 text-muted-foreground" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="top" :sideOffset="4">
-                <p class="text-xs">{{ color.name }}</p>
-              </TooltipContent>
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip v-for="color in colorPresets" :key="color.name">
+                <TooltipTrigger asChild>
+                  <button
+                    @click="setTextColor(color.value)"
+                    class="flex size-7 items-center justify-center rounded-md border border-input transition-transform hover:scale-110"
+                    :class="{
+                      'ring-2 ring-primary ring-offset-1':
+                        currentTextColor === color.value || (!currentTextColor && !color.value)
+                    }"
+                    :style="color.value ? { backgroundColor: color.value } : {}"
+                  >
+                    <RotateCcw v-if="!color.value" class="size-3.5 text-muted-foreground" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" :sideOffset="4">
+                  <p class="text-xs">{{ color.name }}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </PopoverContent>

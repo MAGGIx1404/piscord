@@ -1,67 +1,67 @@
 import { defineStore } from "pinia";
-import type { UserCommunitiesResponse } from "~/types/api";
 
-type Community = UserCommunitiesResponse["communities"][number];
+export interface UserCommunity {
+  id: string;
+  name: string;
+  slug: string;
+  icon_url: string | null;
+  member_count: number;
+  is_public: boolean;
+  is_owner: boolean;
+  joined_at: string;
+}
 
-export const useCommunityStore = defineStore("community", () => {
-  const communities = ref<Community[]>([]);
-  const currentCommunity = ref<Community | null>(null);
-  const isLoading = ref(false);
-  const hasFetched = ref(false);
-  const hasCommunities = computed(() => communities.value?.length > 0);
+export const useCommunityStore = defineStore(
+  "community",
+  () => {
+    const communities = ref<UserCommunity[]>([]);
+    const currentCommunityId = ref<string | null>(null);
+    const loaded = ref(false);
 
-  async function fetchCommunities(force = false) {
-    if (hasFetched.value && !force) return;
+    const currentCommunity = computed(
+      () => communities.value.find((c) => c.id === currentCommunityId.value) ?? null
+    );
 
-    isLoading.value = true;
-    try {
-      const response = await $fetch("/api/user/communities");
-      communities.value = response.communities;
-      hasFetched.value = true;
-    } catch (error) {
-      console.error("Failed to fetch communities:", error);
-    } finally {
-      isLoading.value = false;
+    function setCurrentCommunity(id: string) {
+      currentCommunityId.value = id;
+      if (import.meta.client) {
+        localStorage.setItem("lastCommunityId", id);
+      }
+    }
+
+    async function fetchCommunities() {
+      const api = useApi();
+      try {
+        const data = await api<{ communities: UserCommunity[] }>("/api/users/me/communities");
+        communities.value = data.communities;
+        loaded.value = true;
+        return data.communities;
+      } catch {
+        communities.value = [];
+        loaded.value = true;
+        return [];
+      }
+    }
+
+    function reset() {
+      communities.value = [];
+      currentCommunityId.value = null;
+      loaded.value = false;
+    }
+
+    return {
+      communities,
+      currentCommunityId,
+      currentCommunity,
+      loaded,
+      setCurrentCommunity,
+      fetchCommunities,
+      reset
+    };
+  },
+  {
+    persist: {
+      pick: ["communities", "currentCommunityId"]
     }
   }
-
-  function addCommunity(community: Community) {
-    communities.value.unshift(community);
-  }
-
-  function setCurrentCommunity(communitySlug: string) {
-    const community = communities.value.find((c) => c.slug === communitySlug);
-    currentCommunity.value = community || null;
-  }
-
-  function clearCurrentCommunity() {
-    currentCommunity.value = null;
-  }
-
-  function reset() {
-    communities.value = [];
-    currentCommunity.value = null;
-    hasFetched.value = false;
-  }
-
-  function setCommunities(newCommunities: Community[]) {
-    communities.value = newCommunities;
-    if (newCommunities.length > 0 && newCommunities[0]) {
-      currentCommunity.value = newCommunities[0];
-    }
-  }
-
-  return {
-    communities,
-    currentCommunity,
-    isLoading,
-    hasFetched,
-    hasCommunities,
-    fetchCommunities,
-    addCommunity,
-    setCurrentCommunity,
-    clearCurrentCommunity,
-    reset,
-    setCommunities
-  };
-});
+);

@@ -1,112 +1,120 @@
 <template>
-  <main class="w-full pb-10">
-    <!-- Header -->
-    <CommunityCreateHeader />
+  <main class="relative min-h-screen w-full bg-background">
+    <!-- Progress Header -->
+    <CreateHeader
+      :current-step="currentStep"
+      :total-steps="totalSteps"
+      :step-titles="stepTitles"
+      @cancel="handleCancel"
+    />
 
     <!-- Form Content -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
-      <!-- Left Column - Main Form -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Basic Info -->
-        <CommunityCreateBasicInfo
-          v-model:name="form.name"
-          v-model:slug="form.slug"
-          v-model:description="form.description"
-          :icon-preview="form.iconPreview"
-          :banner-preview="form.bannerPreview"
-          :is-generating="isGenerating"
-          :slug-error="slugError"
-          :is-checking-slug="isCheckingSlug"
-          @trigger-icon-upload="triggerIconUpload"
-          @trigger-banner-upload="triggerBannerUpload"
-          @generate-description="generateAIDescription"
-        />
+    <div class="relative px-6 py-10">
+      <div class="grid gap-8 lg:grid-cols-5">
+        <!-- Left: Form Steps -->
+        <div class="lg:col-span-3">
+          <!-- Step 1: Identity -->
+          <CreateStepIdentity
+            v-show="currentStep === 1"
+            v-model:name="form.name"
+            v-model:slug="form.slug"
+            v-model:description="form.description"
+            v-model:icon-preview="form.iconPreview"
+            v-model:banner-preview="form.bannerPreview"
+            :slug-error="slugError"
+            :is-checking-slug="isCheckingSlug"
+            @update:icon-file="form.iconFile = $event"
+            @update:banner-file="form.bannerFile = $event"
+          />
 
-        <!-- Hidden file inputs -->
-        <input
-          ref="iconInput"
-          type="file"
-          accept="image/*"
-          class="hidden"
-          @change="handleIconUpload"
-        />
-        <input
-          ref="bannerInput"
-          type="file"
-          accept="image/*"
-          class="hidden"
-          @change="handleBannerUpload"
-        />
+          <!-- Step 2: Category & Tags -->
+          <CreateStepDiscovery
+            v-show="currentStep === 2"
+            v-model:category="form.category"
+            v-model:tags="form.tags"
+          />
 
-        <!-- Category & Tags -->
-        <CommunityCreateCategoryTags
-          v-model:category="form.category"
-          v-model:tag-input="tagInput"
-          :tags="form.tags"
-          :categories="categories"
-          @add-tag="addTag"
-          @remove-tag="removeTag"
-        />
+          <!-- Step 3: Rules -->
+          <CreateStepRules v-show="currentStep === 3" v-model:rules="form.rules" />
 
-        <!-- Community Rules -->
-        <CommunityCreateRules
-          v-model:rule-input="ruleInput"
-          :rules="form.rules"
-          :suggestions="ruleSuggestions"
-          @add-rule="addRule"
-          @remove-rule="removeRule"
-          @move-rule="moveRule"
-          @add-suggested-rule="addSuggestedRule"
-        />
+          <!-- Step 4: AI Pet -->
+          <CreateStepAIPet
+            v-show="currentStep === 4"
+            v-model:enabled="aiPet.enabled"
+            v-model:avatar="aiPet.avatar"
+            v-model:name="aiPet.name"
+            v-model:nickname="aiPet.nickname"
+            v-model:personality="aiPet.personality"
+            v-model:model="aiPet.model"
+            v-model:use-custom-key="aiPet.useCustomKey"
+            v-model:api-key="aiPet.apiKey"
+            @update:custom-avatar-file="aiPet.customAvatarFile = $event"
+          />
 
-        <!-- Privacy & Settings -->
-        <CommunityCreatePrivacy
-          v-model:visibility="form.visibility"
-          v-model:require-approval="form.requireApproval"
-          v-model:enable-welcome="form.enableWelcome"
-          v-model:discoverable="form.discoverable"
-        />
-      </div>
+          <!-- Step 5: Privacy -->
+          <CreateStepSettings
+            v-show="currentStep === 5"
+            v-model:visibility="form.visibility"
+            v-model:require-approval="form.requireApproval"
+          />
 
-      <!-- Right Column - Preview & Actions -->
-      <div class="space-y-6 lg:sticky lg:top-20 lg:self-start">
-        <!-- Preview Card -->
-        <CommunityCreatePreview
-          :name="form.name"
-          :description="form.description"
-          :visibility="form.visibility"
-          :tags="form.tags"
-          :icon-preview="form.iconPreview"
-          :banner-preview="form.bannerPreview"
-        />
+          <!-- Navigation Buttons -->
+          <CreateNavigation
+            :current-step="currentStep"
+            :total-steps="totalSteps"
+            :can-proceed="canProceed"
+            :is-form-valid="isFormValid"
+            :is-creating="isCreating"
+            @prev="currentStep--"
+            @next="currentStep++"
+            @create="handleCreate"
+          />
+        </div>
 
-        <!-- Guidelines -->
-        <CommunityCreateGuidelines />
+        <!-- Right: Preview -->
+        <div class="space-y-6 lg:sticky lg:top-24 lg:col-span-2 lg:self-start">
+          <CreatePreview
+            :name="form.name"
+            :description="form.description"
+            :icon-preview="form.iconPreview"
+            :banner-preview="form.bannerPreview"
+            :visibility="form.visibility"
+            :tags="form.tags"
+          />
 
-        <!-- Action Buttons -->
-        <CommunityCreateActions
-          :is-valid="isFormValid"
-          :is-loading="isCreating"
-          @create="handleCreate"
-          @cancel="handleCancel"
-        />
+          <CreateTips :current-step="currentStep" />
+        </div>
       </div>
     </div>
   </main>
 </template>
 
 <script setup lang="ts">
-import { Gamepad2, Code, Music, Palette, BookOpen, Briefcase, Film, Heart } from "lucide-vue-next";
+import {
+  CreateHeader,
+  CreateStepIdentity,
+  CreateStepDiscovery,
+  CreateStepRules,
+  CreateStepAIPet,
+  CreateStepSettings,
+  CreateNavigation,
+  CreatePreview,
+  CreateTips
+} from "~/components/community/create";
 import { toast } from "vue-sonner";
 
-const router = useRouter();
-const communityStore = useCommunityStore();
+definePageMeta({
+  layout: "entry"
+});
 
-const iconInput = ref<HTMLInputElement | null>(null);
-const bannerInput = ref<HTMLInputElement | null>(null);
-const tagInput = ref("");
-const ruleInput = ref("");
-const isGenerating = ref(false);
+const router = useRouter();
+const api = useApi();
+
+// Step management
+const currentStep = ref(1);
+const totalSteps = 5;
+const stepTitles = ["Identity", "Discovery", "Rules", "AI Pet", "Settings"];
+
 const isCreating = ref(false);
 const slugError = ref<string | null>(null);
 const isCheckingSlug = ref(false);
@@ -120,32 +128,46 @@ const form = reactive({
   rules: [] as { id: number; text: string }[],
   visibility: "public" as "public" | "private",
   requireApproval: false,
-  enableWelcome: true,
-  discoverable: true,
   iconPreview: null as string | null,
   iconFile: null as File | null,
   bannerPreview: null as string | null,
   bannerFile: null as File | null
 });
 
-const ruleSuggestions = [
-  "Be respectful to all members",
-  "No spam or self-promotion",
-  "No hate speech or harassment",
-  "Keep discussions on topic",
-  "No NSFW content"
-];
+const aiPet = reactive({
+  enabled: false,
+  avatar: "1",
+  name: "",
+  nickname: "",
+  personality: "",
+  model: "gpt-4o-mini",
+  useCustomKey: false,
+  apiKey: "",
+  customAvatarFile: null as File | null
+});
 
-const categories = [
-  { value: "gaming", label: "Gaming", icon: Gamepad2 },
-  { value: "technology", label: "Technology", icon: Code },
-  { value: "music", label: "Music", icon: Music },
-  { value: "art", label: "Art & Design", icon: Palette },
-  { value: "education", label: "Education", icon: BookOpen },
-  { value: "business", label: "Business", icon: Briefcase },
-  { value: "entertainment", label: "Entertainment", icon: Film },
-  { value: "lifestyle", label: "Lifestyle", icon: Heart }
-];
+const canProceed = computed(() => {
+  switch (currentStep.value) {
+    case 1:
+      return (
+        form.name.trim().length >= 3 && form.description.trim().length >= 10 && !slugError.value
+      );
+    case 2:
+      return !!form.category;
+    case 3:
+      return true;
+    case 4:
+      // AI Pet step: if enabled, require a name
+      if (aiPet.enabled) {
+        return aiPet.name.trim().length >= 2;
+      }
+      return true;
+    case 5:
+      return true;
+    default:
+      return false;
+  }
+});
 
 const isFormValid = computed(() => {
   return !!(
@@ -156,7 +178,7 @@ const isFormValid = computed(() => {
   );
 });
 
-// Debounced slug availability check
+// Debounced slug availability check (real API)
 let slugCheckTimeout: ReturnType<typeof setTimeout>;
 const checkSlugAvailability = async (slug: string) => {
   if (!slug || slug.length < 2) {
@@ -168,16 +190,16 @@ const checkSlugAvailability = async (slug: string) => {
   slugCheckTimeout = setTimeout(async () => {
     isCheckingSlug.value = true;
     try {
-      const { available, reason } = await $fetch("/api/community/slug-available", {
+      const res = await $fetch<{ available: boolean }>("/api/communities/check-slug", {
         query: { slug }
       });
-      slugError.value = available ? null : reason;
+      slugError.value = res.available ? null : "This URL is already taken.";
     } catch {
-      slugError.value = "Failed to check availability";
+      slugError.value = null; // don't block the user on network errors
     } finally {
       isCheckingSlug.value = false;
     }
-  }, 300);
+  }, 400);
 };
 
 // Auto-generate slug from name
@@ -195,163 +217,45 @@ watch(
   }
 );
 
-const triggerIconUpload = () => {
-  iconInput.value?.click();
-};
-
-const handleIconUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("File size must be less than 2MB");
-      return;
-    }
-    form.iconFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.iconPreview = (e.target?.result as string) || null;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const triggerBannerUpload = () => {
-  bannerInput.value?.click();
-};
-
-const handleBannerUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error("File size must be less than 4MB");
-      return;
-    }
-    form.bannerFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      form.bannerPreview = (e.target?.result as string) || null;
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-const generateAIDescription = async () => {
-  if (!form.name.trim() || isGenerating.value) return;
-
-  isGenerating.value = true;
-
-  const categoryLabel = categories.find((c) => c.value === form.category)?.label || "";
-  const prompts = [
-    `Welcome to ${
-      form.name
-    }! A vibrant community where members connect, share ideas, and grow together. ${
-      categoryLabel
-        ? `Whether you're passionate about ${categoryLabel.toLowerCase()} or just getting started, you'll find a welcoming space here.`
-        : "Join us and be part of something special!"
-    }`,
-    `${form.name} is your go-to destination for ${
-      categoryLabel ? categoryLabel.toLowerCase() + " enthusiasts" : "like-minded individuals"
-    }. Connect with fellow members, share your experiences, and discover new perspectives in a friendly, supportive environment.`,
-    `Join ${form.name} – a thriving community built for connection and collaboration. ${
-      categoryLabel ? `Dive into discussions about ${categoryLabel.toLowerCase()}, ` : ""
-    }share your knowledge, and make lasting connections with people who share your interests.`
-  ];
-
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const selectedPrompt = prompts[Math.floor(Math.random() * prompts.length)] || "";
-
-  form.description = "";
-  for (let i = 0; i < selectedPrompt.length; i++) {
-    form.description += selectedPrompt[i];
-    await new Promise((resolve) => setTimeout(resolve, 15));
-  }
-
-  isGenerating.value = false;
-};
-
-const addTag = () => {
-  const tag = tagInput.value.trim().toLowerCase();
-  if (tag && !form.tags.includes(tag) && form.tags.length < 5) {
-    form.tags.push(tag);
-    tagInput.value = "";
-  }
-};
-
-const removeTag = (tag: string) => {
-  form.tags = form.tags.filter((t) => t !== tag);
-};
-
-const addRule = () => {
-  const text = ruleInput.value.trim();
-  if (text && form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
-    form.rules.push({ id: Date.now(), text });
-    ruleInput.value = "";
-  }
-};
-
-const addSuggestedRule = (text: string) => {
-  if (form.rules.length < 10 && !form.rules.some((r) => r.text === text)) {
-    form.rules.push({ id: Date.now(), text });
-  }
-};
-
-const removeRule = (id: number) => {
-  form.rules = form.rules.filter((r) => r.id !== id);
-};
-
-const moveRule = (index: number, direction: number) => {
-  const newIndex = index + direction;
-  if (newIndex >= 0 && newIndex < form.rules.length) {
-    const temp = form.rules[index];
-    const swapItem = form.rules[newIndex];
-    if (temp && swapItem) {
-      form.rules[index] = swapItem;
-      form.rules[newIndex] = temp;
-    }
-  }
-};
-
 const handleCreate = async () => {
-  if (!isFormValid.value || isCreating.value) return;
-
   isCreating.value = true;
-
   try {
-    const response = await $fetch("/api/community", {
-      method: "POST",
-      body: {
-        name: form.name.trim(),
-        slug: form.slug.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        visibility: form.visibility,
-        tags: form.tags,
-        rules: form.rules.map((r) => ({ text: r.text })),
-        requireApproval: form.requireApproval,
-        enableWelcome: form.enableWelcome,
-        discoverable: form.discoverable,
-        iconBase64: form.iconPreview,
-        bannerBase64: form.bannerPreview
+    const fd = new FormData();
+    fd.append("name", form.name);
+    fd.append("slug", form.slug);
+    fd.append("description", form.description);
+    fd.append("category", form.category);
+    fd.append("visibility", form.visibility);
+    fd.append("tags", JSON.stringify(form.tags));
+    fd.append("rules", JSON.stringify(form.rules));
+    fd.append("requireApproval", String(form.requireApproval));
+
+    if (form.iconFile) fd.append("icon", form.iconFile);
+    if (form.bannerFile) fd.append("banner", form.bannerFile);
+
+    // AI Agent
+    fd.append("isAiPet", String(aiPet.enabled));
+    if (aiPet.enabled) {
+      fd.append("aiAgentName", aiPet.name);
+      fd.append("aiAgentPetName", aiPet.nickname);
+      fd.append("aiAgentModel", aiPet.model);
+      fd.append("aiAgentDescription", aiPet.personality);
+      if (aiPet.customAvatarFile) {
+        fd.append("aiAgentAvatarFile", aiPet.customAvatarFile);
+      } else {
+        fd.append("aiAgentAvatar", aiPet.avatar);
       }
+    }
+
+    const res = await api<{ community: { id: string; slug: string } }>("/api/communities", {
+      method: "POST",
+      body: fd
     });
 
-    if (response.success && response.community?.slug) {
-      toast.success("Community created successfully!");
-
-      // Refresh communities list
-      await communityStore.fetchCommunities(true);
-
-      // Set the new community as current
-      communityStore.setCurrentCommunity(response.community.slug);
-
-      // Navigate to the new community
-      router.push(`/community/${response.community.slug}`);
-    }
-  } catch (error: unknown) {
-    const err = error as { data?: { statusMessage?: string } };
-    toast.error(err.data?.statusMessage || "Failed to create community");
+    toast.success("Community created successfully!");
+    await router.push(`/community/${res.community.slug}`);
+  } catch (error: any) {
+    toast.error(error?.data?.message ?? "Failed to create community.");
   } finally {
     isCreating.value = false;
   }
@@ -361,3 +265,34 @@ const handleCancel = () => {
   router.back();
 };
 </script>
+
+<style scoped>
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+}
+
+@keyframes float-delayed {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(1.05);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 20s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 25s ease-in-out infinite;
+  animation-delay: 5s;
+}
+</style>

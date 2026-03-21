@@ -1,293 +1,383 @@
 <template>
-  <main class="w-full pb-10">
-    <!-- Hero Section with Banner & Community Info -->
-    <CommunityHero
-      :name="community.name"
-      :type="community.type"
-      :description="community.description"
-      :created-at="community.createdAt"
-      :member-count="community.memberCount"
-      :stats="quickStats"
-    />
-
-    <!-- Main Content Grid -->
-    <div class="w-full mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6 px-6">
-      <!-- Left Column -->
-      <div class="space-y-6">
-        <!-- About Card -->
-        <CommunityAbout
-          :created-at="'Jan 15, 2024'"
-          :website="'https://oriongroup.gg'"
-          :tags="community.tags"
-        />
-
-        <!-- Community Rules -->
-        <CommunityRules :rules="communityRules" />
-
-        <!-- Workspaces -->
-        <CommunityWorkspaces :workspaces="workspaces" />
-      </div>
-
-      <!-- Middle Column -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Community Stats Chart -->
-        <WidgetsStatsChart
-          title="Community Stats"
-          description="Activity overview showing members, messages, and engagement metrics."
-        />
-
-        <!-- Members by Role -->
-        <CommunityMembers
-          v-model:selected-role="selectedRole"
-          :roles="memberRoles"
-          :members="members"
-        />
-
-        <!-- Channels -->
-        <CommunityChannels :channels="channels" />
-
-        <!-- Recent Activity -->
-        <CommunityActivity :activities="recentActivity" />
-      </div>
+  <main class="min-h-screen w-full">
+    <!-- Loading -->
+    <div v-if="pending" class="flex h-96 items-center justify-center">
+      <div class="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
     </div>
+
+    <template v-else-if="community">
+      <!-- Hero Banner -->
+      <CommunityBanner
+        :name="communityBannerProps.name"
+        :type="communityBannerProps.type"
+        :description="communityBannerProps.description"
+        :banner-image="communityBannerProps.bannerImage"
+        :verified="communityBannerProps.verified"
+        :icon-image="community.icon_url ?? undefined"
+        @notify="handleNotify"
+        @settings="handleSettings"
+        @invite="handleInvite"
+      />
+
+      <!-- Sticky Stats Bar -->
+      <CommunityStatsBar :stats="quickStats" />
+
+      <!-- Main content - asymmetric bento -->
+      <div class="w-full px-8 py-8">
+        <div class="grid grid-cols-12 gap-5">
+          <!-- Left narrow column -->
+          <div class="col-span-12 space-y-5 lg:col-span-3">
+            <!-- AI Agent -->
+            <CommunityAIAgent
+              v-if="aiAgent"
+              :agent="aiAgent"
+              @view-profile="handleViewAgentProfile"
+            />
+
+            <!-- About -->
+            <CommunityAbout
+              :created-at="communityAbout.createdAt"
+              :website="communityAbout.website"
+              :tags="communityAbout.tags"
+            />
+
+            <!-- Rules -->
+            <CommunityRules :rules="communityRules" />
+
+            <!-- Workspaces -->
+            <CommunityWorkspaces :workspaces="mappedWorkspaces" @select="handleSelectWorkspace" />
+          </div>
+
+          <!-- Center wide column -->
+          <div class="col-span-12 space-y-5 lg:col-span-6">
+            <!-- Activity feed + join request moderation -->
+            <CommunityActivity :community-id="communityId" />
+
+            <!-- Channels Grid -->
+            <CommunityChannelGrid
+              :channels="mappedChannels"
+              @create="handleCreateChannel"
+              @select="handleSelectChannel"
+            />
+          </div>
+
+          <!-- Right column - members focus -->
+          <div class="col-span-12 space-y-5 lg:col-span-3">
+            <!-- Member List (includes role filter + view-all modal) -->
+            <CommunityMemberList
+              :members="filteredMembers"
+              :roles="memberRoles"
+              :owner-id="community?.owner_id ?? ''"
+              @select-member="handleSelectMember"
+            />
+          </div>
+        </div>
+      </div>
+    </template>
   </main>
 </template>
 
-<script setup>
-import {
-  Users,
-  MessageSquare,
-  Hash,
-  Layers,
-  Code,
-  Gamepad2,
-  Music,
-  BookOpen,
-  Mic,
-  Video,
-  Megaphone
-} from "lucide-vue-next";
+<script setup lang="ts">
+import { Users, MessageSquare, Hash, Layers, Mic, Megaphone, FolderOpen } from "lucide-vue-next";
+import { markRaw as markRawVue } from "vue";
+import { toast } from "vue-sonner";
 
-const community = {
-  id: "orion_group",
-  name: "Orion Group",
-  type: "Enterprise",
-  description:
-    "🚀 Welcome to Orion Group! A thriving community of developers, designers, and tech enthusiasts. Join us for discussions, collaborations, and fun events. Building the future together! 💻",
-  createdAt: "Jan 2024",
-  memberCount: "18.4K",
-  tags: ["Technology", "Gaming", "Development", "Community", "Esports"]
+const route = useRoute();
+const api = useApi();
+const communityId = route.params.community_id as string;
+
+// ─── API types ────────────────────────────────────────────────────────────────
+
+interface ApiCommunity {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon_url: string | null;
+  banner_url: string | null;
+  category: string | null;
+  tags: string[];
+  rules: Array<{ id: number; text: string }>;
+  member_count: number;
+  is_public: boolean;
+  require_approval: boolean;
+  is_ai_pet: boolean;
+  ai_agent_name: string | null;
+  ai_agent_pet_name: string | null;
+  ai_agent_avatar: string | null;
+  ai_agent_model: string | null;
+  ai_agent_description: string | null;
+  owner_id: string;
+  created_at: string;
+}
+
+interface ApiMember {
+  id: string;
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  nickname: string | null;
+  joined_at: string;
+  role_name: string;
+}
+
+interface ApiRole {
+  id: string;
+  name: string;
+  color: string | null;
+  position: number;
+  is_default: boolean;
+  member_count: number;
+}
+
+interface ApiOverview {
+  community: ApiCommunity;
+  roles: ApiRole[];
+  members: ApiMember[];
+  is_member: boolean;
+  is_owner: boolean;
+  owner_id: string;
+}
+
+// ─── Fetch overview ───────────────────────────────────────────────────────────
+
+const { data, pending, error } = await useAsyncData<ApiOverview>(
+  `community-overview-${communityId}`,
+  () => api<ApiOverview>(`/api/communities/${communityId}`),
+  { server: false }
+);
+
+if (error.value) {
+  throw createError({ statusCode: 404, statusMessage: "Community not found" });
+}
+
+// ─── Fetch channels & workspaces ─────────────────────────────────────────────
+
+interface ApiChannel {
+  id: string;
+  name: string;
+  type: string;
+  topic: string | null;
+  position: number;
+  is_private: boolean;
+  parent_id: string | null;
+  last_message_at: string | null;
+  created_at: string;
+}
+
+interface ApiWorkspace {
+  id: string;
+  name: string;
+  emoji: string | null;
+  description: string | null;
+  is_public: boolean;
+  created_by: string;
+  created_at: string;
+}
+
+const { data: channelsData } = await useAsyncData(
+  `community-channels-${communityId}`,
+  () => api<{ channels: ApiChannel[]; can_manage: boolean }>(`/api/communities/${communityId}/channels`),
+  { server: false }
+);
+
+const { data: workspacesData } = await useAsyncData(
+  `community-workspaces-${communityId}`,
+  () => api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
+    `/api/communities/${communityId}/workspaces`
+  ),
+  { server: false }
+);
+
+// Track last visited community so the home page can redirect here
+const communityStore = useCommunityStore();
+communityStore.setCurrentCommunity(communityId);
+
+// ─── Derived state ────────────────────────────────────────────────────────────
+
+const community = computed(() => data.value?.community ?? null);
+const members = computed(() => data.value?.members ?? []);
+const roles = computed(() => data.value?.roles ?? []);
+
+// Channel type → icon/color mapping
+const defaultChannelStyle = {
+  icon: markRawVue(Hash),
+  bg: "bg-blue-500/20",
+  color: "text-blue-500"
 };
 
-const quickStats = [
-  { icon: Users, value: "18.4K", label: "Members" },
-  { icon: MessageSquare, value: "124K", label: "Messages" },
-  { icon: Hash, value: "42", label: "Channels" },
-  { icon: Layers, value: "6", label: "Workspaces" }
-];
+function getChannelStyle(type: string) {
+  const styles: Record<string, typeof defaultChannelStyle> = {
+    text: defaultChannelStyle,
+    voice: { icon: markRawVue(Mic), bg: "bg-green-500/20", color: "text-green-500" },
+    announcement: { icon: markRawVue(Megaphone), bg: "bg-amber-500/20", color: "text-amber-500" },
+    category: { icon: markRawVue(FolderOpen), bg: "bg-purple-500/20", color: "text-purple-500" }
+  };
+  return styles[type] ?? defaultChannelStyle;
+}
 
-const communityRules = [
-  "Be respectful to all members",
-  "No spam or self-promotion",
-  "Keep discussions on topic",
-  "No NSFW content",
-  "Follow Discord ToS"
-];
+// Map API channels → CommunityChannelGrid format
+const mappedChannels = computed(() =>
+  (channelsData.value?.channels ?? []).map((ch) => {
+    const s = getChannelStyle(ch.type);
+    return {
+      id: ch.id,
+      name: ch.name,
+      icon: s.icon,
+      iconBg: s.bg,
+      iconColor: s.color,
+      lastActivity: ch.last_message_at ? "Active" : "",
+      messageCount: "--"
+    };
+  })
+);
 
-const workspaces = [
+// Workspace color palette
+const wsColors = [
+  "bg-primary/20 text-primary",
+  "bg-blue-500/20 text-blue-500",
+  "bg-purple-500/20 text-purple-500",
+  "bg-amber-500/20 text-amber-500"
+] as const;
+
+// Map API workspaces → CommunityWorkspaces format
+const mappedWorkspaces = computed(() =>
+  (workspacesData.value?.workspaces ?? []).map((ws, i) => ({
+    id: ws.id,
+    name: ws.name,
+    icon: markRawVue(Layers),
+    color: wsColors[i % wsColors.length] as string,
+    channelCount: 0
+  }))
+);
+
+// Banner/header props
+const communityBannerProps = computed(() => ({
+  name: community.value?.name ?? "",
+  type: community.value?.category ?? "Community",
+  description: community.value?.description ?? "",
+  bannerImage: community.value?.banner_url ?? undefined,
+  verified: (community.value?.member_count ?? 0) > 1000
+}));
+
+// Quick stats
+const quickStats = computed(() => [
   {
-    id: 1,
-    name: "General",
-    icon: MessageSquare,
-    color: "bg-blue-500/20 text-blue-500",
-    channelCount: 8
+    icon: markRawVue(Users),
+    value: formatNumber(community.value?.member_count ?? 0),
+    label: "Members"
+  },
+  { icon: markRawVue(MessageSquare), value: "—", label: "Messages" },
+  {
+    icon: markRawVue(Hash),
+    value: formatNumber(channelsData.value?.channels?.length ?? 0),
+    label: "Channels"
   },
   {
-    id: 2,
-    name: "Development",
-    icon: Code,
-    color: "bg-green-500/20 text-green-500",
-    channelCount: 12
-  },
-  {
-    id: 3,
-    name: "Gaming",
-    icon: Gamepad2,
-    color: "bg-purple-500/20 text-purple-500",
-    channelCount: 6
-  },
-  { id: 4, name: "Music", icon: Music, color: "bg-pink-500/20 text-pink-500", channelCount: 4 },
-  {
-    id: 5,
-    name: "Learning",
-    icon: BookOpen,
-    color: "bg-amber-500/20 text-amber-500",
-    channelCount: 7
+    icon: markRawVue(Layers),
+    value: formatNumber(workspacesData.value?.workspaces?.length ?? 0),
+    label: "Workspaces"
   }
-];
+]);
 
-const memberRoles = [
-  { id: "all", label: "All", count: 18420, dotColor: "bg-gray-500" },
-  { id: "owner", label: "Owner", count: 1, dotColor: "bg-yellow-500" },
-  { id: "admin", label: "Admins", count: 5, dotColor: "bg-red-500" },
-  { id: "mod", label: "Mods", count: 12, dotColor: "bg-blue-500" },
-  { id: "member", label: "Members", count: 18402, dotColor: "bg-green-500" }
-];
+// AI Agent
+const aiAgent = computed(() =>
+  community.value?.is_ai_pet
+    ? {
+        id: community.value.id,
+        name: community.value.ai_agent_name ?? "AI",
+        petName: community.value.ai_agent_pet_name ?? "",
+        avatar: community.value.ai_agent_avatar ?? "",
+        model: community.value.ai_agent_model ?? null,
+        description: community.value.ai_agent_description ?? null
+      }
+    : null
+);
 
-const selectedRole = ref("all");
+// About
+const communityAbout = computed(() => ({
+  createdAt: community.value
+    ? new Date(community.value.created_at).toLocaleDateString("en-US", {
+        month: "short",
+        year: "numeric"
+      })
+    : "",
+  website: undefined as string | undefined,
+  tags: community.value?.tags ?? []
+}));
 
-const members = [
-  {
-    id: 1,
-    name: "CyberNinja",
-    avatar: "/images/avatar/1.png",
-    role: "owner",
-    status: "Building something awesome",
-    online: true
-  },
-  {
-    id: 2,
-    name: "PixelQueen",
-    avatar: "/images/avatar/2.png",
-    role: "admin",
-    status: "Available",
-    online: true
-  },
-  {
-    id: 3,
-    name: "CodeMaster",
-    avatar: "/images/avatar/3.png",
-    role: "admin",
-    status: "In a meeting",
-    online: true
-  },
-  {
-    id: 4,
-    name: "GameWizard",
-    avatar: "/images/avatar/4.png",
-    role: "mod",
-    status: "Playing games",
-    online: true
-  },
-  {
-    id: 5,
-    name: "TechGuru",
-    avatar: "/images/avatar/5.png",
-    role: "mod",
-    status: "Coding...",
+// Rules
+const communityRules = computed(() => (community.value?.rules ?? []).map((r) => r.text));
+
+const filteredMembers = computed(() =>
+  members.value.map((m) => ({
+    id: m.user_id,
+    name: m.nickname ?? m.username,
+    avatar: m.avatar_url ?? "",
+    role: m.user_id === community.value?.owner_id ? "owner" : m.role_name || "member",
+    status: "",
     online: false
-  },
-  {
-    id: 6,
-    name: "StarPlayer",
-    avatar: "/images/avatar/1.png",
-    role: "member",
-    status: "Chilling",
-    online: true
-  },
-  {
-    id: 7,
-    name: "NightOwl",
-    avatar: "/images/avatar/2.png",
-    role: "member",
-    status: "Away",
-    online: false
-  },
-  {
-    id: 8,
-    name: "ProGamer",
-    avatar: "/images/avatar/3.png",
-    role: "member",
-    status: "Online",
-    online: true
-  }
-];
+  }))
+);
 
-const channels = [
-  {
-    id: 1,
-    name: "general",
-    icon: MessageSquare,
-    iconBg: "bg-blue-500/20",
-    iconColor: "text-blue-500",
-    lastActivity: "Just now",
-    messageCount: "12.4K"
-  },
-  {
-    id: 2,
-    name: "announcements",
-    icon: Megaphone,
-    iconBg: "bg-amber-500/20",
-    iconColor: "text-amber-500",
-    lastActivity: "2h ago",
-    messageCount: "342"
-  },
-  {
-    id: 3,
-    name: "voice-chat",
-    icon: Mic,
-    iconBg: "bg-green-500/20",
-    iconColor: "text-green-500",
-    lastActivity: "Active",
-    messageCount: "—"
-  },
-  {
-    id: 4,
-    name: "dev-talk",
-    icon: Code,
-    iconBg: "bg-purple-500/20",
-    iconColor: "text-purple-500",
-    lastActivity: "5m ago",
-    messageCount: "8.2K"
-  },
-  {
-    id: 5,
-    name: "gaming",
-    icon: Gamepad2,
-    iconBg: "bg-pink-500/20",
-    iconColor: "text-pink-500",
-    lastActivity: "1h ago",
-    messageCount: "5.1K"
-  },
-  {
-    id: 6,
-    name: "stream",
-    icon: Video,
-    iconBg: "bg-red-500/20",
-    iconColor: "text-red-500",
-    lastActivity: "Live",
-    messageCount: "1.2K"
-  }
-];
+// Roles for filter — counts derived from the resolved member list
+const memberRoles = computed(() => {
+  const all = filteredMembers.value;
+  const ownerCount = all.filter((m) => m.role === "owner").length;
+  return [
+    { id: "all", label: "All", count: all.length, dotColor: "bg-gray-500" },
+    ...(ownerCount > 0
+      ? [
+          {
+            id: "owner",
+            label: "Owner",
+            count: ownerCount,
+            dotColor: "bg-yellow-500",
+            color: "#eab308"
+          }
+        ]
+      : []),
+    ...roles.value.map((r) => ({
+      id: r.id,
+      label: r.name,
+      count: all.filter((m) => m.role.toLowerCase() === r.name.toLowerCase()).length,
+      dotColor: r.color ? "" : "bg-green-500",
+      color: r.color
+    }))
+  ];
+});
 
-const recentActivity = [
-  {
-    id: 1,
-    userName: "CyberNinja",
-    userAvatar: "/images/avatar/1.png",
-    action: "created a new channel #announcements",
-    time: "2 minutes ago"
-  },
-  {
-    id: 2,
-    userName: "PixelQueen",
-    userAvatar: "/images/avatar/2.png",
-    action: "promoted GameWizard to Moderator",
-    time: "1 hour ago"
-  },
-  {
-    id: 3,
-    userName: "CodeMaster",
-    userAvatar: "/images/avatar/3.png",
-    action: "updated community rules",
-    time: "3 hours ago"
-  },
-  {
-    id: 4,
-    userName: "GameWizard",
-    userAvatar: "/images/avatar/4.png",
-    action: "started a voice channel",
-    time: "5 hours ago"
+// Helpers
+function formatNumber(n: number) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return String(n);
+}
+
+// ─── Handlers ─────────────────────────────────────────────────────────────────
+
+const router = useRouter();
+
+// ─── Welcome toast on first join ──────────────────────────────────────────────
+onMounted(() => {
+  if (route.query.welcome === "1" && community.value) {
+    toast.success(`Welcome to ${community.value.name}! 🎉`, {
+      description:
+        "You're now a member. Start exploring channels and connecting with the community.",
+      duration: 5000
+    });
+    // Remove the query param without a page reload
+    router.replace({ query: {} });
   }
-];
+});
+
+const handleNotify = () => toast.info("Notifications toggled");
+const handleSettings = () => router.push(`/community/${communityId}/settings`);
+const handleInvite = () => toast.info("Invite link copied!");
+const handleSelectWorkspace = (ws: any) =>
+  router.push(`/community/${communityId}/workspaces/${ws.id}`);
+const handleCreateChannel = () => router.push(`/community/${communityId}/channels`);
+const handleSelectChannel = (ch: any) => router.push(`/community/${communityId}/channels/${ch.id}`);
+const handleSelectMember = (m: any) => {};
+const handleViewAgentProfile = () => {};
 </script>

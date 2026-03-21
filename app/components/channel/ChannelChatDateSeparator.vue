@@ -1,10 +1,10 @@
 <template>
-  <div class="flex items-center p-4 sticky top-8 z-10">
-    <span class="flex-1 h-px bg-border" />
-    <Badge variant="outline" class="px-3 py-1 min-w-sm text-xs font-medium bg-background">
+  <div class="sticky top-10 z-10 flex items-center p-4">
+    <span class="h-px flex-1 bg-border" />
+    <Badge variant="outline" class="min-w-sm bg-background px-3 py-1 text-xs font-medium">
       {{ label }}
     </Badge>
-    <span class="flex-1 h-px bg-border" />
+    <span class="h-px flex-1 bg-border" />
   </div>
 </template>
 
