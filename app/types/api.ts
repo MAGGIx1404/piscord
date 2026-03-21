@@ -1,5 +1,3 @@
-// ─── Auth / User ─────────────────────────────────────────────────────────────
-
 export interface MeResponse {
   id: string;
   username: string;

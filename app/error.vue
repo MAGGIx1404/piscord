@@ -10,7 +10,6 @@
         class="size-full rounded-lg object-cover"
       ></video>
 
-      <!-- Error reason -->
       <div
         class="absolute bottom-8 left-1/2 inline-flex w-max -translate-x-1/2 items-center gap-2 rounded-full border border-border/50 bg-card px-4 py-2"
       >
@@ -25,7 +24,6 @@
       </div>
     </Card>
 
-    <!-- Background -->
     <div class="fixed top-0 left-0 z-0 size-full opacity-0 dark:opacity-15">
       <div
         class="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_40%,#3ecf8e_100%)]"
