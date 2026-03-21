@@ -1,13 +1,11 @@
 import crypto from "node:crypto";
 import { createError } from "h3";
 import { db, generateId } from "../db";
-import type { AuthTokens, PublicUser } from "../db/types";
+import type { AccessTokenPayload, AuthTokens, PublicUser } from "../db/types";
 import type { User } from "../db/tables";
 import { hashPassword, verifyPassword } from "../utils/password";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
 import { generateTotpSecret, buildTotpSetupResult, verifyTotpCode } from "../utils/totp";
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
@@ -18,8 +16,6 @@ function refreshExpiresAt(): Date {
   d.setDate(d.getDate() + 30);
   return d;
 }
-
-// ─── Register ─────────────────────────────────────────────────────────────────
 
 export async function registerUser(
   username: string,
@@ -58,8 +54,6 @@ export async function registerUser(
   return user as PublicUser;
 }
 
-// ─── Login ────────────────────────────────────────────────────────────────────
-
 export async function loginUser(
   email: string,
   password: string
@@ -90,12 +84,10 @@ export async function loginUser(
   };
 }
 
-// ─── Refresh ──────────────────────────────────────────────────────────────────
-
 export async function refreshSession(rawRefreshToken: string): Promise<AuthTokens> {
-  let payload: { userId: string };
+  let payload: AccessTokenPayload;
   try {
-    payload = verifyRefreshToken(rawRefreshToken) as { userId: string };
+    payload = verifyRefreshToken(rawRefreshToken);
   } catch {
     throw createError({ statusCode: 401, message: "Invalid refresh token" });
   }
@@ -122,14 +114,10 @@ export async function refreshSession(rawRefreshToken: string): Promise<AuthToken
   return createSession(payload.userId);
 }
 
-// ─── Logout ───────────────────────────────────────────────────────────────────
-
 export async function logoutUser(rawRefreshToken: string): Promise<void> {
   const tokenHash = hashToken(rawRefreshToken);
   await db.deleteFrom("refresh_sessions").where("token_hash", "=", tokenHash).execute();
 }
-
-// ─── 2FA Setup ────────────────────────────────────────────────────────────────
 
 export async function setup2FA(userId: string) {
   const user = await db
@@ -148,8 +136,6 @@ export async function setup2FA(userId: string) {
 
   return buildTotpSetupResult(user.email, base32);
 }
-
-// ─── 2FA Verify ───────────────────────────────────────────────────────────────
 
 export async function verify2FA(
   userId: string,
@@ -176,8 +162,6 @@ export async function verify2FA(
   const tokens = await createSession(userId);
   return { ...tokens, user: toPublicUser(user as User) };
 }
-
-// ─── Internal helpers ─────────────────────────────────────────────────────────
 
 async function createSession(userId: string): Promise<AuthTokens> {
   const access_token = signAccessToken({ userId });

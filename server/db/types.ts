@@ -22,8 +22,6 @@ export interface TwoFactorSetupResult {
   secret: string; // base32 for manual entry
 }
 
-// ─── Community ────────────────────────────────────────────────────────────────
-
 export interface PublicCommunity {
   id: string;
   owner_id: string;

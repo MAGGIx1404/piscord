@@ -4,8 +4,6 @@ import fs from "node:fs/promises";
 import { db, generateId } from "../db";
 import type { PublicCommunity } from "../db/types";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 const COMMUNITY_IMAGES_DIR = path.resolve("public/images/communities");
 const ALLOWED_MIMES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MIME_TO_EXT: Record<string, string> = {
@@ -15,8 +13,6 @@ const MIME_TO_EXT: Record<string, string> = {
   "image/gif": ".gif"
 };
 const MAX_SIZE = 8 * 1024 * 1024; // 8 MB
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface CreateCommunityPayload {
   name: string;
@@ -40,8 +36,6 @@ export interface FilePart {
   type?: string;
   filename?: string;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function saveImage(
   communityId: string,
@@ -73,8 +67,6 @@ function toCommunitySlug(name: string): string {
     .slice(0, 30);
 }
 
-// ─── Check slug availability ──────────────────────────────────────────────────
-
 export async function checkCommunitySlug(slug: string): Promise<boolean> {
   const existing = await db
     .selectFrom("communities")
@@ -83,8 +75,6 @@ export async function checkCommunitySlug(slug: string): Promise<boolean> {
     .executeTakeFirst();
   return !existing;
 }
-
-// ─── Create community ─────────────────────────────────────────────────────────
 
 export async function createCommunity(
   ownerId: string,
@@ -111,7 +101,6 @@ export async function createCommunity(
 
   const slug = payload.slug || toCommunitySlug(name);
 
-  // Slug uniqueness
   const taken = await db
     .selectFrom("communities")
     .select("id")
@@ -124,7 +113,6 @@ export async function createCommunity(
 
   const id = generateId();
 
-  // Save images first (use temp id path)
   let icon_url: string | null = null;
   let banner_url: string | null = null;
 
@@ -141,7 +129,6 @@ export async function createCommunity(
     resolvedAiAgentAvatar = await saveImage(id, "ai-avatar", aiAgentAvatarPart);
   }
 
-  // Insert community
   const community = await db
     .insertInto("communities")
     .values({
@@ -189,7 +176,6 @@ export async function createCommunity(
     ])
     .executeTakeFirstOrThrow();
 
-  // Seed default roles
   const memberRoleId = generateId();
   const adminRoleId = generateId();
 
@@ -217,7 +203,6 @@ export async function createCommunity(
     ])
     .execute();
 
-  // Add owner as member
   await db
     .insertInto("community_members")
     .values({
@@ -232,13 +217,11 @@ export async function createCommunity(
     ...community,
     rules: community.rules ? JSON.parse(community.rules) : [],
     tags: community.tags ?? [],
-    is_public: community.is_public as unknown as boolean,
-    member_count: community.member_count as unknown as number,
-    require_approval: community.require_approval as unknown as boolean
-  } as unknown as PublicCommunity;
+    is_public: community.is_public,
+    member_count: community.member_count,
+    require_approval: community.require_approval
+  };
 }
-
-// ─── Get communities owned by user ───────────────────────────────────────────
 
 export async function getUserCommunities(userId: string): Promise<PublicCommunity[]> {
   const rows = await db
@@ -275,8 +258,6 @@ export async function getUserCommunities(userId: string): Promise<PublicCommunit
     tags: r.tags ?? []
   })) as unknown as PublicCommunity[];
 }
-
-// ─── Discover communities ─────────────────────────────────────────────────────
 
 export interface DiscoverQuery {
   search?: string;
@@ -341,7 +322,6 @@ export async function getDiscoverableCommunities(
       .executeTakeFirstOrThrow()
   ]);
 
-  // Check membership and pending requests for each community in parallel
   const communityIds = rows.map((r) => r.id);
   const [memberships, pendingRequests] = await Promise.all([
     communityIds.length > 0
@@ -382,13 +362,10 @@ export async function getDiscoverableCommunities(
   };
 }
 
-// ─── Join community ───────────────────────────────────────────────────────────
-
 export async function joinCommunity(
   userId: string,
   communityId: string
 ): Promise<{ joined: boolean; pending: boolean; slug: string; member_count: number }> {
-  // Check community exists and is joinable
   const community = await db
     .selectFrom("communities")
     .select(["id", "owner_id", "slug", "name", "require_approval", "is_public", "member_count"])
@@ -403,7 +380,6 @@ export async function joinCommunity(
     throw createError({ statusCode: 403, message: "This community is private" });
   }
 
-  // Already a member?
   const existing = await db
     .selectFrom("community_members")
     .select("id")
@@ -416,11 +392,10 @@ export async function joinCommunity(
       joined: false,
       pending: false,
       slug: community.slug,
-      member_count: community.member_count as unknown as number
+      member_count: community.member_count
     };
   }
 
-  // ─── Block duplicate pending request ───────────────────────────────────────
   const existingRequest = await db
     .selectFrom("community_join_requests")
     .select("id")
@@ -436,7 +411,6 @@ export async function joinCommunity(
     });
   }
 
-  // ─── Approval required: persist request, notify owner ──────────────────────
   if (community.require_approval) {
     await db
       .insertInto("community_join_requests")
@@ -451,7 +425,6 @@ export async function joinCommunity(
       })
       .execute();
 
-    // Notify community owner
     await db
       .insertInto("notifications")
       .values({
@@ -469,11 +442,10 @@ export async function joinCommunity(
       joined: false,
       pending: true,
       slug: community.slug,
-      member_count: community.member_count as unknown as number
+      member_count: community.member_count
     };
   }
 
-  // ─── Direct join ───────────────────────────────────────────────────────────
   await db
     .insertInto("community_members")
     .values({
@@ -484,7 +456,6 @@ export async function joinCommunity(
     })
     .execute();
 
-  // Increment member count
   const updated = await db
     .updateTable("communities")
     .set((eb) => ({ member_count: eb("member_count", "+", 1) }))
@@ -492,7 +463,6 @@ export async function joinCommunity(
     .returning("member_count")
     .executeTakeFirstOrThrow();
 
-  // Notify community owner that someone joined
   if (community.owner_id !== userId) {
     await db
       .insertInto("notifications")
@@ -512,11 +482,9 @@ export async function joinCommunity(
     joined: true,
     pending: false,
     slug: community.slug,
-    member_count: updated.member_count as unknown as number
+    member_count: updated.member_count
   };
 }
-
-// ─── Get community overview ───────────────────────────────────────────────────
 
 export interface CommunityMemberPublic {
   id: string;
@@ -593,7 +561,6 @@ export async function getCommunityOverview(
       .where("user_id", "=", userId)
       .executeTakeFirst(),
 
-    // Fetch every member→role assignment for this community
     db
       .selectFrom("member_roles as mr")
       .innerJoin("roles as r", "r.id", "mr.role_id")
@@ -602,8 +569,8 @@ export async function getCommunityOverview(
       .execute()
   ]);
 
-  // Build member_id → highest role name map, using position as priority
-  // (higher position = more privileged; Admin=1 > Member=0 in seed data)
+  // When a member has multiple roles, surface the most privileged one by position
+  // (higher position = more privileged; e.g. Admin=1 > Member=0).
   const memberRolePriorityMap = new Map<string, { name: string; position: number }>();
   for (const mr of memberRoleRows) {
     const pos = Number(mr.position ?? 0);
@@ -628,8 +595,8 @@ export async function getCommunityOverview(
 
   const rolesWithCount: CommunityRole[] = roles.map((r) => ({
     ...r,
-    position: r.position as unknown as number,
-    is_default: r.is_default as unknown as boolean,
+    position: r.position,
+    is_default: r.is_default,
     member_count: roleMemberCount.get(r.id) ?? 0
   }));
 
@@ -637,11 +604,11 @@ export async function getCommunityOverview(
     ...row,
     rules: row.rules ? JSON.parse(row.rules) : [],
     tags: row.tags ?? [],
-    is_public: row.is_public as unknown as boolean,
-    member_count: row.member_count as unknown as number,
-    require_approval: row.require_approval as unknown as boolean,
-    is_ai_pet: row.is_ai_pet as unknown as boolean
-  } as unknown as PublicCommunity;
+    is_public: row.is_public,
+    member_count: row.member_count,
+    require_approval: row.require_approval,
+    is_ai_pet: row.is_ai_pet
+  };
 
   return {
     community,

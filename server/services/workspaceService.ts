@@ -1,11 +1,9 @@
 import { createError } from "h3";
 import { db, generateId } from "../db";
 
-// ─── Permission bitmask ─────────────────────────────────────────────────────
+// Permission bitmask
 // 4 = manage_channels (also covers workspaces)
 const MANAGE_CHANNELS = 4;
-
-// ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface CreateWorkspacePayload {
   name: string;
@@ -29,8 +27,6 @@ export interface WorkspaceListResult {
   workspaces: WorkspaceItem[];
   can_manage: boolean;
 }
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 async function requireMembership(communityId: string, userId: string) {
   const membership = await db
@@ -80,8 +76,6 @@ async function checkCanManage(communityId: string, userId: string): Promise<bool
   return roleRow.some((r) => ((r.permissions as number) & MANAGE_CHANNELS) !== 0);
 }
 
-// ─── Get workspaces by community ────────────────────────────────────────────
-
 export async function getWorkspacesByCommunity(
   communityId: string,
   userId: string
@@ -99,13 +93,11 @@ export async function getWorkspacesByCommunity(
   return {
     workspaces: rows.map((r) => ({
       ...r,
-      is_public: r.is_public as unknown as boolean
+      is_public: r.is_public
     })),
     can_manage: canManage
   };
 }
-
-// ─── Create workspace ───────────────────────────────────────────────────────
 
 export async function createWorkspace(
   communityId: string,
@@ -142,6 +134,6 @@ export async function createWorkspace(
 
   return {
     ...workspace,
-    is_public: workspace.is_public as unknown as boolean
+    is_public: workspace.is_public
   };
 }

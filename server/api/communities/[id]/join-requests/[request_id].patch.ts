@@ -15,7 +15,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "action must be 'approve' or 'reject'" });
   }
 
-  // Only the community owner can review requests
   const community = await db
     .selectFrom("communities")
     .select(["id", "owner_id", "name", "member_count"])
@@ -30,7 +29,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: "Only the community owner can review requests" });
   }
 
-  // Fetch the request
   const joinRequest = await db
     .selectFrom("community_join_requests")
     .select(["id", "user_id", "status"])
@@ -48,7 +46,6 @@ export default defineEventHandler(async (event) => {
 
   const newStatus = action === "approve" ? "approved" : "rejected";
 
-  // Update the request status
   await db
     .updateTable("community_join_requests")
     .set({
@@ -60,7 +57,6 @@ export default defineEventHandler(async (event) => {
     .execute();
 
   if (action === "approve") {
-    // Add user as member
     await db
       .insertInto("community_members")
       .values({
@@ -72,7 +68,6 @@ export default defineEventHandler(async (event) => {
       .onConflict((oc) => oc.constraint("uq_community_members").doNothing())
       .execute();
 
-    // Increment member count
     await db
       .updateTable("communities")
       .set((eb) => ({ member_count: eb("member_count", "+", 1) }))
@@ -80,7 +75,6 @@ export default defineEventHandler(async (event) => {
       .execute();
   }
 
-  // Notify the requester of the decision
   await db
     .insertInto("notifications")
     .values({
