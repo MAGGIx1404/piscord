@@ -28,9 +28,13 @@ export default defineEventHandler(async (event) => {
         "c.id",
         "c.name",
         "c.slug",
+        "c.description",
         "c.icon_url",
+        "c.banner_url",
+        "c.category",
         "c.member_count",
         "c.is_public",
+        "c.require_approval",
         "c.owner_id",
         "cm.joined_at"
       ])
@@ -46,9 +50,13 @@ export default defineEventHandler(async (event) => {
     id: r.id,
     name: r.name,
     slug: r.slug,
+    description: r.description,
     icon_url: r.icon_url,
+    banner_url: r.banner_url,
+    category: r.category,
     member_count: r.member_count,
     is_public: r.is_public,
+    require_approval: r.require_approval,
     is_owner: r.owner_id === userId,
     joined_at: r.joined_at
   }));

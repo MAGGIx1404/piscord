@@ -39,71 +39,43 @@
 
     <!-- Content -->
     <div class="px-6 py-8">
-      <!-- Loading skeleton -->
+      <!-- Loading skeleton (initial load) -->
       <div v-if="pending" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <div
-          v-for="n in 6"
+          v-for="n in 9"
           :key="n"
-          class="flex animate-pulse items-center gap-4 rounded-2xl border border-border/50 bg-card/30 p-4"
-        >
-          <div class="size-12 shrink-0 rounded-xl bg-muted/50" />
-          <div class="flex-1 space-y-2">
-            <div class="h-4 w-1/2 rounded bg-muted/50" />
-            <div class="h-3 w-1/3 rounded bg-muted/40" />
-          </div>
-        </div>
+          class="h-64 animate-pulse rounded-2xl border border-border/50 bg-card/30"
+        />
       </div>
 
       <!-- Grid -->
-      <div
-        v-else-if="communities.length"
-        class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
-      >
-        <button
-          v-for="c in communities"
-          :key="c.id"
-          class="group relative flex items-center gap-4 rounded-2xl border border-border/50 bg-card/50 p-4 text-left transition-all duration-200 hover:border-border hover:bg-card hover:shadow-md"
-          :class="c.id === currentCommunityId ? 'ring-2 ring-primary/40' : ''"
-          @click="goToCommunity(c.id)"
-        >
-          <!-- Active indicator -->
-          <div
-            v-if="c.id === currentCommunityId"
-            class="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5"
-          >
-            <div class="size-1.5 rounded-full bg-primary" />
-            <span class="text-[10px] font-medium text-primary">Active</span>
-          </div>
-
-          <!-- Icon -->
-          <Avatar class="size-12 shrink-0 rounded-xl">
-            <AvatarImage :src="c.icon_url ?? ''" />
-            <AvatarFallback class="rounded-xl text-sm font-semibold">
-              {{ c.name.charAt(0).toUpperCase() }}
-            </AvatarFallback>
-          </Avatar>
-
-          <!-- Info -->
-          <div class="min-w-0 flex-1">
-            <p class="truncate text-sm font-semibold">{{ c.name }}</p>
-            <div class="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-              <span class="flex items-center gap-1">
-                <Users class="size-3" />
-                {{ formatCount(c.member_count) }}
-              </span>
-              <span v-if="c.is_owner" class="flex items-center gap-1 text-amber-500">
-                <Crown class="size-3" />
-                Owner
-              </span>
-            </div>
-          </div>
-
-          <!-- Arrow -->
-          <ChevronRight
-            class="size-4 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 group-hover:text-foreground"
+      <template v-else-if="communities.length">
+        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <DiscoverCard
+            v-for="c in communities"
+            :key="c.id"
+            :community="c"
+            @join="handleJoin"
+            @card-click="openCommunityModal"
           />
-        </button>
-      </div>
+        </div>
+
+        <!-- Infinite scroll sentinel -->
+        <div v-if="hasMore" ref="sentinelRef" class="mt-6 flex items-center justify-center py-4">
+          <div v-if="loadingMore" class="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 class="size-4 animate-spin" />
+            Loading more...
+          </div>
+        </div>
+
+        <!-- End of list -->
+        <p
+          v-if="!hasMore && communities.length > perPage"
+          class="mt-6 text-center text-xs text-muted-foreground"
+        >
+          You've reached the end
+        </p>
+      </template>
 
       <!-- Empty state -->
       <div v-else class="flex flex-col items-center gap-3 py-20 text-center">
@@ -129,80 +101,165 @@
           </NuxtLink>
         </div>
       </div>
-
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="mt-8 flex items-center justify-center gap-2">
-        <Button variant="outline" size="sm" :disabled="page <= 1" @click="page--">
-          Previous
-        </Button>
-        <span class="px-3 text-sm text-muted-foreground">
-          Page {{ page }} of {{ totalPages }}
-        </span>
-        <Button variant="outline" size="sm" :disabled="page >= totalPages" @click="page++">
-          Next
-        </Button>
-      </div>
     </div>
+
+    <!-- Community Detail Modal -->
+    <CommunityDetailModal
+      v-model="modalOpen"
+      :data="modalData"
+      :loading="modalLoading"
+      @navigate="goToCommunity"
+    />
   </main>
 </template>
 
 <script setup lang="ts">
-import { Search, X, Users, Crown, ChevronRight, Building2 } from "lucide-vue-next";
+import { Search, X, Building2, Loader2 } from "lucide-vue-next";
+import { useIntersectionObserver, watchDebounced } from "@vueuse/core";
+import type { Community } from "~/components/discover/types";
+import type { CommunityOverviewData } from "~/components/community/CommunityDetailModal.vue";
 
 const api = useApi();
 const router = useRouter();
 const communityStore = useCommunityStore();
-const currentCommunityId = computed(() => communityStore.currentCommunityId);
+
+// ─── Infinite scroll state ──────────────────────────────────────────────────
 
 const searchQuery = ref("");
-const page = ref(1);
-const perPage = 18;
+const perPage = 12;
 
-// Reset to page 1 when search changes
-watch(searchQuery, () => {
-  page.value = 1;
-});
-
-const fetchQuery = computed(() => ({
-  search: searchQuery.value || undefined,
-  limit: perPage,
-  offset: (page.value - 1) * perPage
-}));
-
-interface ApiResponse {
-  communities: {
-    id: string;
-    name: string;
-    slug: string;
-    icon_url: string | null;
-    member_count: number;
-    is_public: boolean;
-    is_owner: boolean;
-    joined_at: string;
-  }[];
-  total: number;
-  limit: number;
-  offset: number;
+interface ApiCommunity {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon_url: string | null;
+  banner_url: string | null;
+  category: string | null;
+  member_count: number;
+  is_public: boolean;
+  require_approval: boolean;
+  is_owner: boolean;
+  joined_at: string;
 }
 
-const { data, pending } = await useAsyncData<ApiResponse>(
-  "my-communities",
-  () => api<ApiResponse>("/api/users/me/communities", { query: fetchQuery.value }),
-  { watch: [fetchQuery] }
+interface ApiResponse {
+  communities: ApiCommunity[];
+  total: number;
+}
+
+const rawCommunities = ref<ApiCommunity[]>([]);
+const total = ref(0);
+const offset = ref(0);
+const pending = ref(true);
+const loadingMore = ref(false);
+const hasMore = computed(() => offset.value < total.value);
+
+async function fetchCommunities(reset = false) {
+  if (reset) {
+    offset.value = 0;
+    rawCommunities.value = [];
+    pending.value = true;
+  } else {
+    loadingMore.value = true;
+  }
+
+  try {
+    const query: Record<string, unknown> = {
+      limit: perPage,
+      offset: offset.value
+    };
+    if (searchQuery.value) query.search = searchQuery.value;
+
+    const data = await api<ApiResponse>("/api/users/me/communities", { query });
+
+    if (reset) {
+      rawCommunities.value = data.communities;
+    } else {
+      rawCommunities.value = [...rawCommunities.value, ...data.communities];
+    }
+    total.value = data.total;
+    offset.value = offset.value + data.communities.length;
+  } finally {
+    pending.value = false;
+    loadingMore.value = false;
+  }
+}
+
+function loadMore() {
+  if (!hasMore.value || loadingMore.value || pending.value) return;
+  fetchCommunities(false);
+}
+
+// Map raw API data → Community type for DiscoverCard
+const communities = computed<Community[]>(() =>
+  rawCommunities.value.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description,
+    totalUsers: c.member_count,
+    posterImage: c.banner_url,
+    iconImage: c.icon_url,
+    type: c.category,
+    requiresApproval: c.require_approval,
+    isMember: true
+  }))
 );
 
-const communities = computed(() => data.value?.communities ?? []);
-const total = computed(() => data.value?.total ?? 0);
-const totalPages = computed(() => Math.ceil(total.value / perPage));
+// Debounced search reset
+watchDebounced(
+  searchQuery,
+  () => {
+    fetchCommunities(true);
+  },
+  { debounce: 300 }
+);
+
+// Intersection observer for infinite scroll
+const sentinelRef = ref<HTMLElement | null>(null);
+
+useIntersectionObserver(sentinelRef, ([entry]) => {
+  if (entry?.isIntersecting) {
+    loadMore();
+  }
+});
+
+// Initial fetch
+onMounted(() => {
+  fetchCommunities(true);
+});
+
+// ─── Community detail modal ─────────────────────────────────────────────────
+
+const modalOpen = ref(false);
+const modalData = ref<CommunityOverviewData | null>(null);
+const modalLoading = ref(false);
+
+async function openCommunityModal(id: string) {
+  modalData.value = null;
+  modalLoading.value = true;
+  modalOpen.value = true;
+
+  try {
+    modalData.value = await api<CommunityOverviewData>(`/api/communities/${id}`);
+  } catch {
+    modalOpen.value = false;
+    goToCommunity(id);
+  } finally {
+    modalLoading.value = false;
+  }
+}
 
 function goToCommunity(id: string) {
+  modalOpen.value = false;
   communityStore.setCurrentCommunity(id);
   router.push(`/community/${id}`);
 }
 
-function formatCount(n: number) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
-  return String(n);
-}
+// ─── Join handler (no-op for already-member cards, but needed for emit) ────
+
+const handleJoin = (_communityId: string, _isRequest: boolean) => {
+  // All communities on this page are already joined — this is a no-op
+};
 </script>

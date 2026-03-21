@@ -1,6 +1,7 @@
 <template>
   <div
-    class="group relative overflow-hidden rounded-2xl border border-border/50 bg-card/30 transition-all duration-300"
+    class="group relative cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card/30 transition-all duration-300"
+    @click="emit('cardClick', community.id)"
   >
     <!-- Poster Image -->
     <div class="relative h-36 overflow-hidden">
@@ -76,7 +77,7 @@
         <div class="flex items-center justify-end gap-2">
           <!-- View button — only when already a member -->
           <Button v-if="community.isMember" size="sm" variant="default" class="h-8 px-3" as-child>
-            <NuxtLink :to="`/community/${community.id}`">
+            <NuxtLink :to="`/community/${community.id}`" @click.stop>
               <ExternalLink class="mr-1 size-3.5" />
               View
             </NuxtLink>
@@ -95,7 +96,7 @@
                     : 'text-primary hover:bg-primary/10'
             "
             :disabled="community.isMember || community.isPendingRequest || isJoining"
-            @click="handleJoin"
+            @click.stop="handleJoin"
           >
             <template v-if="community.isMember">
               <BadgeCheck class="mr-1 size-3.5" />
@@ -212,7 +213,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const emit = defineEmits<{ join: [id: string, isRequest: boolean] }>();
+const emit = defineEmits<{ join: [id: string, isRequest: boolean]; cardClick: [id: string] }>();
 
 const isJoining = ref(false);
 const showApprovalModal = ref(false);
