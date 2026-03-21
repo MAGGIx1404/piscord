@@ -61,7 +61,7 @@ export const useCommunityStore = defineStore(
   },
   {
     persist: {
-      pick: ["communities", "currentCommunityId"]
+      pick: ["currentCommunityId"]
     }
   }
 );

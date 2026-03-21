@@ -1,4 +1,3 @@
-import { createError, getRouterParam, readBody } from "h3";
 import { toggleReaction, getMessageById } from "../../../../services/messageService";
 import { broadcastToChannel } from "../../../../routes/_ws";
 

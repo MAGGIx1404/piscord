@@ -1,4 +1,5 @@
 import { db, generateId } from "../../../../db";
+import { broadcastToCommunity } from "../../../../routes/_ws";
 
 export default defineEventHandler(async (event) => {
   const reviewerId = requireAuth(event);
@@ -56,11 +57,14 @@ export default defineEventHandler(async (event) => {
     .where("id", "=", requestId)
     .execute();
 
+  let memberId: string | undefined;
+
   if (action === "approve") {
+    memberId = generateId();
     await db
       .insertInto("community_members")
       .values({
-        id: generateId(),
+        id: memberId,
         community_id: communityId,
         user_id: joinRequest.user_id,
         nickname: null
@@ -90,6 +94,41 @@ export default defineEventHandler(async (event) => {
       }
     })
     .execute();
+
+  // Fetch updated member_count for broadcast
+  const updated = await db
+    .selectFrom("communities")
+    .select("member_count")
+    .where("id", "=", communityId)
+    .executeTakeFirstOrThrow();
+
+  broadcastToCommunity(communityId, {
+    type: "community:request_reviewed",
+    request_id: requestId,
+    status: newStatus,
+    user_id: joinRequest.user_id,
+    member_count: updated.member_count
+  });
+
+  if (action === "approve" && memberId) {
+    const user = await db
+      .selectFrom("users")
+      .select(["username", "avatar_url"])
+      .where("id", "=", joinRequest.user_id)
+      .executeTakeFirst();
+
+    broadcastToCommunity(communityId, {
+      type: "community:member_join",
+      member: {
+        id: memberId,
+        user_id: joinRequest.user_id,
+        username: user?.username ?? "",
+        avatar_url: user?.avatar_url ?? null,
+        joined_at: new Date().toISOString()
+      },
+      member_count: updated.member_count
+    });
+  }
 
   return { success: true, status: newStatus };
 });

@@ -1,4 +1,3 @@
-import { createError, getRouterParam } from "h3";
 import { db } from "../../../db";
 import { sql } from "kysely";
 

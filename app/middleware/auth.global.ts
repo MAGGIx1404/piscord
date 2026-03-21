@@ -16,21 +16,14 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return navigateTo("/auth/login");
   }
 
-  // When an authenticated user hits /, redirect to their current/last community.
+  // When an authenticated user hits /, redirect to their last community or the communities page.
   if (to.path === "/" && isAuth) {
     const communityStore = useCommunityStore();
 
-    if (!communityStore.loaded) {
-      await communityStore.fetchCommunities();
-    }
-
     if (communityStore.currentCommunityId) {
       return navigateTo(`/community/${communityStore.currentCommunityId}`, { replace: true });
-    } else if (communityStore.communities.length > 0) {
-      communityStore.setCurrentCommunity(communityStore.communities[0]?.id || "");
-      return navigateTo(`/community/${communityStore.communities[0]?.id || ""}`, {
-        replace: true
-      });
     }
+
+    return navigateTo("/my-communities", { replace: true });
   }
 });

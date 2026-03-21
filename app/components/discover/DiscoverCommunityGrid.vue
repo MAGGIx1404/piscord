@@ -7,12 +7,13 @@
       </h2>
     </div>
 
-    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
       <DiscoverCard
         v-for="community in communities"
         :key="community.id"
         :community="community"
         @join="(id, isRequest) => $emit('join', id, isRequest)"
+        @card-click="(id) => $emit('cardClick', id)"
       />
     </div>
   </div>
@@ -31,5 +32,5 @@ withDefaults(defineProps<Props>(), {
   showTitle: true
 });
 
-defineEmits<{ join: [id: string, isRequest: boolean] }>();
+defineEmits<{ join: [id: string, isRequest: boolean]; cardClick: [id: string] }>();
 </script>

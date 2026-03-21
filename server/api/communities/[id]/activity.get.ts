@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     .select(["cm.id", "cm.user_id", "cm.joined_at", "u.username", "u.avatar_url"])
     .where("cm.community_id", "=", communityId)
     .orderBy("cm.joined_at", "desc")
-    .limit(30)
+    .limit(10)
     .execute();
 
   const joinRequests =
