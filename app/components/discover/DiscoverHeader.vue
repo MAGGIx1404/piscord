@@ -1,5 +1,5 @@
 <template>
-  <div class="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+  <div class="sticky top-0 z-30 border-b border-border bg-background">
     <div class="px-6 py-5">
       <!-- Title Row -->
       <div class="mb-5 flex items-center justify-between">
@@ -68,7 +68,7 @@
             :key="filter.value"
             @click="$emit('update:activeFilter', filter.value)"
             :class="[
-              'shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200',
+              'shrink-0 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200',
               activeFilter === filter.value
                 ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
                 : 'border border-border/50 bg-card/50 text-muted-foreground hover:bg-card hover:text-foreground'
@@ -78,13 +78,20 @@
             {{ filter.label }}
           </button>
         </div>
+
+        <Button size="lg" class="ml-auto shrink-0 gap-2" as-child>
+          <NuxtLink to="/community/create">
+            <Plus class="size-5" />
+            Create Community
+          </NuxtLink>
+        </Button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Compass, Search, X } from "lucide-vue-next";
+import { Compass, Search, X, Plus } from "lucide-vue-next";
 import type { Component } from "vue";
 
 interface FilterOption {

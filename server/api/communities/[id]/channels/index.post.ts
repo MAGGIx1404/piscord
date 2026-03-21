@@ -1,14 +1,17 @@
 import { createChannel } from "../../../../services/channelService";
 import type { CreateChannelPayload } from "../../../../services/channelService";
 import type { ChannelType } from "../../../../db/tables";
+import { resolveCommunityId } from "../../../../utils/community";
 
 export default defineEventHandler(async (event) => {
   const userId = requireAuth(event);
-  const communityId = getRouterParam(event, "id");
+  const slugOrId = getRouterParam(event, "id");
 
-  if (!communityId) {
+  if (!slugOrId) {
     throw createError({ statusCode: 400, message: "Community ID is required" });
   }
+
+  const communityId = await resolveCommunityId(slugOrId);
 
   const body = await readBody<CreateChannelPayload>(event);
 
