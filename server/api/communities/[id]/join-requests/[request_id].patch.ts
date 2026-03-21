@@ -1,14 +1,17 @@
 import { db, generateId } from "../../../../db";
 import { broadcastToCommunity } from "../../../../routes/_ws";
+import { resolveCommunityId } from "../../../../utils/community";
 
 export default defineEventHandler(async (event) => {
   const reviewerId = requireAuth(event);
-  const communityId = getRouterParam(event, "id");
+  const slugOrId = getRouterParam(event, "id");
   const requestId = getRouterParam(event, "request_id");
 
-  if (!communityId || !requestId) {
+  if (!slugOrId || !requestId) {
     throw createError({ statusCode: 400, message: "Missing parameters" });
   }
+
+  const communityId = await resolveCommunityId(slugOrId);
 
   const { action } = await readBody<{ action: "approve" | "reject" }>(event);
 

@@ -1,13 +1,16 @@
 import { db } from "../../../db";
 import { sql } from "kysely";
+import { resolveCommunityId } from "../../../utils/community";
 
 export default defineEventHandler(async (event) => {
   const userId = requireAuth(event);
-  const communityId = getRouterParam(event, "id");
+  const slugOrId = getRouterParam(event, "id");
 
-  if (!communityId) {
+  if (!slugOrId) {
     throw createError({ statusCode: 400, message: "Community ID is required" });
   }
+
+  const communityId = await resolveCommunityId(slugOrId);
 
   // Check membership
   const membership = await db

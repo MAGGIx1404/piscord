@@ -1,7 +1,7 @@
 <template>
   <main class="min-h-screen w-full">
     <!-- Header -->
-    <div class="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <div class="sticky top-0 z-30 border-b border-border bg-background">
       <div class="px-6 py-8">
         <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>

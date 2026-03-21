@@ -37,7 +37,7 @@
             v-if="customAvatarPreview"
             key="custom-avatar"
             @click="avatar = customAvatarPreview"
-            class="relative size-16 overflow-hidden rounded-xl border-2 transition-all hover:scale-105"
+            class="relative size-16 overflow-hidden rounded-full border-2 transition-all hover:scale-105"
             :class="[
               avatar === customAvatarPreview
                 ? 'border-primary ring-2 ring-primary/30'
@@ -57,7 +57,7 @@
             v-for="avatarOption in avatarOptions"
             :key="avatarOption"
             @click="avatar = avatarOption"
-            class="relative size-16 overflow-hidden rounded-xl border-2 transition-all hover:scale-105"
+            class="relative size-16 overflow-hidden rounded-full border-2 transition-all hover:scale-105"
             :class="[
               avatar === avatarOption
                 ? 'border-primary ring-2 ring-primary/30'
@@ -65,7 +65,7 @@
             ]"
           >
             <img
-              :src="`/images/avatar/${avatarOption}.png`"
+              :src="`/images/avatar/${avatarOption}.svg`"
               :alt="`Avatar ${avatarOption}`"
               class="size-full object-cover"
             />
@@ -272,7 +272,7 @@ const emit = defineEmits<{
 const showApiKey = ref(false);
 const customAvatarPreview = ref<string | null>(null);
 
-const avatarOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+const avatarOptions = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 const aiModels: AIModel[] = [
   {
@@ -304,41 +304,6 @@ const aiModels: AIModel[] = [
     iconColor: "text-amber-500"
   }
 ];
-
-const capabilities: Capability[] = [
-  {
-    id: "chat",
-    label: "Chat & Conversation",
-    description: "Engage in natural conversations with members",
-    icon: MessageCircle
-  },
-  {
-    id: "moderation",
-    label: "Auto-Moderation",
-    description: "Help moderate content and enforce rules",
-    icon: Shield
-  },
-  {
-    id: "qa",
-    label: "Q&A Assistant",
-    description: "Answer frequently asked questions",
-    icon: HelpCircle
-  },
-  {
-    id: "welcome",
-    label: "Welcome New Members",
-    description: "Greet and onboard new community members",
-    icon: Sparkles
-  }
-];
-
-const toggleCapability = (id: string, isEnabled: boolean) => {
-  if (isEnabled) {
-    enabledCapabilities.value = [...enabledCapabilities.value, id];
-  } else {
-    enabledCapabilities.value = enabledCapabilities.value.filter((c) => c !== id);
-  }
-};
 
 const handleCustomAvatarUpload = (event: Event) => {
   const file = (event.target as HTMLInputElement).files?.[0];

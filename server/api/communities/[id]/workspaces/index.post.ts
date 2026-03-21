@@ -1,13 +1,16 @@
 import { createWorkspace } from "../../../../services/workspaceService";
 import type { CreateWorkspacePayload } from "../../../../services/workspaceService";
+import { resolveCommunityId } from "../../../../utils/community";
 
 export default defineEventHandler(async (event) => {
   const userId = requireAuth(event);
-  const communityId = getRouterParam(event, "id");
+  const slugOrId = getRouterParam(event, "id");
 
-  if (!communityId) {
+  if (!slugOrId) {
     throw createError({ statusCode: 400, message: "Community ID is required" });
   }
+
+  const communityId = await resolveCommunityId(slugOrId);
 
   const body = await readBody<CreateWorkspacePayload>(event);
 
