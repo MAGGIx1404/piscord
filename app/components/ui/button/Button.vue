@@ -12,6 +12,7 @@ interface Props extends PrimitiveProps {
   size?: ButtonVariants["size"];
   class?: HTMLAttributes["class"];
   isLoading?: boolean;
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -26,6 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
     :as="as"
     :as-child="asChild"
     :class="cn(buttonVariants({ variant, size }), props.class)"
+    :disabled="props.disabled || props.isLoading"
   >
     <div
       v-if="props.isLoading"

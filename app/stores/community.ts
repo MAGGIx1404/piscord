@@ -32,7 +32,7 @@ export const useCommunityStore = defineStore(
     async function fetchCommunities() {
       const api = useApi();
       try {
-        const data = await api<{ communities: UserCommunity[] }>("/api/users/me/communities");
+        const data = await api("/api/users/me/communities");
         communities.value = data.communities;
         loaded.value = true;
         return data.communities;
