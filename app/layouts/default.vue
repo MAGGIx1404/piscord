@@ -7,4 +7,20 @@
   <Enable2FAModal />
 </template>
 
-<script setup></script>
+<script setup>
+const userStore = useUserStore();
+const { connect, disconnect } = useUserSocket();
+
+watch(
+  () => userStore.isAuthenticated,
+  (authed) => {
+    if (authed) connect();
+    else disconnect();
+  },
+  { immediate: true }
+);
+
+onUnmounted(() => {
+  disconnect();
+});
+</script>

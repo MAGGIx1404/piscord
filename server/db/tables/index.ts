@@ -242,6 +242,52 @@ export interface MemberRolesTable {
 export type MemberRole = Selectable<MemberRolesTable>;
 export type NewMemberRole = Insertable<MemberRolesTable>;
 
+// ─── Friend Requests ────────────────────────────────────────────────────────
+
+export type FriendRequestStatus = "pending" | "accepted" | "declined" | "blocked";
+
+export interface FriendRequestsTable {
+  id: Generated<string>;
+  sender_id: string;
+  receiver_id: string;
+  status: ColumnType<FriendRequestStatus, FriendRequestStatus | undefined, FriendRequestStatus>;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type FriendRequest = Selectable<FriendRequestsTable>;
+export type NewFriendRequest = Insertable<FriendRequestsTable>;
+export type FriendRequestUpdate = Updateable<FriendRequestsTable>;
+
+// ─── DM Conversations ──────────────────────────────────────────────────────
+
+export interface DmConversationsTable {
+  id: Generated<string>;
+  user1_id: string;
+  user2_id: string;
+  last_message_at: Date | null;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type DmConversation = Selectable<DmConversationsTable>;
+export type NewDmConversation = Insertable<DmConversationsTable>;
+
+// ─── DM Messages ────────────────────────────────────────────────────────────
+
+export interface DmMessagesTable {
+  id: Generated<string>;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  is_edited: ColumnType<boolean, boolean | undefined, boolean>;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type DmMessage = Selectable<DmMessagesTable>;
+export type NewDmMessage = Insertable<DmMessagesTable>;
+export type DmMessageUpdate = Updateable<DmMessagesTable>;
+
 export interface Database {
   users: UsersTable;
   refresh_sessions: RefreshSessionsTable;
@@ -256,4 +302,7 @@ export interface Database {
   messages: MessagesTable;
   message_attachments: MessageAttachmentsTable;
   reactions: ReactionsTable;
+  friend_requests: FriendRequestsTable;
+  dm_conversations: DmConversationsTable;
+  dm_messages: DmMessagesTable;
 }
