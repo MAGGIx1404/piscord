@@ -48,6 +48,5 @@
 </template>
 
 <script setup>
-definePageMeta({ layout: "auth" });
 const { email, errors, isPending, onSubmit, password } = useSignin();
 </script>

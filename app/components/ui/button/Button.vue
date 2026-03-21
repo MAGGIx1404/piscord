@@ -18,11 +18,16 @@ interface Props extends PrimitiveProps {
 const props = withDefaults(defineProps<Props>(), {
   as: "button"
 });
+
+const primitiveProps = computed(() => {
+  const { variant, size, class: className, isLoading, ...rest } = props;
+  return rest;
+});
 </script>
 
 <template>
   <Primitive
-    v-bind="props"
+    v-bind="primitiveProps"
     data-slot="button"
     :as="as"
     :as-child="asChild"

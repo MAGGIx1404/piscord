@@ -77,8 +77,6 @@
 <script lang="ts" setup>
 import { CircleCheck, XCircle, Loader2 } from "lucide-vue-next";
 
-definePageMeta({ layout: "auth" });
-
 const { checking, email, errors, isPending, onSubmit, password, username, usernameAvailable } =
   useRegister();
 </script>

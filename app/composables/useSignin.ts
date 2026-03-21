@@ -28,7 +28,7 @@ export function useSignin() {
 
       if ("requires_2fa" in result) {
         router.push(`/auth/2fa?user_id=${result.user_id}`);
-        return;
+        return { requires_2fa: true };
       }
 
       await router.push("/");
@@ -39,6 +39,8 @@ export function useSignin() {
           open();
         }, 2000);
       }
+
+      return { requires_2fa: false };
     } finally {
       isPending.value = false;
     }
@@ -48,7 +50,10 @@ export function useSignin() {
     const loginPromise = processLogin(v);
     toast.promise(loginPromise, {
       loading: "Signing you in...",
-      success: "Welcome back!",
+      success: (result: { requires_2fa: boolean }) => {
+        if (result.requires_2fa) return "";
+        return "Welcome back!";
+      },
       error: (err: any) => {
         const status = err?.statusCode ?? err?.status;
         if (status === 401) return "Invalid email or password";
