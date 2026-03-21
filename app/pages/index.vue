@@ -1,6 +1,5 @@
 <template>
   <main class="relative flex h-[calc(100vh-32px)] w-full flex-col overflow-hidden">
-    <!-- Full Page Background -->
     <div
       class="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-br from-primary/5 via-transparent to-primary/10"
     />
@@ -13,10 +12,8 @@
       class="absolute -right-20 -bottom-20 size-96 rounded-full bg-primary/10 opacity-50 blur-3xl"
     />
 
-    <!-- Main Content - Centered -->
     <div class="relative flex flex-1 items-center justify-center px-6">
       <div class="w-full max-w-2xl space-y-10 text-center">
-        <!-- Hero Text -->
         <div class="space-y-5">
           <div
             class="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
@@ -46,7 +43,6 @@
           </p>
         </div>
 
-        <!-- Invite Link Input -->
         <div class="mx-auto max-w-md">
           <div class="flex gap-2 rounded-lg border border-border bg-card/60 p-1.5 backdrop-blur-sm">
             <div class="flex flex-1 items-center gap-3 px-4">
@@ -64,7 +60,6 @@
           </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button variant="outline" size="lg" as-child>
             <NuxtLink to="/discover">
