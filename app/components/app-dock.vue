@@ -1,7 +1,9 @@
 <template>
-  <div class="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center">
+  <div
+    class="pointer-events-none fixed bottom-0 left-0 z-50 flex w-full items-center justify-center pt-10 pb-4"
+  >
     <div
-      class="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2 shadow-lg sm:gap-3 sm:px-4 sm:py-2.5"
+      class="pointer-events-auto relative z-3 flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2 shadow-lg sm:gap-3 sm:px-4 sm:py-2.5"
     >
       <NavDockIcon :icon="LayoutDashboardIcon" label="Dashboard" to="/" />
       <NavDockIcon :icon="CompassIcon" label="Discover" to="/discover" />
@@ -47,29 +49,12 @@
       </NotificationModal>
       <NavDockIcon :icon="UserCircleIcon" label="Profile" to="/me" />
       <NavDockIcon :icon="SettingsIcon" label="Settings" to="/me/settings" />
-      <span class="mx-0.5 h-5 w-px bg-border/60" aria-hidden="true" />
-      <button
-        class="group relative grid h-10 w-10 cursor-pointer place-items-center rounded-xl border border-border/60 bg-card shadow-sm backdrop-blur-xl transition-all duration-200 hover:-translate-y-1 hover:scale-[1.08] hover:border-border hover:bg-accent sm:h-11 sm:w-11"
-        :aria-label="isDark ? 'Switch to light' : 'Switch to dark'"
-        @click="toggleTheme"
-      >
-        <Sun
-          v-if="isDark"
-          class="h-[18px] w-[18px] text-muted-foreground transition-colors duration-200 group-hover:text-accent-foreground"
-          :stroke-width="1.8"
-        />
-        <Moon
-          v-else
-          class="h-[18px] w-[18px] text-muted-foreground transition-colors duration-200 group-hover:text-accent-foreground"
-          :stroke-width="1.8"
-        />
-        <span
-          class="tooltip pointer-events-none absolute -bottom-6 text-[9px] tracking-wide whitespace-nowrap text-muted-foreground sm:text-[10px]"
-        >
-          {{ isDark ? "Light" : "Dark" }}
-        </span>
-      </button>
     </div>
+
+    <!-- Background -->
+    <div
+      class="absolute bottom-0 left-0 z-1 size-full bg-linear-0 from-background to-background/0"
+    ></div>
   </div>
 </template>
 
@@ -82,14 +67,11 @@ import {
   Hash as HashIcon,
   Layers as LayersIcon,
   Bell,
-  Sun,
-  Moon,
   UserCircle as UserCircleIcon,
   Settings as SettingsIcon
 } from "lucide-vue-next";
 import NotificationModal from "~/components/NotificationModal.vue";
 
-const { enabled: isDark, toggleTheme } = useTheme();
 const communityStore = useCommunityStore();
 const currentCommunityId = computed(() => communityStore.currentCommunityId);
 </script>

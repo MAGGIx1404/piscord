@@ -154,3 +154,55 @@ export async function createWorkspace(
     is_public: workspace.is_public
   };
 }
+
+// ─── Get Single Workspace ─────────────────────────────────────────────────
+
+export async function getWorkspaceById(
+  workspaceId: string,
+  communityId: string,
+  userId: string
+): Promise<WorkspaceItem> {
+  await requireMembership(communityId, userId);
+
+  const workspace = await db
+    .selectFrom("workspaces")
+    .select([
+      "id",
+      "name",
+      "emoji",
+      "description",
+      "banner_url",
+      "is_public",
+      "created_by",
+      "created_at"
+    ])
+    .where("id", "=", workspaceId)
+    .where("community_id", "=", communityId)
+    .executeTakeFirst();
+
+  if (!workspace) {
+    throw createError({ statusCode: 404, message: "Workspace not found" });
+  }
+
+  return { ...workspace, is_public: workspace.is_public };
+}
+
+// ─── Workspace Membership Check ──────────────────────────────────────────
+
+export async function requireWorkspaceMembership(
+  workspaceId: string,
+  userId: string
+): Promise<{ workspaceId: string; communityId: string }> {
+  const workspace = await db
+    .selectFrom("workspaces")
+    .select(["id", "community_id"])
+    .where("id", "=", workspaceId)
+    .executeTakeFirst();
+
+  if (!workspace) {
+    throw createError({ statusCode: 404, message: "Workspace not found" });
+  }
+
+  await requireMembership(workspace.community_id, userId);
+  return { workspaceId: workspace.id, communityId: workspace.community_id };
+}

@@ -13,7 +13,6 @@ export default defineNuxtConfig({
     "shadcn-nuxt",
     "@pinia/nuxt",
     "@pinia-plugin-persistedstate/nuxt",
-    "motion-v/nuxt",
     "@nuxt/image"
   ],
 
@@ -53,7 +52,20 @@ export default defineNuxtConfig({
   css: ["@/assets/css/main.css"],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: [
+        "lucide-vue-next",
+        "vue-sonner",
+        "clsx",
+        "tailwind-merge",
+        "yup",
+        "vee-validate",
+        "class-variance-authority",
+        "@vueuse/core",
+        "reka-ui"
+      ]
+    }
   },
 
   runtimeConfig: {

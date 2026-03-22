@@ -59,15 +59,6 @@
           class="group cursor-pointer overflow-hidden rounded-2xl border border-border/50 bg-card transition-all hover:border-border hover:shadow-lg hover:shadow-black/5"
           @click="router.push(`/community/${communityId}/workspaces/${workspace.id}`)"
         >
-          <!-- Banner -->
-          <div v-if="workspace.banner_url" class="h-32 w-full overflow-hidden">
-            <img
-              :src="workspace.banner_url"
-              :alt="workspace.name"
-              class="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
-
           <div class="p-5">
             <div class="flex items-start gap-3">
               <div
