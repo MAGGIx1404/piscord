@@ -174,6 +174,7 @@ export interface WorkspacesTable {
   emoji: string | null;
   description: string | null;
   banner_url: string | null;
+  content: Buffer | null;
   is_public: ColumnType<boolean, boolean | undefined, boolean>;
   created_at: ColumnType<Date, never, never>;
   updated_at: ColumnType<Date, never, never>;

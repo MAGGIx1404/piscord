@@ -1,7 +1,9 @@
 <template>
-  <div class="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center">
+  <div
+    class="pointer-events-none fixed bottom-0 left-0 z-50 flex w-full items-center justify-center pt-10 pb-4"
+  >
     <div
-      class="flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2 shadow-lg sm:gap-3 sm:px-4 sm:py-2.5"
+      class="pointer-events-auto relative z-3 flex items-center gap-2 rounded-xl border border-border/60 bg-card px-3 py-2 shadow-lg sm:gap-3 sm:px-4 sm:py-2.5"
     >
       <NavDockIcon :icon="LayoutDashboardIcon" label="Dashboard" to="/" />
       <NavDockIcon :icon="CompassIcon" label="Discover" to="/discover" />
@@ -48,6 +50,11 @@
       <NavDockIcon :icon="UserCircleIcon" label="Profile" to="/me" />
       <NavDockIcon :icon="SettingsIcon" label="Settings" to="/me/settings" />
     </div>
+
+    <!-- Background -->
+    <div
+      class="absolute bottom-0 left-0 z-1 size-full bg-linear-0 from-background to-background/0"
+    ></div>
   </div>
 </template>
 

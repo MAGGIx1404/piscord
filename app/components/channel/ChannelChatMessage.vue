@@ -23,6 +23,8 @@
     <div
       class="mx-2 flex items-start gap-3 rounded-lg px-4 py-2 transition-colors hover:bg-accent/30"
       :class="{ 'mt-0': stacked }"
+      @mouseenter="hovered = true"
+      @mouseleave="hovered = false"
     >
       <!-- Avatar (hide if stacked) -->
       <div class="w-10 shrink-0">
@@ -121,34 +123,15 @@
       <div
         class="absolute -top-3 right-4 flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
       >
+        <button
+          v-for="emoji in topEmojis"
+          :key="emoji"
+          class="flex size-7 items-center justify-center rounded-md text-sm transition-colors hover:bg-accent"
+          @click="$emit('react', { message, reaction: { emoji, count: 0, reacted: false } })"
+        >
+          {{ emoji }}
+        </button>
         <TooltipProvider>
-          <!-- Emoji Reaction Picker -->
-          <Popover>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" class="size-7">
-                    <SmilePlus class="size-4" />
-                  </Button>
-                </PopoverTrigger>
-              </TooltipTrigger>
-              <TooltipContent side="top">Add Reaction</TooltipContent>
-            </Tooltip>
-            <PopoverContent class="w-auto p-2" side="top" align="start">
-              <div class="grid grid-cols-6 gap-1">
-                <button
-                  v-for="emoji in quickEmojis"
-                  :key="emoji"
-                  class="flex size-8 items-center justify-center rounded-md text-lg transition-colors hover:bg-accent"
-                  @click="
-                    $emit('react', { message, reaction: { emoji, count: 0, reacted: false } })
-                  "
-                >
-                  {{ emoji }}
-                </button>
-              </div>
-            </PopoverContent>
-          </Popover>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" class="size-7" @click="$emit('reply', message)">
@@ -202,7 +185,6 @@ import {
   CornerUpRight,
   MessageCircle,
   UserPlus,
-  SmilePlus,
   Reply,
   Pin,
   MoreHorizontal,
@@ -211,7 +193,7 @@ import {
   Forward,
   Trash2
 } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { ChatWorkspace } from "./ChannelWorkspaceCard.vue";
 
 interface Author {
@@ -269,24 +251,7 @@ const formattedTime = computed(() => {
   });
 });
 
-const quickEmojis = [
-  "👍",
-  "👎",
-  "❤️",
-  "😂",
-  "😮",
-  "😢",
-  "🔥",
-  "🎉",
-  "👀",
-  "💯",
-  "✅",
-  "❌",
-  "🚀",
-  "💡",
-  "⭐",
-  "🙏",
-  "👏",
-  "🤔"
-];
+const hovered = ref(false);
+
+const topEmojis = ["👍", "❤️", "😂", "😮", "🔥", "👀"];
 </script>
