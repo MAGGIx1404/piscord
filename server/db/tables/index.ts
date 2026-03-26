@@ -289,6 +289,87 @@ export type DmMessage = Selectable<DmMessagesTable>;
 export type NewDmMessage = Insertable<DmMessagesTable>;
 export type DmMessageUpdate = Updateable<DmMessagesTable>;
 
+// ─── AI Canvas Nodes ────────────────────────────────────────────────────────
+
+export interface AiNodeConfig {
+  temperature?: number;
+  max_tokens?: number;
+  system_prompt?: string;
+}
+
+export interface AiNodesTable {
+  id: Generated<string>;
+  workspace_id: string;
+  model: string;
+  title: string;
+  position_x: ColumnType<number, number | undefined, number>;
+  position_y: ColumnType<number, number | undefined, number>;
+  config: ColumnType<AiNodeConfig, AiNodeConfig | undefined, AiNodeConfig>;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type AiNode = Selectable<AiNodesTable>;
+export type NewAiNode = Insertable<AiNodesTable>;
+export type AiNodeUpdate = Updateable<AiNodesTable>;
+
+// ─── Node Messages ──────────────────────────────────────────────────────────
+
+export type NodeMessageRole = "user" | "assistant" | "system";
+
+export interface NodeMessagesTable {
+  id: Generated<string>;
+  node_id: string;
+  role: NodeMessageRole;
+  content: string;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type NodeMessage = Selectable<NodeMessagesTable>;
+export type NewNodeMessage = Insertable<NodeMessagesTable>;
+
+// ─── Prompt Runs ────────────────────────────────────────────────────────────
+
+export type PromptRunStatus = "pending" | "running" | "completed" | "failed";
+
+export interface PromptRunsTable {
+  id: Generated<string>;
+  workspace_id: string;
+  prompt: string;
+  status: ColumnType<PromptRunStatus, PromptRunStatus | undefined, PromptRunStatus>;
+  created_by: string;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type PromptRun = Selectable<PromptRunsTable>;
+export type NewPromptRun = Insertable<PromptRunsTable>;
+export type PromptRunUpdate = Updateable<PromptRunsTable>;
+
+// ─── Prompt Run Results ─────────────────────────────────────────────────────
+
+export type PromptRunResultStatus = "pending" | "running" | "completed" | "failed";
+
+export interface PromptRunResultsTable {
+  id: Generated<string>;
+  prompt_run_id: string;
+  node_id: string;
+  response: string | null;
+  status: ColumnType<
+    PromptRunResultStatus,
+    PromptRunResultStatus | undefined,
+    PromptRunResultStatus
+  >;
+  latency_ms: number | null;
+  error: string | null;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type PromptRunResult = Selectable<PromptRunResultsTable>;
+export type NewPromptRunResult = Insertable<PromptRunResultsTable>;
+export type PromptRunResultUpdate = Updateable<PromptRunResultsTable>;
+
+// ─── Database ───────────────────────────────────────────────────────────────
+
 export interface Database {
   users: UsersTable;
   refresh_sessions: RefreshSessionsTable;
@@ -306,4 +387,8 @@ export interface Database {
   friend_requests: FriendRequestsTable;
   dm_conversations: DmConversationsTable;
   dm_messages: DmMessagesTable;
+  ai_nodes: AiNodesTable;
+  node_messages: NodeMessagesTable;
+  prompt_runs: PromptRunsTable;
+  prompt_run_results: PromptRunResultsTable;
 }

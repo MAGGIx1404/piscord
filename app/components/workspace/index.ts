@@ -1,3 +1,11 @@
 export { default as WorkspaceHeader } from "./WorkspaceHeader.vue";
 export { default as WorkspaceCollaborators } from "./WorkspaceCollaborators.vue";
 export { default as WorkspaceActivity } from "./WorkspaceActivity.vue";
+export { default as WorkspaceCanvas } from "./WorkspaceCanvas.vue";
+export { default as AINodeComponent } from "./AINodeComponent.vue";
+export { default as WorkspacePromptBar } from "./WorkspacePromptBar.vue";
+export { default as WorkspaceToolbar } from "./WorkspaceToolbar.vue";
+export { default as WorkspaceNodePanel } from "./WorkspaceNodePanel.vue";
+export { default as WorkspaceEmptyState } from "./WorkspaceEmptyState.vue";
+export { default as NodeChatDialog } from "./NodeChatDialog.vue";
+export { default as WorkspaceHistoryPanel } from "./WorkspaceHistoryPanel.vue";

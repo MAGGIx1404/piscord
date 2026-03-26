@@ -39,25 +39,46 @@
 
     <!-- Content -->
     <div class="px-6 py-8">
-      <!-- Loading skeleton (initial load) -->
-      <div v-if="pending" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <!-- Loading skeleton -->
+      <div v-if="pending" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="n in 9"
           :key="n"
-          class="h-64 animate-pulse rounded-2xl border border-border/50 bg-card/30"
+          class="h-16 animate-pulse rounded-xl border border-border/50 bg-card/30"
         />
       </div>
 
-      <!-- Grid -->
+      <!-- List -->
       <template v-else-if="communities.length">
-        <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
-          <DiscoverCard
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <NuxtLink
             v-for="c in communities"
             :key="c.id"
-            :community="c"
-            @join="handleJoin"
-            @card-click="openCommunityModal"
-          />
+            :to="`/community/${c.slug || c.id}`"
+            class="group flex items-center gap-3 rounded-xl border border-border/50 bg-card/50 p-3 transition-colors hover:border-border hover:bg-card"
+            @click="communityStore.setCurrentCommunity(c.id)"
+          >
+            <!-- Icon -->
+            <Avatar class="size-10 shrink-0 rounded-lg">
+              <AvatarImage v-if="c.icon_url" :src="c.icon_url" :alt="c.name" />
+              <AvatarFallback class="rounded-lg bg-muted text-sm font-medium">
+                {{ c.name.slice(0, 2).toUpperCase() }}
+              </AvatarFallback>
+            </Avatar>
+
+            <!-- Info -->
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium">{{ c.name }}</p>
+              <p class="text-xs text-muted-foreground">
+                {{ c.member_count.toLocaleString() }} member{{ c.member_count !== 1 ? "s" : "" }}
+              </p>
+            </div>
+
+            <!-- Arrow -->
+            <ChevronRight
+              class="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+            />
+          </NuxtLink>
         </div>
 
         <!-- Infinite scroll sentinel -->
@@ -102,31 +123,19 @@
         </div>
       </div>
     </div>
-
-    <!-- Community Detail Modal -->
-    <CommunityDetailModal
-      v-model="modalOpen"
-      :data="modalData"
-      :loading="modalLoading"
-      @navigate="goToCommunity"
-    />
   </main>
 </template>
 
 <script setup lang="ts">
-import { Search, X, Building2, Loader2 } from "lucide-vue-next";
+import { Search, X, Building2, Loader2, ChevronRight } from "lucide-vue-next";
 import { useIntersectionObserver, watchDebounced } from "@vueuse/core";
-import type { Community } from "~/components/discover/types";
-import type { CommunityOverviewData } from "~/components/community/CommunityDetailModal.vue";
 
-const api = useApi();
-const router = useRouter();
 const communityStore = useCommunityStore();
 
 // ─── Infinite scroll state ──────────────────────────────────────────────────
 
 const searchQuery = ref("");
-const perPage = 12;
+const perPage = 20;
 
 interface ApiCommunity {
   id: string;
@@ -148,17 +157,19 @@ interface ApiResponse {
   total: number;
 }
 
-const rawCommunities = ref<ApiCommunity[]>([]);
+const communities = ref<ApiCommunity[]>([]);
 const total = ref(0);
 const offset = ref(0);
 const pending = ref(true);
 const loadingMore = ref(false);
 const hasMore = computed(() => offset.value < total.value);
 
+const api = useApi();
+
 async function fetchCommunities(reset = false) {
   if (reset) {
     offset.value = 0;
-    rawCommunities.value = [];
+    communities.value = [];
     pending.value = true;
   } else {
     loadingMore.value = true;
@@ -174,9 +185,9 @@ async function fetchCommunities(reset = false) {
     const data = await api<ApiResponse>("/api/users/me/communities", { query });
 
     if (reset) {
-      rawCommunities.value = data.communities;
+      communities.value = data.communities;
     } else {
-      rawCommunities.value = [...rawCommunities.value, ...data.communities];
+      communities.value = [...communities.value, ...data.communities];
     }
     total.value = data.total;
     offset.value = offset.value + data.communities.length;
@@ -190,22 +201,6 @@ function loadMore() {
   if (!hasMore.value || loadingMore.value || pending.value) return;
   fetchCommunities(false);
 }
-
-// Map raw API data → Community type for DiscoverCard
-const communities = computed<Community[]>(() =>
-  rawCommunities.value.map((c) => ({
-    id: c.id,
-    name: c.name,
-    slug: c.slug,
-    description: c.description,
-    totalUsers: c.member_count,
-    posterImage: c.banner_url,
-    iconImage: c.icon_url,
-    type: c.category,
-    requiresApproval: c.require_approval,
-    isMember: true
-  }))
-);
 
 // Debounced search reset
 watchDebounced(
@@ -229,37 +224,4 @@ useIntersectionObserver(sentinelRef, ([entry]) => {
 onMounted(() => {
   fetchCommunities(true);
 });
-
-// ─── Community detail modal ─────────────────────────────────────────────────
-
-const modalOpen = ref(false);
-const modalData = ref<CommunityOverviewData | null>(null);
-const modalLoading = ref(false);
-
-async function openCommunityModal(id: string) {
-  modalData.value = null;
-  modalLoading.value = true;
-  modalOpen.value = true;
-
-  try {
-    modalData.value = await api<CommunityOverviewData>(`/api/communities/${id}`);
-  } catch {
-    modalOpen.value = false;
-    goToCommunity(id);
-  } finally {
-    modalLoading.value = false;
-  }
-}
-
-function goToCommunity(id: string) {
-  modalOpen.value = false;
-  communityStore.setCurrentCommunity(id);
-  router.push(`/community/${id}`);
-}
-
-// ─── Join handler (no-op for already-member cards, but needed for emit) ────
-
-const handleJoin = (_communityId: string, _isRequest: boolean) => {
-  // All communities on this page are already joined — this is a no-op
-};
 </script>
