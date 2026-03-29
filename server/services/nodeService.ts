@@ -2,8 +2,8 @@ import { db, generateId } from "../db";
 import type { AiNodeConfig } from "../db/tables";
 import { requireWorkspaceMembership } from "./workspaceService";
 import { runAI } from "./aiService";
+import { buildMemoryContext } from "./memoryService";
 
-// ─── Interfaces ─────────────────────────────────────────────────────────────
 
 export interface CreateNodePayload {
   model: string;
@@ -50,7 +50,6 @@ export interface PromptRunResultItem {
   error: string | null;
 }
 
-// ─── Node CRUD ──────────────────────────────────────────────────────────────
 
 const NODE_COLUMNS = [
   "id",
@@ -68,7 +67,7 @@ export async function getNodesByWorkspace(
   workspaceId: string,
   communityId: string,
   userId: string
-): Promise<NodeItem[]> {
+): Promise<(NodeItem & { last_response: string | null })[]> {
   await requireWorkspaceMembership(workspaceId, userId);
 
   const rows = await db
@@ -78,7 +77,36 @@ export async function getNodesByWorkspace(
     .orderBy("created_at", "asc")
     .execute();
 
-  return rows as NodeItem[];
+  // Fetch last assistant message for each node
+  const nodeIds = rows.map((r) => r.id);
+  let lastMessages: Array<{ node_id: string; content: string }> = [];
+  if (nodeIds.length > 0) {
+    // Get the most recent assistant message per node using DISTINCT ON
+    lastMessages = await db
+      .selectFrom("node_messages")
+      .select(["node_id", "content"])
+      .where("node_id", "in", nodeIds)
+      .where("role", "=", "assistant")
+      .orderBy("node_id")
+      .orderBy("created_at", "desc")
+      .execute()
+      .then((msgs) => {
+        // Keep only the first (most recent) per node_id
+        const seen = new Set<string>();
+        return msgs.filter((m) => {
+          if (seen.has(m.node_id)) return false;
+          seen.add(m.node_id);
+          return true;
+        });
+      });
+  }
+
+  const lastMap = new Map(lastMessages.map((m) => [m.node_id, m.content]));
+
+  return (rows as NodeItem[]).map((r) => ({
+    ...r,
+    last_response: lastMap.get(r.id) ?? null
+  }));
 }
 
 export async function createNode(
@@ -172,7 +200,6 @@ export async function deleteNode(
   }
 }
 
-// ─── Node Messages ──────────────────────────────────────────────────────────
 
 export async function getNodeMessages(
   nodeId: string,
@@ -191,7 +218,6 @@ export async function getNodeMessages(
   return rows;
 }
 
-// ─── Save Messages (client-side AI, server persists) ─────────────────────────
 
 export async function saveNodeMessages(
   nodeId: string,
@@ -222,14 +248,12 @@ export async function saveNodeMessages(
   return { success: true };
 }
 
-// ─── Single Node Run ────────────────────────────────────────────────────────
 
 export async function runSingleNode(
   nodeId: string,
   workspaceId: string,
   userId: string,
-  prompt: string,
-  puterToken: string
+  prompt: string
 ): Promise<{ response: string; latency_ms: number }> {
   await requireWorkspaceMembership(workspaceId, userId);
 
@@ -253,11 +277,14 @@ export async function runSingleNode(
   const messages = [...history, { role: "user", content: prompt }];
   const config = node.config as AiNodeConfig;
 
+  // Inject workspace memory context for smarter responses
+  const memoryContext = await buildMemoryContext(workspaceId);
+
   const result = await runAI({
     model: node.model,
     messages,
     config,
-    puterToken
+    memoryContext
   });
 
   // Persist messages
@@ -275,14 +302,12 @@ export async function runSingleNode(
   return { response: result.content, latency_ms: result.latency_ms };
 }
 
-// ─── Multi-Node Run ─────────────────────────────────────────────────────────
 
 export async function runMultiNode(
   workspaceId: string,
   userId: string,
   prompt: string,
-  nodeIds: string[],
-  puterToken: string
+  nodeIds: string[]
 ): Promise<{ prompt_run_id: string; results: PromptRunResultItem[] }> {
   await requireWorkspaceMembership(workspaceId, userId);
 
@@ -321,6 +346,9 @@ export async function runMultiNode(
 
   await db.insertInto("prompt_run_results").values(resultRows).execute();
 
+  // Build memory context once for all nodes
+  const memoryContext = await buildMemoryContext(workspaceId);
+
   // Execute all nodes in parallel
   const executions = nodes.map(async (node) => {
     const resultRow = resultRows.find((r) => r.node_id === node.id)!;
@@ -337,7 +365,7 @@ export async function runMultiNode(
     const messages = [...history, { role: "user", content: prompt }];
 
     try {
-      const aiResult = await runAI({ model: node.model, messages, config, puterToken });
+      const aiResult = await runAI({ model: node.model, messages, config, memoryContext });
 
       // Update result row
       await db

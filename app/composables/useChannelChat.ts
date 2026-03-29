@@ -35,7 +35,6 @@ export function useChannelChat(channelId: Ref<string>) {
   const api = useApi();
   const userStore = useUserStore();
 
-  // State
   const messages = ref<ChatMessage[]>([]);
   const members = ref<ChannelMember[]>([]);
   const aiAgent = ref<AIAgent | null>(null);
@@ -51,8 +50,6 @@ export function useChannelChat(channelId: Ref<string>) {
   let typingTimer: ReturnType<typeof setTimeout> | null = null;
   let isTyping = false;
 
-  // ── Fetch initial data ─────────────────────────────────────────────────
-
   async function fetchMessages(before?: string) {
     const params = new URLSearchParams();
     if (before) params.set("before", before);
@@ -63,7 +60,6 @@ export function useChannelChat(channelId: Ref<string>) {
     );
 
     if (before) {
-      // Prepend older messages
       messages.value = [...data.messages, ...messages.value];
     } else {
       messages.value = data.messages;
@@ -88,8 +84,6 @@ export function useChannelChat(channelId: Ref<string>) {
     if (oldest) await fetchMessages(oldest.id);
   }
 
-  // ── WebSocket ──────────────────────────────────────────────────────────
-
   function connect() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/_ws`;
@@ -97,7 +91,6 @@ export function useChannelChat(channelId: Ref<string>) {
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      // Authenticate — token is read from the httpOnly cookie on the server side
       ws?.send(
         JSON.stringify({
           type: "auth",
@@ -113,7 +106,6 @@ export function useChannelChat(channelId: Ref<string>) {
 
     ws.onclose = () => {
       connected.value = false;
-      // Reconnect after 3 seconds
       setTimeout(() => {
         if (channelId.value) connect();
       }, 3000);
@@ -133,7 +125,6 @@ export function useChannelChat(channelId: Ref<string>) {
 
       case "message:new": {
         const msg = data.message as ChatMessage;
-        // Avoid duplicates (sender already has it from API response)
         if (!messages.value.find((m) => m.id === msg.id)) {
           messages.value.push(msg);
         }
@@ -167,14 +158,12 @@ export function useChannelChat(channelId: Ref<string>) {
 
   function disconnect() {
     if (ws) {
-      ws.onclose = null; // Prevent reconnect
+      ws.onclose = null;
       ws.close();
       ws = null;
     }
     connected.value = false;
   }
-
-  // ── Actions ────────────────────────────────────────────────────────────
 
   async function sendMessage(content: string, replyToId?: string) {
     const data = await api<{ message: ChatMessage }>(`/api/channels/${channelId.value}/messages`, {
@@ -185,12 +174,10 @@ export function useChannelChat(channelId: Ref<string>) {
       }
     });
 
-    // Add to local messages immediately
     if (!messages.value.find((m) => m.id === data.message.id)) {
       messages.value.push(data.message);
     }
 
-    // Stop typing
     stopTyping();
     replyingTo.value = null;
 
@@ -206,7 +193,6 @@ export function useChannelChat(channelId: Ref<string>) {
       }
     );
 
-    // Update local message reactions
     const msg = messages.value.find((m) => m.id === messageId);
     if (msg) msg.reactions = data.reactions;
   }
@@ -216,7 +202,6 @@ export function useChannelChat(channelId: Ref<string>) {
     isTyping = true;
     ws?.send(JSON.stringify({ type: "typing:start" }));
 
-    // Auto-stop after 5 seconds
     typingTimer = setTimeout(() => {
       stopTyping();
     }, 5000);
@@ -236,8 +221,6 @@ export function useChannelChat(channelId: Ref<string>) {
     replyingTo.value = message;
   }
 
-  // ── Init & Cleanup ────────────────────────────────────────────────────
-
   async function init() {
     loading.value = true;
     try {
@@ -254,7 +237,6 @@ export function useChannelChat(channelId: Ref<string>) {
   });
 
   return {
-    // State
     messages,
     members,
     aiAgent,
@@ -265,8 +247,6 @@ export function useChannelChat(channelId: Ref<string>) {
     hasMore,
     connected,
     replyingTo,
-
-    // Actions
     init,
     sendMessage,
     toggleReaction,

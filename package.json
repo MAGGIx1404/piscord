@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
-    "@heyputer/puter.js": "^2.2.14",
+    "ollama": "^0.5.0",
     "@nuxt/eslint": "^1.10.0",
     "@nuxt/fonts": "^0.12.1",
     "@nuxt/hints": "^1.0.0-alpha.2",

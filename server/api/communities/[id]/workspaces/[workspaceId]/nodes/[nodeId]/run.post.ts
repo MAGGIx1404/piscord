@@ -16,14 +16,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Prompt is required" });
   }
 
-  const puterToken = getHeader(event, "x-puter-token");
-  if (!puterToken) {
-    throw createError({
-      statusCode: 400,
-      message: "Puter authentication token is required (X-Puter-Token header)"
-    });
-  }
-
   const communityId = await resolveCommunityId(slugOrId);
-  return runSingleNode(nodeId, workspaceId, userId, body.prompt.trim(), puterToken);
+  return runSingleNode(nodeId, workspaceId, userId, body.prompt.trim());
 });

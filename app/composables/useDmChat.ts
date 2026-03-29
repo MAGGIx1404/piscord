@@ -28,8 +28,6 @@ export function useDmChat(conversationId: Ref<string | null>, friendId: Ref<stri
   let isTyping = false;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
-  // ── Fetch messages ──────────────────────────────────────────────────────
-
   async function fetchMessages(before?: string) {
     if (!conversationId.value) return;
 
@@ -54,8 +52,6 @@ export function useDmChat(conversationId: Ref<string | null>, friendId: Ref<stri
     const oldest = messages.value[0];
     if (oldest) await fetchMessages(oldest.id);
   }
-
-  // ── WebSocket ───────────────────────────────────────────────────────────
 
   function connect() {
     if (import.meta.server) return;
@@ -129,8 +125,6 @@ export function useDmChat(conversationId: Ref<string | null>, friendId: Ref<stri
     connected.value = false;
   }
 
-  // ── Actions ─────────────────────────────────────────────────────────────
-
   async function sendMessage(content: string) {
     if (!conversationId.value) return null;
 
@@ -175,8 +169,6 @@ export function useDmChat(conversationId: Ref<string | null>, friendId: Ref<stri
       typingTimer = null;
     }
   }
-
-  // ── Init & Cleanup ──────────────────────────────────────────────────────
 
   async function init() {
     loading.value = true;

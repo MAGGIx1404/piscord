@@ -17,21 +17,32 @@ export interface CanvasNode {
   latency: number | null;
 }
 
+export interface MemoryItem {
+  id: string;
+  workspace_id: string;
+  content: string;
+  type: string;
+  created_by: string | null;
+  created_at: string;
+}
+
 export const useWorkspaceStore = defineStore("workspace", () => {
   const nodes = ref<CanvasNode[]>([]);
   const selectedNodeIds = ref<Set<string>>(new Set());
   const activeNodeId = ref<string | null>(null);
   const isRunning = ref(false);
+  const aiEnabled = ref(false);
+  const memories = ref<MemoryItem[]>([]);
 
   const activeNode = computed(() => nodes.value.find((n) => n.id === activeNodeId.value) ?? null);
 
   const selectedNodes = computed(() => nodes.value.filter((n) => selectedNodeIds.value.has(n.id)));
 
-  function setNodes(apiNodes: Omit<CanvasNode, "status" | "lastResponse" | "latency">[]) {
+  function setNodes(apiNodes: Omit<CanvasNode, "status" | "lastResponse" | "latency">[] | (Omit<CanvasNode, "status" | "lastResponse" | "latency"> & { last_response?: string | null })[]) {
     nodes.value = apiNodes.map((n) => ({
       ...n,
       status: "idle",
-      lastResponse: null,
+      lastResponse: ("last_response" in n && n.last_response) ? n.last_response : null,
       latency: null
     }));
   }
@@ -90,11 +101,29 @@ export const useWorkspaceStore = defineStore("workspace", () => {
     if (node) node.status = "error";
   }
 
+  function toggleAI() {
+    aiEnabled.value = !aiEnabled.value;
+  }
+
+  function setMemories(items: MemoryItem[]) {
+    memories.value = items;
+  }
+
+  function addMemoryItem(item: MemoryItem) {
+    memories.value.unshift(item);
+  }
+
+  function removeMemoryItem(id: string) {
+    memories.value = memories.value.filter((m) => m.id !== id);
+  }
+
   function reset() {
     nodes.value = [];
     selectedNodeIds.value = new Set();
     activeNodeId.value = null;
     isRunning.value = false;
+    aiEnabled.value = false;
+    memories.value = [];
   }
 
   return {
@@ -104,6 +133,8 @@ export const useWorkspaceStore = defineStore("workspace", () => {
     activeNode,
     selectedNodes,
     isRunning,
+    aiEnabled,
+    memories,
     setNodes,
     addNode,
     removeNode,
@@ -114,6 +145,10 @@ export const useWorkspaceStore = defineStore("workspace", () => {
     setNodeStatus,
     setNodeResponse,
     setNodeError,
+    toggleAI,
+    setMemories,
+    addMemoryItem,
+    removeMemoryItem,
     reset
   };
 });

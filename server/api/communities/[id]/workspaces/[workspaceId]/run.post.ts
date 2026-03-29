@@ -18,14 +18,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "At least one node ID is required" });
   }
 
-  const puterToken = getHeader(event, "x-puter-token");
-  if (!puterToken) {
-    throw createError({
-      statusCode: 400,
-      message: "Puter authentication token is required (X-Puter-Token header)"
-    });
-  }
-
   const communityId = await resolveCommunityId(slugOrId);
-  return runMultiNode(workspaceId, userId, body.prompt.trim(), body.node_ids, puterToken);
+  return runMultiNode(workspaceId, userId, body.prompt.trim(), body.node_ids);
 });

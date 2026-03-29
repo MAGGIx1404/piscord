@@ -132,8 +132,6 @@ import { useIntersectionObserver, watchDebounced } from "@vueuse/core";
 
 const communityStore = useCommunityStore();
 
-// ─── Infinite scroll state ──────────────────────────────────────────────────
-
 const searchQuery = ref("");
 const perPage = 20;
 

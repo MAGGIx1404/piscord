@@ -174,8 +174,6 @@ const { isOpen, close } = use2FASetup();
 const { setup2FA, verify2FA } = useAuth();
 const userStore = useUserStore();
 
-// ─── State ────────────────────────────────────────────────────────────────────
-
 const step = ref("prompt"); // 'prompt' | 'scan' | 'verify' | 'success'
 const loading = ref(false);
 const qrCode = ref("");
@@ -188,8 +186,6 @@ const verifying = ref(false);
 const codeError = ref("");
 
 const code = computed(() => digits.value.join(""));
-
-// ─── Reset on open ───────────────────────────────────────────────────────────
 
 function resetState() {
   step.value = "prompt";
@@ -208,8 +204,6 @@ onMounted(() => {
   if (isOpen.value) resetState();
 });
 
-// ─── Start setup (user confirmed they want 2FA) ───────────────────────────────
-
 async function startSetup() {
   step.value = "scan";
   loading.value = true;
@@ -224,21 +218,15 @@ async function startSetup() {
   }
 }
 
-// ─── Close handler ────────────────────────────────────────────────────────────
-
 function onOpenChange(val) {
   if (!val) close();
 }
-
-// ─── Copy secret ─────────────────────────────────────────────────────────────
 
 async function copySecret() {
   await navigator.clipboard.writeText(secret.value).catch(() => {});
   copied.value = true;
   setTimeout(() => (copied.value = false), 2000);
 }
-
-// ─── OTP inputs ──────────────────────────────────────────────────────────────
 
 function setInputRef(el, i) {
   if (el) inputRefs[i] = el;
@@ -269,8 +257,6 @@ function onPaste(event) {
   });
   focusAt(Math.min(text.length, 5));
 }
-
-// ─── Verify ───────────────────────────────────────────────────────────────────
 
 async function onVerify() {
   if (code.value.length < 6 || verifying.value) return;

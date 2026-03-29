@@ -1,54 +1,42 @@
 <template>
   <main class="flex h-full w-full flex-col">
-    <!-- Loading State: Skeleton -->
     <div v-if="loading" class="flex h-full flex-col">
-      <!-- Skeleton header -->
       <div class="border-b px-4 py-3">
         <div class="flex items-center gap-3">
-          <div class="size-5 animate-pulse rounded bg-muted" />
-          <div class="h-4 w-32 animate-pulse rounded bg-muted" />
-          <div class="h-3 w-48 animate-pulse rounded bg-muted" />
+          <Skeleton class="size-5" />
+          <Skeleton class="h-4 w-32" />
+          <Skeleton class="h-3 w-48" />
         </div>
       </div>
-
-      <!-- Skeleton messages -->
       <div class="flex-1 space-y-6 px-4 pt-8">
         <div v-for="i in 5" :key="i" class="flex items-start gap-3">
-          <div class="size-9 shrink-0 animate-pulse rounded-full bg-muted" />
+          <Skeleton class="size-9 shrink-0 rounded-full" />
           <div class="flex-1 space-y-2">
             <div class="flex items-center gap-2">
-              <div class="h-3 w-24 animate-pulse rounded bg-muted" />
-              <div class="h-2.5 w-12 animate-pulse rounded bg-muted" />
+              <Skeleton class="h-3 w-24" />
+              <Skeleton class="h-2.5 w-12" />
             </div>
-            <div
-              class="h-3 animate-pulse rounded bg-muted"
-              :style="{ width: `${40 + ((i * 13) % 50)}%` }"
-            />
-            <div
+            <Skeleton class="h-3" :style="{ width: `${40 + ((i * 13) % 50)}%` }" />
+            <Skeleton
               v-if="i % 2 === 0"
-              class="h-3 animate-pulse rounded bg-muted"
+              class="h-3"
               :style="{ width: `${25 + ((i * 7) % 30)}%` }"
             />
           </div>
         </div>
       </div>
-
-      <!-- Skeleton input -->
       <div class="border-t px-4 py-3">
-        <div class="h-10 animate-pulse rounded-lg bg-muted" />
+        <Skeleton class="h-10 rounded-lg" />
       </div>
     </div>
 
     <template v-else>
-      <!-- Channel Header -->
       <div class="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
-        <!-- Banner header -->
         <div v-if="channelBanner" class="relative h-28 w-full overflow-hidden">
           <img :src="channelBanner" :alt="channelName" class="h-full w-full object-cover" />
           <div
             class="absolute inset-0 bg-linear-to-t from-background via-background/30 to-transparent"
           />
-
           <div class="absolute bottom-0 left-0 flex w-full items-end justify-between px-4 pb-2.5">
             <div class="flex items-center gap-2">
               <Hash class="size-5 text-white/80" />
@@ -71,7 +59,6 @@
                   <ChannelAIHelp :ai-agent="aiAgent" :can-manage="canManage" />
                 </PopoverContent>
               </Popover>
-
               <div
                 class="flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-xs text-white/80 backdrop-blur-sm"
               >
@@ -85,7 +72,6 @@
           </div>
         </div>
 
-        <!-- No-banner header -->
         <div v-else class="flex items-center justify-between px-4 py-3">
           <div class="flex items-center gap-2">
             <Hash class="size-5 text-muted-foreground" />
@@ -110,7 +96,6 @@
                 <ChannelAIHelp :ai-agent="aiAgent" :can-manage="canManage" />
               </PopoverContent>
             </Popover>
-
             <div class="flex items-center gap-1 text-xs text-muted-foreground">
               <div class="size-2 rounded-full" :class="connected ? 'bg-green-500' : 'bg-red-500'" />
               {{ onlineUsers.length }} online
@@ -119,14 +104,11 @@
         </div>
       </div>
 
-      <!-- Messages Area -->
       <div ref="scrollContainer" class="flex-1 overflow-y-auto">
-        <!-- Load More -->
         <div v-if="hasMore" class="flex justify-center py-4">
           <Button variant="ghost" size="sm" @click="loadMore">Load older messages</Button>
         </div>
 
-        <!-- Empty State (no messages) -->
         <div
           v-if="messages.length === 0"
           class="flex flex-1 flex-col items-center justify-center px-4 py-20"
@@ -147,7 +129,6 @@
           </div>
         </div>
 
-        <!-- Messages list -->
         <template v-else>
           <ChannelIntro
             :name="channelName"
@@ -155,7 +136,6 @@
             :type="channelType"
             :show-actions="false"
           />
-
           <ChannelChatPanel
             :messages="formattedMessages"
             @reply="handleReply"
@@ -168,7 +148,6 @@
         </template>
       </div>
 
-      <!-- Typing Indicator -->
       <div v-if="typingUsernames.length || aiProcessing" class="px-4 py-1">
         <span class="text-xs text-muted-foreground italic">
           <template v-if="aiProcessing"> {{ aiAgent?.name || "AI" }} is thinking... </template>
@@ -178,7 +157,6 @@
         </span>
       </div>
 
-      <!-- Reply Preview -->
       <div v-if="replyingTo" class="flex items-center gap-2 border-t bg-accent/30 px-4 py-2">
         <CornerUpRight class="size-4 text-muted-foreground" />
         <span class="text-sm text-muted-foreground">
@@ -193,12 +171,13 @@
         </Button>
       </div>
 
-      <!-- Chat Input -->
       <ChannelChatInput
         :members="members"
         :ai-agent="aiAgent"
+        :suggestions="suggestions"
         @send="handleSend"
         @typing="handleTyping"
+        @input-change="onChatInput"
       />
     </template>
   </main>
@@ -212,7 +191,6 @@ import {
   Sparkles,
   MessageSquare as MessageSquareIcon
 } from "lucide-vue-next";
-import { ref, computed, onMounted, nextTick, watch } from "vue";
 import { toast } from "vue-sonner";
 
 const route = useRoute();
@@ -222,14 +200,12 @@ const api = useApi();
 const channelId = computed(() => route.params.channel_id as string);
 const communityId = computed(() => route.params.community_id as string);
 
-// Channel info
 const channelName = ref("");
 const channelTopic = ref("");
 const channelDescription = ref("");
 const channelBanner = ref("");
 const channelType = ref<"text" | "voice" | "announcement">("text");
 
-// Chat composable
 const {
   messages,
   members,
@@ -249,13 +225,10 @@ const {
   setReplyTo
 } = useChannelChat(channelId);
 
-// AI Agent composable
 const { processing: aiProcessing, handleAIMention } = useAIAgent();
-
-// Scroll container ref
+const { suggestions, updateText: onChatInput } = useSuggestions();
 const scrollContainer = ref<HTMLElement>();
 
-// Fetch channel details
 async function fetchChannelInfo() {
   const data = await api<{
     channels: Array<{
@@ -278,7 +251,6 @@ async function fetchChannelInfo() {
   }
 }
 
-// Format messages for the chat panel
 interface FormattedMessage {
   id: string;
   author: { id: string; name: string; avatar: string };
@@ -307,7 +279,6 @@ const formattedMessages = computed<FormattedMessage[]>(() => {
   }));
 });
 
-// Typing label
 const typingUsernames = computed(() => {
   return typingUsers.value
     .map((id) => members.value.find((m) => m.id === id)?.username)
@@ -322,11 +293,9 @@ const typingLabel = computed(() => {
   return `${names[0]} and ${names.length - 1} others are typing...`;
 });
 
-// Event handlers
 async function handleSend(content: string) {
   const msg = await sendMessage(content, replyingTo.value?.id);
 
-  // Check for AI mention
   if (aiAgent.value?.name) {
     const aiName = aiAgent.value.name.toLowerCase();
     if (content.toLowerCase().includes(`@${aiName}`)) {
@@ -399,7 +368,6 @@ function scrollToBottom() {
   }
 }
 
-// Auto-scroll when new messages arrive
 watch(
   () => messages.value.length,
   () => {
@@ -407,7 +375,6 @@ watch(
   }
 );
 
-// Init
 onMounted(async () => {
   await fetchChannelInfo();
   await init();

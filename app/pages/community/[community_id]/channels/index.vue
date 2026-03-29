@@ -1,7 +1,6 @@
 <template>
   <main class="w-full px-6 py-8">
     <div class="relative z-3 w-full">
-      <!-- Header (always visible) -->
       <div class="mb-8 flex w-full items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <button
@@ -22,7 +21,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- Search -->
           <div class="relative">
             <Search
               class="pointer-events-none absolute top-1/2 left-3 z-3 size-4 -translate-y-1/2 text-primary"
@@ -41,11 +39,8 @@
         </div>
       </div>
 
-      <!-- Main layout: channels + leaderboard -->
       <div class="grid w-full grid-cols-1 gap-6 xl:grid-cols-12">
-        <!-- Channels grid -->
         <div class="xl:col-span-9">
-          <!-- Loading skeleton -->
           <div v-if="pending" class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
             <div v-for="col in 4" :key="col" class="space-y-3">
               <div class="h-5 w-20 animate-pulse rounded-md bg-muted/60" />
@@ -89,7 +84,6 @@
                 />
               </div>
 
-              <!-- No results for search -->
               <div
                 v-if="searchQuery && !filteredChannels.length"
                 class="flex flex-col items-center justify-center py-16"
@@ -101,7 +95,6 @@
               </div>
             </div>
 
-            <!-- Global empty state -->
             <ChannelEmptyState
               v-else-if="!searchQuery"
               :can-manage="canManage"
@@ -110,7 +103,6 @@
           </template>
         </div>
 
-        <!-- Leaderboard sidebar -->
         <div class="xl:col-span-3">
           <div class="sticky top-8">
             <template v-if="pending">
@@ -130,7 +122,6 @@
         </div>
       </div>
 
-      <!-- Create Channel Dialog -->
       <ChannelCreateDialog
         v-model="showCreateDialog"
         :community-id="communityId"
@@ -151,14 +142,10 @@ const router = useRouter();
 const api = useApi();
 const communityId = route.params.community_id as string;
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 interface ChannelsResponse {
   channels: ChannelCardItem[];
   can_manage: boolean;
 }
-
-// ─── Fetch channels ──────────────────────────────────────────────────────────
 
 const { data, pending, refresh } = await useAsyncData<ChannelsResponse>(
   `community-channels-${communityId}`,
@@ -167,8 +154,6 @@ const { data, pending, refresh } = await useAsyncData<ChannelsResponse>(
 
 const channels = computed(() => data.value?.channels ?? []);
 const canManage = computed(() => data.value?.can_manage ?? false);
-
-// ─── Search ─────────────────────────────────────────────────────────────────
 
 const searchQuery = ref("");
 
@@ -179,8 +164,6 @@ const filteredChannels = computed(() => {
     (ch) => ch.name.toLowerCase().includes(q) || ch.topic?.toLowerCase().includes(q)
   );
 });
-
-// ─── Fetch leaderboard ───────────────────────────────────────────────────────
 
 interface LeaderboardResponse {
   leaderboard: Array<{
@@ -206,8 +189,6 @@ const leaderboardMembers = computed<LeaderboardMember[]>(() => {
     score: m.score > 0 ? String(m.score) : "0"
   }));
 });
-
-// ─── Column definitions ─────────────────────────────────────────────────────
 
 const columnConfig = [
   {
@@ -259,8 +240,6 @@ const typeColumns = computed(() =>
   }))
 );
 
-// ─── Create dialog ──────────────────────────────────────────────────────────
-
 const showCreateDialog = ref(false);
 const createDefaultType = ref("text");
 
@@ -269,13 +248,9 @@ function openCreateDialog(type?: string) {
   showCreateDialog.value = true;
 }
 
-// ─── Navigation ─────────────────────────────────────────────────────────────
-
 function handleSelect(channel: ChannelCardItem) {
   router.push(`/community/${communityId}/channels/${channel.id}`);
 }
-
-// ─── Sync community store ───────────────────────────────────────────────────
 
 const communityStore = useCommunityStore();
 communityStore.setCurrentCommunity(communityId);

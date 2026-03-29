@@ -1,6 +1,5 @@
 <template>
   <div class="mx-auto w-full max-w-4xl px-4 py-8">
-    <!-- Page Header -->
     <div class="mb-8">
       <h1 class="text-2xl font-bold tracking-tight">Settings</h1>
       <p class="mt-1 text-sm text-muted-foreground">
@@ -8,9 +7,7 @@
       </p>
     </div>
 
-    <!-- Settings Layout -->
     <div class="flex flex-col gap-8 md:flex-row">
-      <!-- Sidebar Nav -->
       <aside class="w-full shrink-0 md:w-52">
         <nav class="flex flex-row gap-1 md:flex-col">
           <button
@@ -30,12 +27,9 @@
         </nav>
       </aside>
 
-      <!-- Content -->
       <div class="min-w-0 flex-1 space-y-6">
-        <!-- ── Account ──────────────────────────────────────────────────── -->
         <section v-if="activeTab === 'account'">
           <SettingsCard title="Profile" description="Update your display name and public info.">
-            <!-- Avatar -->
             <div class="flex items-center gap-4">
               <div class="relative">
                 <Avatar class="size-16">
@@ -50,7 +44,7 @@
                 >
                   <Camera class="size-3.5" />
                 </button>
-                <input
+                <Input
                   ref="avatarInput"
                   type="file"
                   accept="image/*"
@@ -76,7 +70,6 @@
 
             <Separator />
 
-            <!-- Display name -->
             <div class="grid gap-2">
               <Label for="displayName">Display name</Label>
               <Input
@@ -87,7 +80,6 @@
               />
             </div>
 
-            <!-- Username -->
             <div class="grid gap-2">
               <Label for="username">Username</Label>
               <div class="relative">
@@ -127,9 +119,7 @@
           </div>
         </section>
 
-        <!-- ── Security ─────────────────────────────────────────────────── -->
         <section v-else-if="activeTab === 'security'">
-          <!-- Two-factor authentication -->
           <SettingsCard
             title="Two-factor authentication"
             description="Add an extra layer of security to your account with an authenticator app."
@@ -170,7 +160,6 @@
             </div>
           </SettingsCard>
 
-          <!-- Change password -->
           <SettingsCard
             title="Change password"
             description="Update your password to keep your account secure."
@@ -217,7 +206,6 @@
                     <EyeOff v-else class="size-4" />
                   </button>
                 </div>
-                <!-- Strength bar -->
                 <div v-if="passwordForm.newPwd" class="mt-1 space-y-1">
                   <div class="flex gap-1">
                     <div
@@ -258,7 +246,6 @@
             </div>
           </SettingsCard>
 
-          <!-- Danger zone -->
           <SettingsCard
             title="Danger zone"
             description="Irreversible account actions."
@@ -278,7 +265,6 @@
           </SettingsCard>
         </section>
 
-        <!-- ── Notifications ─────────────────────────────────────────────── -->
         <section v-else-if="activeTab === 'notifications'">
           <SettingsCard
             title="Push notifications"
@@ -344,7 +330,6 @@
             </div>
           </SettingsCard>
 
-          <!-- Do not disturb -->
           <SettingsCard
             title="Do not disturb"
             description="Mute all notifications for a period of time."
@@ -374,7 +359,6 @@
           </div>
         </section>
 
-        <!-- ── Appearance ────────────────────────────────────────────────── -->
         <section v-else-if="activeTab === 'appearance'">
           <SettingsCard title="Theme" description="Choose how Flowcord looks for you.">
             <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -418,7 +402,6 @@
     </div>
   </div>
 
-  <!-- Delete account confirmation dialog -->
   <AlertDialog :open="deleteDialogOpen" @update:open="deleteDialogOpen = $event">
     <AlertDialogContent>
       <AlertDialogHeader>
@@ -445,10 +428,8 @@
 import { User, ShieldCheck, Bell, Palette, Camera, Eye, EyeOff, Loader2 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
-// ─── Meta ───────────────────────────────────────────────────────────────────
 definePageMeta({ layout: "default" });
 
-// ─── Store / composables ────────────────────────────────────────────────────
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 const { open: openEnable2FA } = use2FASetup();
@@ -456,7 +437,6 @@ const theme = useTheme();
 const route = useRoute();
 const api = useApi();
 
-// ─── Tabs ────────────────────────────────────────────────────────────────────
 const tabs = [
   { id: "account", label: "Account", icon: User },
   { id: "security", label: "Security", icon: ShieldCheck },
@@ -465,13 +445,11 @@ const tabs = [
 ];
 const activeTab = ref((route.query.tab as string) || "account");
 
-// ─── User initials ────────────────────────────────────────────────────────────
 const userInitials = computed(() => {
   const u = user.value?.username ?? "";
   return u.slice(0, 2).toUpperCase();
 });
 
-// ─── Account form ────────────────────────────────────────────────────────────
 const form = reactive({
   displayName: user.value?.username ?? "",
   username: user.value?.username ?? "",
@@ -504,7 +482,6 @@ async function saveProfile() {
   }
 }
 
-// ─── Avatar ──────────────────────────────────────────────────────────────────
 const avatarInput = ref<HTMLInputElement | null>(null);
 const avatarFile = ref<File | null>(null);
 const savingAvatar = ref(false);
@@ -538,7 +515,6 @@ async function saveAvatar() {
   }
 }
 
-// ─── Password ────────────────────────────────────────────────────────────────
 const passwordForm = reactive({ current: "", newPwd: "", confirm: "" });
 const showCurrentPwd = ref(false);
 const showNewPwd = ref(false);
@@ -589,14 +565,12 @@ async function changePassword() {
   }
 }
 
-// ─── Delete account ────────────────────────────────────────────────────────
 const deleteDialogOpen = ref(false);
 async function deleteAccount() {
   deleteDialogOpen.value = false;
   useToast().info("Account deletion is not yet available.");
 }
 
-// ─── Notifications ────────────────────────────────────────────────────────
 const notifs = reactive({
   directMessages: true,
   mentions: true,
@@ -616,7 +590,6 @@ async function saveNotifications() {
   useToast().success("Notification preferences saved.");
 }
 
-// ─── DND ─────────────────────────────────────────────────────────────────
 const dndOptions = [
   { label: "30 min", value: 30 },
   { label: "1 hour", value: 60 },
@@ -635,7 +608,6 @@ function setDnd(mins: number) {
   dndActive.value = mins;
 }
 
-// ─── Appearance ───────────────────────────────────────────────────────────
 const isDark = theme.enabled;
 
 interface ThemeDef {
@@ -664,7 +636,6 @@ function applyTheme(id: string) {
   } else if (id === "light") {
     if (isDark.value) theme.toggleTheme();
   } else {
-    // system
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     if (prefersDark !== isDark.value) theme.toggleTheme();
   }
@@ -676,7 +647,6 @@ const appearance = reactive({
   sidebarAvatars: true
 });
 
-// ─── Toast helper ─────────────────────────────────────────────────────────
 function useToast() {
   return {
     success: (msg: string) => toast.success(msg),

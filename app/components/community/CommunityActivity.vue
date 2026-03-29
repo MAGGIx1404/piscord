@@ -55,7 +55,6 @@
     </div>
 
     <template v-else>
-      <!-- ─── Activity tab ──────────────────────────────────────────────────── -->
       <div v-if="activeTab === 'activity'">
         <div
           v-if="!recentActivity.length"
@@ -98,7 +97,6 @@
         </div>
       </div>
 
-      <!-- ─── Requests tab (owner only) ────────────────────────────────────── -->
       <div v-else-if="activeTab === 'requests' && isOwner">
         <div
           v-if="!joinRequests.length"
@@ -221,8 +219,6 @@ const activeTab = ref<"activity" | "requests">("activity");
 const reviewing = ref<string | null>(null);
 const reviewAction = ref<"approve" | "reject" | null>(null);
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface ActivityItem {
   id: string;
   user_id: string;
@@ -248,8 +244,6 @@ interface ApiResponse {
   requireApproval: boolean;
 }
 
-// ─── Fetch ────────────────────────────────────────────────────────────────────
-
 const { data, pending, refresh } = await useAsyncData<ApiResponse>(
   `community-activity-${props.communityId}`,
   () => api<ApiResponse>(`/api/communities/${props.communityId}/activity`)
@@ -267,8 +261,6 @@ watch(data, (val) => {
     // Don't auto-switch — let the badge draw attention instead
   }
 });
-
-// ─── Real-time updates ───────────────────────────────────────────────────────
 
 const { connected, connect } = useCommunityLive(
   computed(() => props.communityId),
@@ -304,8 +296,6 @@ watch(
   { immediate: true }
 );
 
-// ─── Review action ────────────────────────────────────────────────────────────
-
 async function reviewRequest(requestId: string, action: "approve" | "reject") {
   reviewing.value = requestId;
   reviewAction.value = action;
@@ -326,8 +316,6 @@ async function reviewRequest(requestId: string, action: "approve" | "reject") {
     reviewAction.value = null;
   }
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function handleRefresh() {
   void refresh();

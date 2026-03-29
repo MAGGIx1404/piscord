@@ -3,8 +3,6 @@ import { verifyAccessToken } from "../utils/jwt";
 import { parse as parseCookies } from "cookie-es";
 import { getFriendIds } from "../services/friendService";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 interface ChannelPeer {
   userId: string;
   scope: "channel";
@@ -24,20 +22,11 @@ interface UserPeer {
 
 type AuthenticatedPeer = ChannelPeer | CommunityPeer | UserPeer;
 
-// ─── State ──────────────────────────────────────────────────────────────────
-
-// Map of peer → auth info
 const peerAuth = new Map<Peer, AuthenticatedPeer>();
-// Map of channelId → Set of peers
 const channelPeers = new Map<string, Set<Peer>>();
-// Map of communityId → Set of peers watching the community overview
 const communityPeers = new Map<string, Set<Peer>>();
-// Map of userId → Set of peers (user can have multiple tabs)
 const userPeers = new Map<string, Set<Peer>>();
-// Map of channelId → Set of userIds currently typing
 const typingUsers = new Map<string, Set<string>>();
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function broadcastToChannel(channelId: string, data: unknown, excludePeer?: Peer) {
   const peers = channelPeers.get(channelId);
@@ -87,8 +76,6 @@ function isUserOnline(userId: string): boolean {
   return (userPeers.get(userId)?.size ?? 0) > 0;
 }
 
-// ─── Export for use by API routes ───────────────────────────────────────────
-
 export {
   broadcastToChannel,
   broadcastToCommunity,
@@ -101,12 +88,8 @@ export {
   peerAuth
 };
 
-// ─── WebSocket Handler ─────────────────────────────────────────────────────
-
 export default defineWebSocketHandler({
-  open(peer) {
-    // Client must authenticate via first message
-  },
+  open(_peer) {},
 
   message(peer, msg) {
     let data: Record<string, unknown>;
@@ -119,14 +102,11 @@ export default defineWebSocketHandler({
 
     const { type } = data;
 
-    // ── Auth ─────────────────────────────────────────────────────────────
     if (type === "auth") {
       const channelId = data.channelId as string | undefined;
       const communityId = data.communityId as string | undefined;
       const scope = data.scope as string | undefined;
 
-      // Token can come from the message payload or from the httpOnly cookie
-      // (cookie is sent with the WebSocket upgrade request)
       let token = data.token as string | undefined;
 
       if (!token) {
@@ -152,7 +132,6 @@ export default defineWebSocketHandler({
         const payload = verifyAccessToken(token);
 
         if (channelId) {
-          // Channel subscription
           peerAuth.set(peer, { userId: payload.userId, scope: "channel", channelId });
 
           if (!channelPeers.has(channelId)) {
@@ -178,7 +157,6 @@ export default defineWebSocketHandler({
             peer
           );
         } else if (communityId) {
-          // Community subscription
           peerAuth.set(peer, { userId: payload.userId, scope: "community", communityId });
 
           if (!communityPeers.has(communityId)) {
@@ -188,7 +166,6 @@ export default defineWebSocketHandler({
 
           peer.send(JSON.stringify({ type: "auth:success", userId: payload.userId }));
         } else if (scope === "user") {
-          // User-level subscription (for DMs and friend events)
           peerAuth.set(peer, { userId: payload.userId, scope: "user" });
 
           const wasOnline = (userPeers.get(payload.userId)?.size ?? 0) > 0;
@@ -200,7 +177,6 @@ export default defineWebSocketHandler({
 
           peer.send(JSON.stringify({ type: "auth:success", userId: payload.userId }));
 
-          // Broadcast online status to friends (only if user just came online)
           if (!wasOnline) {
             getFriendIds(payload.userId).then((friendIds) => {
               for (const fid of friendIds) {
@@ -215,14 +191,12 @@ export default defineWebSocketHandler({
       return;
     }
 
-    // All subsequent messages require auth
     const auth = peerAuth.get(peer);
     if (!auth) {
       peer.send(JSON.stringify({ type: "error", message: "Not authenticated" }));
       return;
     }
 
-    // ── Channel typing ──────────────────────────────────────────────────
     if (auth.scope === "channel") {
       if (type === "typing:start") {
         if (!typingUsers.has(auth.channelId)) {
@@ -254,7 +228,6 @@ export default defineWebSocketHandler({
       }
     }
 
-    // ── DM typing (user scope) ──────────────────────────────────────────
     if (auth.scope === "user") {
       if (type === "dm:typing:start") {
         const recipientId = data.recipientId as string;
@@ -312,7 +285,6 @@ export default defineWebSocketHandler({
         if (userPeers.get(auth.userId)?.size === 0) {
           userPeers.delete(auth.userId);
 
-          // Broadcast offline status to friends
           getFriendIds(auth.userId).then((friendIds) => {
             for (const fid of friendIds) {
               broadcastToUser(fid, { type: "friend:offline", userId: auth.userId });

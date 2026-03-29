@@ -63,7 +63,9 @@ export default defineNuxtConfig({
         "vee-validate",
         "class-variance-authority",
         "@vueuse/core",
-        "reka-ui"
+        "reka-ui",
+        "marked",
+        "dompurify"
       ]
     }
   },

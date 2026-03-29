@@ -1,13 +1,10 @@
 <template>
   <main class="flex h-[calc(100vh-6rem)] w-full overflow-hidden rounded-xl border border-border/50">
-    <!-- ── Left Panel ──────────────────────────────────────────────────────── -->
     <div class="flex w-100 shrink-0 flex-col border-r border-border/50">
-      <!-- Header -->
       <div class="border-b border-border/50 px-4 py-4">
         <h1 class="text-lg font-bold">Friends</h1>
       </div>
 
-      <!-- Tabs -->
       <div class="flex border-b border-border/50">
         <button
           v-for="tab in tabs"
@@ -30,13 +27,12 @@
         </button>
       </div>
 
-      <!-- Search (for Search tab) -->
       <div v-if="activeTab === 'search'" class="border-b border-border/50 px-4 py-3">
         <div class="relative">
           <SearchIcon
             class="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
           />
-          <input
+          <Input
             v-model="searchQuery"
             type="text"
             placeholder="Search by username..."
@@ -45,9 +41,7 @@
         </div>
       </div>
 
-      <!-- List content -->
       <div class="flex-1 overflow-y-auto">
-        <!-- All Friends Tab -->
         <template v-if="activeTab === 'all'">
           <div v-if="loadingFriends" class="space-y-2 p-3">
             <div v-for="n in 5" :key="n" class="flex items-center gap-3 rounded-xl p-2.5">
@@ -67,7 +61,6 @@
             </Button>
           </div>
           <div v-else class="space-y-0.5 p-2">
-            <!-- Online friends first -->
             <template v-if="onlineFriends.length">
               <p
                 class="px-3 pt-2 pb-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase"
@@ -101,7 +94,6 @@
           </div>
         </template>
 
-        <!-- Pending Tab -->
         <template v-else-if="activeTab === 'pending'">
           <div v-if="loadingRequests" class="space-y-2 p-3">
             <div v-for="n in 3" :key="n" class="h-16 animate-pulse rounded-xl bg-muted/40" />
@@ -150,7 +142,6 @@
           </div>
         </template>
 
-        <!-- Search Tab -->
         <template v-else-if="activeTab === 'search'">
           <div v-if="searchQuery.length < 2" class="flex flex-col items-center gap-2 px-4 py-12">
             <SearchIcon class="size-8 text-muted-foreground/40" />
@@ -185,7 +176,6 @@
       </div>
     </div>
 
-    <!-- ── Right Panel (DM Chat) ───────────────────────────────────────────── -->
     <div class="flex flex-1 flex-col">
       <template v-if="selectedFriend && conversationId">
         <FriendsDmChatPanel
@@ -201,7 +191,6 @@
         />
       </template>
       <template v-else>
-        <!-- Empty state -->
         <div class="flex flex-1 flex-col items-center justify-center gap-3">
           <div class="flex size-20 items-center justify-center rounded-2xl bg-muted/30">
             <MessageSquare class="size-10 text-muted-foreground/30" />
@@ -224,8 +213,6 @@ import type { Friend } from "~/composables/useFriends";
 const api = useApi();
 const route = useRoute();
 
-// ─── Friends composable ──────────────────────────────────────────────────────
-
 const {
   friends,
   incomingRequests,
@@ -246,8 +233,6 @@ const {
   stopRealtime
 } = useFriends();
 
-// ─── Tabs ────────────────────────────────────────────────────────────────────
-
 const activeTab = ref<"all" | "pending" | "search">("all");
 const searchQuery = ref("");
 
@@ -261,11 +246,9 @@ const tabs = computed(() => [
   { id: "search" as const, label: "Search", count: 0 }
 ]);
 
-// Online/offline sorting
 const onlineFriends = computed(() => friends.value.filter((f) => f.is_online));
 const offlineFriends = computed(() => friends.value.filter((f) => !f.is_online));
 
-// Debounced search
 watchDebounced(
   searchQuery,
   (q) => {
@@ -273,8 +256,6 @@ watchDebounced(
   },
   { debounce: 300 }
 );
-
-// ─── DM Chat ─────────────────────────────────────────────────────────────────
 
 const selectedFriend = ref<Friend | null>(null);
 const conversationId = ref<string | null>(null);
@@ -318,13 +299,10 @@ async function handleSendDm(content: string) {
   await sendDm(content);
 }
 
-// ─── Init ────────────────────────────────────────────────────────────────────
-
 onMounted(async () => {
   await Promise.all([fetchFriends(), fetchRequests()]);
   listenRealtime();
 
-  // Support ?dm=userId query param to auto-open a DM
   const dmUserId = route.query.dm as string | undefined;
   if (dmUserId) {
     const friend = friends.value.find((f) => f.id === dmUserId);

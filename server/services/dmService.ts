@@ -1,8 +1,6 @@
 import { db, generateId } from "../db";
 import { areFriends } from "./friendService";
 
-// ─── Get or Create Conversation ────────────────────────────────────────────
-
 export async function getOrCreateConversation(userId1: string, userId2: string) {
   // Canonical ordering: lower ID = user1
   const [user1_id, user2_id] = [userId1, userId2].sort();
@@ -23,8 +21,6 @@ export async function getOrCreateConversation(userId1: string, userId2: string) 
     .returningAll()
     .executeTakeFirstOrThrow();
 }
-
-// ─── Get Conversations ─────────────────────────────────────────────────────
 
 export async function getConversations(userId: string) {
   const rows = await db
@@ -80,8 +76,6 @@ export async function getConversations(userId: string) {
 
   return conversations;
 }
-
-// ─── Get Messages ──────────────────────────────────────────────────────────
 
 export async function getMessages(
   conversationId: string,
@@ -155,8 +149,6 @@ export async function getMessages(
     has_more
   };
 }
-
-// ─── Send Message ──────────────────────────────────────────────────────────
 
 export async function sendMessage(conversationId: string, senderId: string, content: string) {
   // Verify participant

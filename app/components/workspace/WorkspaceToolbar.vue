@@ -13,30 +13,30 @@
 
       <Separator orientation="vertical" class="h-5" />
 
-      <!-- Add Node (searchable popover) -->
-      <Popover v-model:open="open">
+      <!-- Add Node (persona picker) -->
+      <Popover v-model:open="popoverOpen">
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" class="gap-1.5">
-            <Plus class="size-4" /> Add Node
+            <Plus class="size-4" /> Add Persona
           </Button>
         </PopoverTrigger>
-        <PopoverContent class="w-64 p-0" align="start">
+        <PopoverContent class="w-72 p-0" align="start">
           <Command>
-            <CommandInput placeholder="Search models..." />
-            <CommandEmpty>No models found.</CommandEmpty>
+            <CommandInput placeholder="Search personas..." />
+            <CommandEmpty>No personas found.</CommandEmpty>
             <CommandList>
-              <CommandGroup
-                v-for="group in groupedModels"
-                :key="group.provider"
-                :heading="group.provider"
-              >
+              <CommandGroup>
                 <CommandItem
-                  v-for="model in group.models"
-                  :key="model.id"
-                  :value="model.id + ' ' + model.name + ' ' + model.provider"
-                  @select="selectModel(model)"
+                  v-for="persona in personas"
+                  :key="persona.id"
+                  :value="persona.id + ' ' + persona.name + ' ' + persona.description"
+                  @select="selectPersona(persona)"
                 >
-                  <span class="truncate text-sm">{{ model.name }}</span>
+                  <span class="mr-2 text-base">{{ persona.emoji }}</span>
+                  <div class="min-w-0 flex-1">
+                    <span class="text-sm font-medium">{{ persona.name }}</span>
+                    <p class="truncate text-xs text-muted-foreground">{{ persona.description }}</p>
+                  </div>
                 </CommandItem>
               </CommandGroup>
             </CommandList>
@@ -45,9 +45,55 @@
       </Popover>
 
       <!-- Select All -->
-      <Button variant="ghost" size="sm" @click="$emit('selectAll')"> Select All </Button>
+      <Button variant="ghost" size="sm" @click="$emit('selectAll')">Select All</Button>
 
       <Separator orientation="vertical" class="h-5" />
+
+      <!-- AI Toggle -->
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div class="flex items-center gap-1.5">
+              <Switch :checked="aiEnabled" class="scale-75" @update:checked="$emit('toggle-ai')" />
+              <span
+                class="text-xs"
+                :class="aiEnabled ? 'text-emerald-500' : 'text-muted-foreground/50'"
+              >
+                AI
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p class="text-xs">
+              {{
+                aiEnabled ? "AI enabled — prompts will call Ollama" : "AI disabled — no API calls"
+              }}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <Separator orientation="vertical" class="h-5" />
+
+      <!-- Memory -->
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button variant="ghost" size="icon" class="size-8" @click="$emit('openMemory')">
+              <Brain class="size-4" />
+              <span
+                v-if="memoryCount > 0"
+                class="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] text-primary-foreground"
+              >
+                {{ memoryCount }}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p class="text-xs">Workspace memory ({{ memoryCount }})</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <!-- History -->
       <Button variant="ghost" size="icon" class="size-8" @click="$emit('openHistory')">
@@ -59,9 +105,11 @@
         <div class="flex items-center -space-x-1.5">
           <Tooltip v-for="member in displayedMembers" :key="member.id">
             <TooltipTrigger>
-              <Avatar class="size-6 ring-2 ring-card transition-all hover:ring-primary hover:z-10">
-                <AvatarImage :src="member.avatar_url" />
-                <AvatarFallback class="text-[10px]">{{ getInitials(member.username) }}</AvatarFallback>
+              <Avatar class="size-6 ring-2 ring-card transition-all hover:z-10 hover:ring-primary">
+                <AvatarImage :src="member.avatar_url || ''" />
+                <AvatarFallback class="text-[10px]">{{
+                  member.username.slice(0, 2).toUpperCase()
+                }}</AvatarFallback>
               </Avatar>
             </TooltipTrigger>
             <TooltipContent>
@@ -81,12 +129,13 @@
 </template>
 
 <script setup lang="ts">
-import { ArrowLeft, Plus, History } from "lucide-vue-next";
+import { ArrowLeft, Plus, History, Brain } from "lucide-vue-next";
 
-interface AIModel {
+interface Persona {
   id: string;
   name: string;
-  provider: string;
+  emoji: string;
+  description: string;
 }
 
 interface Member {
@@ -97,36 +146,25 @@ interface Member {
 
 const props = defineProps<{
   workspaceName: string;
-  models: AIModel[];
+  personas: Persona[];
   members: Member[];
+  aiEnabled: boolean;
+  memoryCount: number;
 }>();
 
 const emit = defineEmits<{
-  addNode: [model: AIModel];
+  addNode: [persona: Persona];
   selectAll: [];
   openHistory: [];
+  openMemory: [];
+  "toggle-ai": [];
 }>();
 
+const popoverOpen = ref(false);
 const displayedMembers = computed(() => props.members.slice(0, 4));
 
-function getInitials(username: string) {
-  return username.slice(0, 2).toUpperCase();
-}
-
-const open = ref(false);
-
-const groupedModels = computed(() => {
-  const groups = new Map<string, AIModel[]>();
-  for (const model of props.models) {
-    const p = model.provider;
-    if (!groups.has(p)) groups.set(p, []);
-    groups.get(p)!.push(model);
-  }
-  return Array.from(groups.entries()).map(([provider, models]) => ({ provider, models }));
-});
-
-function selectModel(model: AIModel) {
-  emit("addNode", model);
-  open.value = false;
+function selectPersona(persona: Persona) {
+  emit("addNode", persona);
+  popoverOpen.value = false;
 }
 </script>

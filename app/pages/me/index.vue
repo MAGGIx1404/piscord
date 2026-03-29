@@ -1,8 +1,6 @@
 <template>
   <main class="min-h-screen w-full">
-    <!-- ── Profile Header ──────────────────────────────────────────────────── -->
     <div class="relative">
-      <!-- Banner -->
       <div
         class="h-40 w-full overflow-hidden rounded-xl bg-linear-to-br from-primary/30 via-primary/10 to-background sm:h-52"
       >
@@ -11,10 +9,8 @@
         />
       </div>
 
-      <!-- Avatar + info row -->
       <div class="px-6 pb-5">
         <div class="-mt-10 flex flex-wrap items-end justify-between gap-4">
-          <!-- Avatar -->
           <div class="relative shrink-0">
             <Avatar class="size-20 rounded-2xl ring-4 ring-background sm:size-24">
               <AvatarImage :src="user?.avatar_url ?? ''" />
@@ -27,7 +23,6 @@
             />
           </div>
 
-          <!-- Action buttons -->
           <div class="flex items-center gap-2 pb-1">
             <Button variant="outline" size="sm" class="gap-1.5 text-xs" @click="editOpen = true">
               <Pencil class="size-3.5" />
@@ -39,7 +34,6 @@
           </div>
         </div>
 
-        <!-- Name & meta -->
         <div class="mt-3 space-y-1">
           <div class="flex flex-wrap items-center gap-2">
             <h1 class="text-xl leading-none font-bold sm:text-2xl">{{ user?.username }}</h1>
@@ -55,7 +49,6 @@
           <p class="text-xs text-muted-foreground/70">Joined {{ joinedDate }}</p>
         </div>
 
-        <!-- Stats row -->
         <div class="mt-4 flex flex-wrap gap-4 sm:gap-6">
           <div class="text-center">
             <p class="text-lg leading-none font-bold tabular-nums">{{ communities.length }}</p>
@@ -79,7 +72,6 @@
       </div>
     </div>
 
-    <!-- ── Tabs ──────────────────────────────────────────────────────────────── -->
     <div class="border-t border-border/60 px-6">
       <div class="flex gap-0">
         <button
@@ -98,9 +90,7 @@
       </div>
     </div>
 
-    <!-- ── Tab Panels ─────────────────────────────────────────────────────────── -->
     <div class="px-6 py-6">
-      <!-- COMMUNITIES TAB -->
       <div v-if="activeTab === 'communities'">
         <div v-if="communityPending" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div v-for="n in 6" :key="n" class="h-20 animate-pulse rounded-xl bg-muted/40" />
@@ -149,7 +139,6 @@
         </div>
       </div>
 
-      <!-- JOIN REQUESTS TAB -->
       <div v-else-if="activeTab === 'requests'">
         <div v-if="notifPending" class="space-y-2">
           <div v-for="n in 4" :key="n" class="h-16 animate-pulse rounded-xl bg-muted/40" />
@@ -190,9 +179,7 @@
         </div>
       </div>
 
-      <!-- ACCOUNT TAB -->
       <div v-else-if="activeTab === 'account'" class="max-w-lg space-y-4">
-        <!-- Username -->
         <div class="space-y-3 rounded-xl border border-border/60 bg-card p-4">
           <div class="flex items-center justify-between">
             <div>
@@ -209,7 +196,6 @@
           </div>
         </div>
 
-        <!-- Email -->
         <div class="space-y-3 rounded-xl border border-border/60 bg-card p-4">
           <div>
             <p class="text-sm font-semibold">Email</p>
@@ -221,7 +207,6 @@
           </div>
         </div>
 
-        <!-- 2FA -->
         <div class="rounded-xl border border-border/60 bg-card p-4">
           <div class="flex items-center justify-between">
             <div>
@@ -241,7 +226,6 @@
           </div>
         </div>
 
-        <!-- Danger zone -->
         <div class="space-y-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
           <p class="text-sm font-semibold text-destructive">Danger Zone</p>
           <p class="text-xs text-muted-foreground">Permanently delete your account and all data.</p>
@@ -250,7 +234,6 @@
       </div>
     </div>
 
-    <!-- ── Edit Profile Dialog ─────────────────────────────────────────────── -->
     <Dialog v-model:open="editOpen">
       <DialogContent class="max-w-sm gap-5">
         <DialogHeader>
@@ -296,8 +279,6 @@ import { toast } from "vue-sonner";
 
 const api = useApi();
 
-// ── User ─────────────────────────────────────────────────────────────────────
-
 const { data: userData, refresh: refreshUser } = await useAsyncData(
   "me-profile",
   () =>
@@ -323,8 +304,6 @@ const joinedDate = computed(() => {
   });
 });
 
-// ── Communities ───────────────────────────────────────────────────────────────
-
 interface UserCommunity {
   id: string;
   name: string;
@@ -343,8 +322,6 @@ const { data: communityData, pending: communityPending } = await useAsyncData(
 );
 const communities = computed(() => communityData.value?.communities ?? []);
 
-// ── Join Requests ─────────────────────────────────────────────────────────────
-
 interface JoinRequest {
   id: string;
   status: "pending" | "approved" | "rejected" | "cancelled";
@@ -360,16 +337,12 @@ const { data: notifData, pending: notifPending } = await useAsyncData(
 );
 const joinRequests = computed(() => notifData.value?.requests ?? []);
 
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-
 const tabs = [
   { id: "communities", label: "Communities" },
   { id: "requests", label: "Requests" },
   { id: "account", label: "Account" }
 ];
 const activeTab = ref("communities");
-
-// ── Edit Profile ──────────────────────────────────────────────────────────────
 
 const editOpen = ref(false);
 const saving = ref(false);
@@ -399,8 +372,6 @@ async function saveProfile() {
     saving.value = false;
   }
 }
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatNumber(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";

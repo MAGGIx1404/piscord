@@ -1,5 +1,6 @@
 import { db } from "../../../../../db";
 import { resolveCommunityId } from "../../../../../utils/community";
+import { requireWorkspaceMembership } from "../../../../../services/workspaceService";
 
 export default defineEventHandler(async (event) => {
   const userId = requireAuth(event);
@@ -10,25 +11,29 @@ export default defineEventHandler(async (event) => {
   if (!workspaceId) throw createError({ statusCode: 400, message: "Workspace ID is required" });
 
   const communityId = await resolveCommunityId(slugOrId);
+  await requireWorkspaceMembership(workspaceId, userId);
 
-  // Verify user is a member
-  const membership = await db
-    .selectFrom("community_members")
-    .select("id")
-    .where("community_id", "=", communityId)
-    .where("user_id", "=", userId)
-    .executeTakeFirst();
+  // Find distinct users who created prompt_runs in this workspace
+  const activeUserIds = await db
+    .selectFrom("prompt_runs")
+    .select("created_by")
+    .distinct()
+    .where("workspace_id", "=", workspaceId)
+    .where("created_by", "is not", null)
+    .execute();
 
-  if (!membership) {
-    throw createError({ statusCode: 403, message: "Not a member of this community" });
-  }
+  const ids = activeUserIds.map((r) => r.created_by).filter(Boolean) as string[];
+
+  // Always include the current user
+  if (!ids.includes(userId)) ids.push(userId);
+
+  if (!ids.length) return [];
 
   const members = await db
-    .selectFrom("community_members as cm")
-    .innerJoin("users as u", "u.id", "cm.user_id")
-    .select(["u.id", "u.username", "u.avatar_url"])
-    .where("cm.community_id", "=", communityId)
-    .orderBy("u.username", "asc")
+    .selectFrom("users")
+    .select(["id", "username", "avatar_url"])
+    .where("id", "in", ids)
+    .orderBy("username", "asc")
     .execute();
 
   return members;

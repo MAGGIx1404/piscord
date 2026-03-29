@@ -1,12 +1,10 @@
 <template>
   <main class="min-h-screen w-full">
-    <!-- Loading -->
     <div v-if="pending" class="flex h-96 items-center justify-center">
       <div class="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
     </div>
 
     <template v-else-if="community">
-      <!-- Hero Banner -->
       <CommunityBanner
         :name="communityBannerProps.name"
         :type="communityBannerProps.type"
@@ -19,45 +17,35 @@
         @invite="handleInvite"
       />
 
-      <!-- Sticky Stats Bar -->
       <CommunityStatsBar :stats="quickStats" />
 
-      <!-- Main content - asymmetric bento -->
       <div class="w-full px-8 py-8">
         <div class="grid grid-cols-12 gap-5">
-          <!-- Left narrow column -->
           <div class="col-span-12 space-y-5 lg:col-span-3">
-            <!-- AI Agent -->
             <CommunityAIAgent
               v-if="aiAgent"
               :agent="aiAgent"
               @view-profile="handleViewAgentProfile"
             />
 
-            <!-- About -->
             <CommunityAbout
               :created-at="communityAbout.createdAt"
               :website="communityAbout.website"
               :tags="communityAbout.tags"
             />
 
-            <!-- Rules -->
             <CommunityRules :rules="communityRules" />
 
-            <!-- Workspaces -->
             <CommunityWorkspaces :workspaces="mappedWorkspaces" @select="handleSelectWorkspace" />
           </div>
 
-          <!-- Center wide column -->
           <div class="col-span-12 space-y-5 lg:col-span-6">
-            <!-- Activity feed + join request moderation -->
             <CommunityActivity
               :community-id="communityId"
               @member-count-update="handleMemberCountUpdate"
               @member-join="handleMemberJoin"
             />
 
-            <!-- Channels Grid -->
             <CommunityChannelGrid
               :channels="mappedChannels"
               @create="handleCreateChannel"
@@ -65,9 +53,7 @@
             />
           </div>
 
-          <!-- Right column - members focus -->
           <div class="col-span-12 space-y-5 lg:col-span-3">
-            <!-- Member List (includes role filter + view-all modal) -->
             <CommunityMemberList
               :members="filteredMembers"
               :roles="memberRoles"
@@ -90,8 +76,6 @@ import type { LiveActivityItem } from "~/composables/useCommunityLive";
 const route = useRoute();
 const api = useApi();
 const communityId = route.params.community_id as string;
-
-// ─── API types ────────────────────────────────────────────────────────────────
 
 interface ApiCommunity {
   id: string;
@@ -144,18 +128,14 @@ interface ApiOverview {
   owner_id: string;
 }
 
-// ─── Fetch overview ───────────────────────────────────────────────────────────
-
 const { data, pending, error } = await useAsyncData<ApiOverview>(
   `community-overview-${communityId}`,
-  () => api<ApiOverview>(`/api/communities/${communityId}`),
+  () => api<ApiOverview>(`/api/communities/${communityId}`)
 );
 
 if (error.value) {
   throw createError({ statusCode: 404, statusMessage: "Community not found" });
 }
-
-// ─── Fetch channels & workspaces ─────────────────────────────────────────────
 
 interface ApiChannel {
   id: string;
@@ -179,33 +159,23 @@ interface ApiWorkspace {
   created_at: string;
 }
 
-const { data: channelsData } = await useAsyncData(
-  `community-channels-${communityId}`,
-  () =>
-    api<{ channels: ApiChannel[]; can_manage: boolean }>(
-      `/api/communities/${communityId}/channels`
-    )
+const { data: channelsData } = await useAsyncData(`community-channels-${communityId}`, () =>
+  api<{ channels: ApiChannel[]; can_manage: boolean }>(`/api/communities/${communityId}/channels`)
 );
 
-const { data: workspacesData } = await useAsyncData(
-  `community-workspaces-${communityId}`,
-  () =>
-    api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
-      `/api/communities/${communityId}/workspaces`
-    )
+const { data: workspacesData } = await useAsyncData(`community-workspaces-${communityId}`, () =>
+  api<{ workspaces: ApiWorkspace[]; can_manage: boolean }>(
+    `/api/communities/${communityId}/workspaces`
+  )
 );
 
-// Track last visited community so the home page can redirect here
 const communityStore = useCommunityStore();
 communityStore.setCurrentCommunity(communityId);
-
-// ─── Derived state ────────────────────────────────────────────────────────────
 
 const community = computed(() => data.value?.community ?? null);
 const members = computed(() => data.value?.members ?? []);
 const roles = computed(() => data.value?.roles ?? []);
 
-// Channel type → icon/color mapping
 const defaultChannelStyle = {
   icon: markRawVue(Hash),
   bg: "bg-blue-500/20",
@@ -222,7 +192,6 @@ function getChannelStyle(type: string) {
   return styles[type] ?? defaultChannelStyle;
 }
 
-// Map API channels → CommunityChannelGrid format
 const mappedChannels = computed(() =>
   (channelsData.value?.channels ?? []).map((ch) => {
     const s = getChannelStyle(ch.type);
@@ -238,7 +207,6 @@ const mappedChannels = computed(() =>
   })
 );
 
-// Workspace color palette
 const wsColors = [
   "bg-primary/20 text-primary",
   "bg-blue-500/20 text-blue-500",
@@ -246,7 +214,6 @@ const wsColors = [
   "bg-amber-500/20 text-amber-500"
 ] as const;
 
-// Map API workspaces → CommunityWorkspaces format
 const mappedWorkspaces = computed(() =>
   (workspacesData.value?.workspaces ?? []).map((ws, i) => ({
     id: ws.id,
@@ -257,7 +224,6 @@ const mappedWorkspaces = computed(() =>
   }))
 );
 
-// Banner/header props
 const communityBannerProps = computed(() => ({
   name: community.value?.name ?? "",
   type: community.value?.category ?? "Community",
@@ -266,7 +232,6 @@ const communityBannerProps = computed(() => ({
   verified: (community.value?.member_count ?? 0) > 1000
 }));
 
-// Quick stats
 const quickStats = computed(() => [
   {
     icon: markRawVue(Users),
@@ -286,7 +251,6 @@ const quickStats = computed(() => [
   }
 ]);
 
-// AI Agent
 const aiAgent = computed(() =>
   community.value?.is_ai_pet
     ? {
@@ -300,7 +264,6 @@ const aiAgent = computed(() =>
     : null
 );
 
-// About
 const communityAbout = computed(() => ({
   createdAt: community.value
     ? new Date(community.value.created_at).toLocaleDateString("en-US", {
@@ -312,7 +275,6 @@ const communityAbout = computed(() => ({
   tags: community.value?.tags ?? []
 }));
 
-// Rules
 const communityRules = computed(() => (community.value?.rules ?? []).map((r) => r.text));
 
 const filteredMembers = computed(() =>
@@ -326,7 +288,6 @@ const filteredMembers = computed(() =>
   }))
 );
 
-// Roles for filter — counts derived from the resolved member list
 const memberRoles = computed(() => {
   const all = filteredMembers.value;
   const ownerCount = all.filter((m) => m.role === "owner").length;
@@ -353,14 +314,11 @@ const memberRoles = computed(() => {
   ];
 });
 
-// Helpers
 function formatNumber(n: number) {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
   if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
   return String(n);
 }
-
-// ─── Real-time event handlers ─────────────────────────────────────────────────
 
 function handleMemberCountUpdate(count: number) {
   if (data.value?.community) {
@@ -385,11 +343,8 @@ function handleMemberJoin(member: LiveActivityItem) {
   }
 }
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
-
 const router = useRouter();
 
-// ─── Welcome toast on first join ──────────────────────────────────────────────
 onMounted(() => {
   if (route.query.welcome === "1" && community.value) {
     toast.success(`Welcome to ${community.value.name}! 🎉`, {
@@ -397,7 +352,6 @@ onMounted(() => {
         "You're now a member. Start exploring channels and connecting with the community.",
       duration: 5000
     });
-    // Remove the query param without a page reload
     router.replace({ query: {} });
   }
 });

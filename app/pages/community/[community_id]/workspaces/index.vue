@@ -1,6 +1,5 @@
 <template>
   <main class="mx-auto w-full max-w-4xl px-6 pt-8 pb-24">
-    <!-- Header (always visible) -->
     <div class="mb-8 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <button
@@ -26,7 +25,6 @@
       </Button>
     </div>
 
-    <!-- Loading skeleton -->
     <div v-if="pending" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div
         v-for="n in 4"
@@ -51,7 +49,6 @@
     </div>
 
     <template v-else>
-      <!-- Workspace list -->
       <div v-if="workspaces.length" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div
           v-for="workspace in workspaces"
@@ -97,7 +94,6 @@
         </div>
       </div>
 
-      <!-- Empty state -->
       <div
         v-else
         class="relative overflow-hidden rounded-2xl border border-dashed border-border/60 bg-muted/20 px-6 py-20"
@@ -138,7 +134,6 @@
       </div>
     </template>
 
-    <!-- Create Workspace Dialog -->
     <Dialog v-model:open="showCreateDialog">
       <DialogContent class="max-w-md">
         <DialogHeader>
@@ -147,7 +142,6 @@
         </DialogHeader>
 
         <div class="space-y-4 py-2">
-          <!-- Banner upload -->
           <div class="space-y-2">
             <label class="text-sm font-medium">
               Banner <span class="text-muted-foreground">(optional)</span>
@@ -195,7 +189,7 @@
             <label class="text-sm font-medium">
               Emoji <span class="text-muted-foreground">(optional)</span>
             </label>
-            <Input v-model="createForm.emoji" placeholder="📝" maxlength="4" class="w-20" />
+            <Input v-model="createForm.emoji" placeholder="" maxlength="4" class="w-20" />
           </div>
 
           <div class="space-y-2">
@@ -230,8 +224,6 @@ const router = useRouter();
 const api = useApi();
 const communityId = route.params.community_id as string;
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 interface WorkspaceItem {
   id: string;
   name: string;
@@ -248,8 +240,6 @@ interface WorkspacesResponse {
   can_manage: boolean;
 }
 
-// ─── Fetch workspaces ────────────────────────────────────────────────────────
-
 const { data, pending, refresh } = await useAsyncData<WorkspacesResponse>(
   `community-workspaces-${communityId}`,
   () => api<WorkspacesResponse>(`/api/communities/${communityId}/workspaces`)
@@ -258,14 +248,10 @@ const { data, pending, refresh } = await useAsyncData<WorkspacesResponse>(
 const workspaces = computed(() => data.value?.workspaces ?? []);
 const canManage = computed(() => data.value?.can_manage ?? false);
 
-// ─── Format date ─────────────────────────────────────────────────────────────
-
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
-
-// ─── Create workspace ────────────────────────────────────────────────────────
 
 const showCreateDialog = ref(false);
 const creating = ref(false);
@@ -304,7 +290,6 @@ async function handleCreate() {
   if (!createForm.name.trim()) return;
   creating.value = true;
   try {
-    // Upload banner if selected
     let bannerUrl: string | undefined;
     if (wsBannerFile.value) {
       const fd = new FormData();
@@ -339,8 +324,6 @@ async function handleCreate() {
     creating.value = false;
   }
 }
-
-// ─── Sync community store ───────────────────────────────────────────────────
 
 const communityStore = useCommunityStore();
 communityStore.setCurrentCommunity(communityId);
