@@ -12,8 +12,8 @@
 import "dotenv/config";
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { Kysely, PostgresDialect, Migrator, FileMigrationProvider } from "kysely";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { Kysely, PostgresDialect, Migrator, type Migration } from "kysely";
 import { Pool } from "pg";
 import type { Database } from "../server/db/tables/index.js";
 
@@ -52,13 +52,80 @@ const db = new Kysely<Database>({
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.resolve(__dirname, "../migrations");
 
+class WindowsSafeFileMigrationProvider {
+  async getMigrations(): Promise<Record<string, Migration>> {
+    const migrations: Record<string, Migration> = {};
+    const seenBasenames = new Set<string>();
+    const files = await fs.readdir(migrationsDir);
+
+    for (const fileName of files) {
+      const migrationKey = getMigrationBasename(fileName);
+      if (!migrationKey) {
+        continue;
+      }
+
+      if (seenBasenames.has(migrationKey)) {
+        throw new Error(
+          `Duplicate migration basename detected for '${migrationKey}'. ` +
+            "Keep only one migration file per basename across .ts/.js/.mjs/.mts extensions."
+        );
+      }
+      seenBasenames.add(migrationKey);
+
+      const fullPath = path.join(migrationsDir, fileName);
+      const migrationModule = await import(pathToFileURL(fullPath).href);
+
+      if (isMigration(migrationModule?.default)) {
+        migrations[migrationKey] = migrationModule.default;
+      } else if (isMigration(migrationModule)) {
+        migrations[migrationKey] = migrationModule;
+      } else {
+        throw new Error(
+          `Invalid migration export in '${migrationKey}' (${fileName}). ` +
+            "Expected an object export (default or module) with an 'up' function and optional 'down' function."
+        );
+      }
+    }
+
+    return migrations;
+  }
+}
+
+function getMigrationBasename(fileName: string): string | null {
+  const compoundExtensions = [".d.ts", ".d.mts"];
+  const migrationExtensions = [".ts", ".js", ".mjs", ".mts"];
+
+  // Ignore declaration files explicitly.
+  for (const ext of compoundExtensions) {
+    if (fileName.endsWith(ext)) {
+      return null;
+    }
+  }
+
+  for (const ext of migrationExtensions) {
+    if (fileName.endsWith(ext)) {
+      return fileName.slice(0, -ext.length);
+    }
+  }
+
+  return null;
+}
+
+function isMigration(value: unknown): value is Migration {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as { up?: unknown; down?: unknown };
+  return (
+    typeof candidate.up === "function" &&
+    (candidate.down === undefined || typeof candidate.down === "function")
+  );
+}
+
 const migrator = new Migrator({
   db,
-  provider: new FileMigrationProvider({
-    fs,
-    path,
-    migrationFolder: migrationsDir
-  })
+  provider: new WindowsSafeFileMigrationProvider()
 });
 
 // ─── Run ──────────────────────────────────────────────────────────────────────
