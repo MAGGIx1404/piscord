@@ -20,12 +20,19 @@ interface UserPeer {
   scope: "user";
 }
 
-type AuthenticatedPeer = ChannelPeer | CommunityPeer | UserPeer;
+interface WorkspacePeer {
+  userId: string;
+  scope: "workspace";
+  workspaceId: string;
+}
+
+type AuthenticatedPeer = ChannelPeer | CommunityPeer | UserPeer | WorkspacePeer;
 
 const peerAuth = new Map<Peer, AuthenticatedPeer>();
 const channelPeers = new Map<string, Set<Peer>>();
 const communityPeers = new Map<string, Set<Peer>>();
 const userPeers = new Map<string, Set<Peer>>();
+const workspacePeers = new Map<string, Set<Peer>>();
 const typingUsers = new Map<string, Set<string>>();
 
 function broadcastToChannel(channelId: string, data: unknown, excludePeer?: Peer) {
@@ -76,15 +83,44 @@ function isUserOnline(userId: string): boolean {
   return (userPeers.get(userId)?.size ?? 0) > 0;
 }
 
+function broadcastToWorkspace(workspaceId: string, data: unknown, excludePeer?: Peer) {
+  const peers = workspacePeers.get(workspaceId);
+  if (!peers) return;
+  const payload = JSON.stringify(data);
+  for (const peer of peers) {
+    if (peer !== excludePeer) {
+      peer.send(payload);
+    }
+  }
+}
+
+function getWorkspaceOnlineUsers(workspaceId: string): { userId: string }[] {
+  const peers = workspacePeers.get(workspaceId);
+  if (!peers) return [];
+  const seen = new Set<string>();
+  const result: { userId: string }[] = [];
+  for (const peer of peers) {
+    const auth = peerAuth.get(peer);
+    if (auth && !seen.has(auth.userId)) {
+      seen.add(auth.userId);
+      result.push({ userId: auth.userId });
+    }
+  }
+  return result;
+}
+
 export {
   broadcastToChannel,
   broadcastToCommunity,
   broadcastToUser,
+  broadcastToWorkspace,
   getOnlineUsers,
+  getWorkspaceOnlineUsers,
   isUserOnline,
   channelPeers,
   communityPeers,
   userPeers,
+  workspacePeers,
   peerAuth
 };
 
@@ -118,7 +154,7 @@ export default defineWebSocketHandler({
         }
       }
 
-      if (!token || (!channelId && !communityId && scope !== "user")) {
+      if (!token || (!channelId && !communityId && scope !== "user" && scope !== "workspace")) {
         peer.send(
           JSON.stringify({
             type: "error",
@@ -131,7 +167,40 @@ export default defineWebSocketHandler({
       try {
         const payload = verifyAccessToken(token);
 
-        if (channelId) {
+        if (scope === "workspace") {
+          const workspaceId = data.workspaceId as string | undefined;
+          if (!workspaceId) {
+            peer.send(JSON.stringify({ type: "error", message: "Missing workspaceId" }));
+            return;
+          }
+
+          peerAuth.set(peer, { userId: payload.userId, scope: "workspace", workspaceId });
+
+          if (!workspacePeers.has(workspaceId)) {
+            workspacePeers.set(workspaceId, new Set());
+          }
+          workspacePeers.get(workspaceId)!.add(peer);
+
+          const onlineUsers = getWorkspaceOnlineUsers(workspaceId);
+
+          peer.send(
+            JSON.stringify({
+              type: "auth:success",
+              userId: payload.userId,
+              onlineUsers
+            })
+          );
+
+          broadcastToWorkspace(
+            workspaceId,
+            {
+              type: "workspace:presence:join",
+              userId: payload.userId,
+              onlineUsers
+            },
+            peer
+          );
+        } else if (channelId) {
           peerAuth.set(peer, { userId: payload.userId, scope: "channel", channelId });
 
           if (!channelPeers.has(channelId)) {
@@ -228,6 +297,49 @@ export default defineWebSocketHandler({
       }
     }
 
+    if (auth.scope === "workspace") {
+      if (type === "workspace:update") {
+        // Broadcast document update to all other peers in this workspace
+        broadcastToWorkspace(
+          auth.workspaceId,
+          {
+            type: "workspace:update",
+            userId: auth.userId,
+            content: data.content,
+            version: data.version
+          },
+          peer
+        );
+        return;
+      }
+
+      if (type === "workspace:cursor") {
+        broadcastToWorkspace(
+          auth.workspaceId,
+          {
+            type: "workspace:cursor",
+            userId: auth.userId,
+            cursor: data.cursor
+          },
+          peer
+        );
+        return;
+      }
+
+      if (type === "workspace:saved") {
+        broadcastToWorkspace(
+          auth.workspaceId,
+          {
+            type: "workspace:saved",
+            userId: auth.userId,
+            version: data.version
+          },
+          peer
+        );
+        return;
+      }
+    }
+
     if (auth.scope === "user") {
       if (type === "dm:typing:start") {
         const recipientId = data.recipientId as string;
@@ -291,6 +403,17 @@ export default defineWebSocketHandler({
             }
           });
         }
+      } else if (auth.scope === "workspace") {
+        workspacePeers.get(auth.workspaceId)?.delete(peer);
+        if (workspacePeers.get(auth.workspaceId)?.size === 0) {
+          workspacePeers.delete(auth.workspaceId);
+        }
+
+        broadcastToWorkspace(auth.workspaceId, {
+          type: "workspace:presence:leave",
+          userId: auth.userId,
+          onlineUsers: getWorkspaceOnlineUsers(auth.workspaceId)
+        });
       }
 
       peerAuth.delete(peer);
@@ -310,6 +433,11 @@ export default defineWebSocketHandler({
         userPeers.get(auth.userId)?.delete(peer);
         if (userPeers.get(auth.userId)?.size === 0) {
           userPeers.delete(auth.userId);
+        }
+      } else if (auth.scope === "workspace") {
+        workspacePeers.get(auth.workspaceId)?.delete(peer);
+        if (workspacePeers.get(auth.workspaceId)?.size === 0) {
+          workspacePeers.delete(auth.workspaceId);
         }
       }
       peerAuth.delete(peer);

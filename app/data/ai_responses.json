@@ -1,0 +1,113 @@
+{
+  "rewrite": [
+    {
+      "keywords": ["rewrite", "rephrase", "reword", "improve writing"],
+      "responses": [
+        "Here's a refined version that maintains your original meaning while enhancing clarity and flow:\n\n{text}\n\nThe key changes focus on stronger verb choices and more precise language.",
+        "I've restructured the text for better readability and impact:\n\n{text}\n\nNotice how breaking complex sentences improves comprehension.",
+        "Here's a polished version with improved sentence structure:\n\n{text}\n\nThe revision prioritizes active voice and concise phrasing.",
+        "A cleaner version of your text:\n\n{text}\n\nI focused on eliminating redundancy while preserving your voice.",
+        "Here's your text rewritten for maximum clarity:\n\n{text}\n\nThe changes emphasize directness and professional tone."
+      ]
+    }
+  ],
+  "summarize": [
+    {
+      "keywords": ["summarize", "summary", "short", "brief", "tldr", "condense"],
+      "responses": [
+        "**Key Points:**\n• The main argument centers on {topic}\n• Supporting evidence suggests significant impact\n• The conclusion emphasizes actionable next steps",
+        "**Summary:**\nThe text discusses {topic}, highlighting three main aspects: the current state, challenges faced, and proposed solutions. The core message emphasizes the need for thoughtful action.",
+        "**TL;DR:**\nThis covers {topic} with focus on practical implications. The essential takeaway is that strategic planning combined with execution drives the best outcomes.",
+        "**In Brief:**\n• Core theme: {topic}\n• Main insight: A structured approach yields better results\n• Action item: Focus on implementation over theory",
+        "**Quick Summary:**\nThe content addresses {topic}, making a compelling case for improvement through systematic changes. Three key themes emerge: clarity, consistency, and measurable impact."
+      ]
+    }
+  ],
+  "expand": [
+    {
+      "keywords": ["expand", "elaborate", "add more", "detail", "extend", "longer"],
+      "responses": [
+        "Here's an expanded version with additional context and depth:\n\n{text}\n\nTo further strengthen this, consider adding specific examples that illustrate your main points. Real-world case studies or data points would make the argument more compelling. Additionally, exploring potential counterarguments and addressing them proactively would demonstrate thorough analysis.",
+        "Building on your original text:\n\n{text}\n\nThis topic deserves deeper exploration. Consider the historical context that led to this situation, the stakeholders involved, and the ripple effects of different approaches. Each angle adds richness to the narrative and helps readers understand the full picture.",
+        "Expanded version with supporting details:\n\n{text}\n\nTo make this more comprehensive, we can examine the underlying causes, discuss relevant trends in the field, and project potential future developments. Including expert perspectives or research findings would further solidify the arguments presented.",
+        "Here's your text with additional depth:\n\n{text}\n\nThe expanded version benefits from concrete examples, statistical context, and a broader examination of implications. Consider weaving in analogies or comparisons that make complex ideas more accessible to your audience.",
+        "A more detailed exploration of your text:\n\n{text}\n\nEvery strong piece of writing benefits from layers of evidence and reasoning. Adding background information, exploring edge cases, and connecting your ideas to broader themes creates a more authoritative and engaging reading experience."
+      ]
+    }
+  ],
+  "improve": [
+    {
+      "keywords": ["improve", "enhance", "better", "fix grammar", "polish", "refine"],
+      "responses": [
+        "**Improved version:**\n\n{text}\n\n**Changes made:**\n• Fixed grammatical inconsistencies\n• Strengthened transitional phrases\n• Improved paragraph flow and coherence\n• Enhanced vocabulary precision",
+        "**Polished version:**\n\n{text}\n\n**Enhancements:**\n• Corrected sentence structure issues\n• Added stronger topic sentences\n• Improved logical flow between ideas\n• Tightened language for impact",
+        "**Refined version:**\n\n{text}\n\n**Key improvements:**\n• Eliminated passive voice where active is stronger\n• Fixed punctuation and grammar\n• Improved word choice for clarity\n• Strengthened the opening and closing",
+        "**Enhanced text:**\n\n{text}\n\n**What changed:**\n• Smoother transitions between paragraphs\n• More precise language throughout\n• Better sentence variety for readability\n• Stronger concluding statement",
+        "**Upgraded version:**\n\n{text}\n\n**Improvements include:**\n• Clearer thesis statement\n• More effective use of evidence\n• Tighter prose with no filler words\n• Professional tone maintained throughout"
+      ]
+    }
+  ],
+  "tone_formal": [
+    {
+      "keywords": ["formal", "professional", "business", "corporate"],
+      "responses": [
+        "Here's the formal version:\n\n{text}\n\nThe tone has been adjusted to suit professional communication, with appropriate formality and structured presentation.",
+        "Professional redraft:\n\n{text}\n\nI've elevated the register while maintaining the core message. The language is now suitable for business correspondence or official documentation.",
+        "Formalized version:\n\n{text}\n\nKey changes include replacing colloquialisms with formal equivalents, restructuring for logical progression, and adopting an objective tone."
+      ]
+    }
+  ],
+  "tone_casual": [
+    {
+      "keywords": ["casual", "friendly", "conversational", "relaxed"],
+      "responses": [
+        "Here's a more casual take:\n\n{text}\n\nThe tone is now friendlier and more approachable — perfect for blog posts or informal communication.",
+        "Relaxed version:\n\n{text}\n\nI've loosened up the language to feel more like a conversation. It's still clear and on-point, just less stiff.",
+        "Conversational rewrite:\n\n{text}\n\nThis reads more naturally now — like you're explaining it to a friend over coffee."
+      ]
+    }
+  ],
+  "fix_grammar": [
+    {
+      "keywords": ["grammar", "spelling", "typo", "correct", "proofread"],
+      "responses": [
+        "**Proofread version:**\n\n{text}\n\n**Corrections:**\n• Fixed subject-verb agreement\n• Corrected punctuation\n• Fixed spelling errors\n• Improved sentence clarity",
+        "**Grammar-checked version:**\n\n{text}\n\n**Issues fixed:**\n• Corrected run-on sentences\n• Fixed misplaced modifiers\n• Standardized punctuation usage\n• Resolved spelling inconsistencies",
+        "**Corrected text:**\n\n{text}\n\n**Changes:**\n• Fixed tense consistency\n• Corrected comma usage\n• Resolved pronoun references\n• Fixed capitalization errors"
+      ]
+    }
+  ],
+  "continue": [
+    {
+      "keywords": ["continue", "next", "keep going", "more", "finish"],
+      "responses": [
+        "Continuing from where you left off:\n\nFurthermore, this approach opens up several interesting possibilities. When we consider the broader implications, it becomes clear that the potential for growth and innovation is substantial. The next logical step would be to examine specific use cases and evaluate their feasibility.",
+        "Building on that thought:\n\nThis naturally leads to an important consideration — how do we balance ambition with practicality? The answer lies in iterative progress. By taking measured steps and learning from each one, we can build something truly remarkable without overextending our resources.",
+        "Taking this further:\n\nWhat makes this particularly compelling is the intersection of theory and practice. While the concept is powerful on its own, its real value emerges through implementation. Let's explore how this translates into concrete actions and measurable outcomes.",
+        "Following that thread:\n\nThe implications extend beyond the immediate scope. When we zoom out, we see patterns that connect to broader trends in the field. These connections suggest that what we're building here could have lasting impact — not just locally, but across the entire landscape."
+      ]
+    }
+  ],
+  "brainstorm": [
+    {
+      "keywords": ["brainstorm", "ideas", "suggest", "creative", "think"],
+      "responses": [
+        "Here are some creative directions to explore:\n\n1. **The Contrarian Angle** — What if the opposite of conventional wisdom is true?\n2. **The Human Story** — Center the narrative around real people and their experiences\n3. **The Future Vision** — Paint a picture of what success looks like in 5 years\n4. **The Problem-First** — Start with the pain point and build the solution around it\n5. **The Data Play** — Let numbers tell the story with compelling visualizations",
+        "Some ideas to get the creative juices flowing:\n\n1. **Start with a question** — Hook the reader with something they can't help but answer\n2. **Use an analogy** — Compare your topic to something unexpected but relatable\n3. **Tell a micro-story** — A 3-sentence narrative that illustrates the key point\n4. **Flip the script** — Challenge an assumption your audience holds\n5. **Show, don't tell** — Replace abstract claims with concrete examples",
+        "Here's a brainstorm dump:\n\n• What if you opened with a bold, controversial statement?\n• Consider using a before/after format to show transformation\n• A numbered list of myths vs. facts could be engaging\n• Personal anecdotes add authenticity and relatability\n• A visual metaphor could tie everything together beautifully"
+      ]
+    }
+  ],
+  "fallback": [
+    {
+      "keywords": [],
+      "responses": [
+        "I've analyzed your text and here's my suggestion:\n\n{text}\n\nThe revision focuses on clarity, flow, and impact. Let me know if you'd like me to adjust the tone or focus.",
+        "Here's my take on improving this:\n\n{text}\n\nI've focused on making the content more engaging while preserving your original intent.",
+        "Working with your text, here's what I suggest:\n\n{text}\n\nThe changes prioritize readability and professional polish.",
+        "After reviewing your content:\n\n{text}\n\nI've made strategic adjustments to strengthen the overall message and improve flow.",
+        "Here's an enhanced version:\n\n{text}\n\nThe key focus areas were clarity, conciseness, and maintaining your unique voice."
+      ]
+    }
+  ]
+}
