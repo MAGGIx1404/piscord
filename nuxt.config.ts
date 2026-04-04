@@ -65,7 +65,16 @@ export default defineNuxtConfig({
         "@vueuse/core",
         "reka-ui",
         "marked",
-        "dompurify"
+        "dompurify",
+        "@tiptap/vue-3",
+        "@tiptap/starter-kit",
+        "@tiptap/extension-placeholder",
+        "@tiptap/extension-text-align",
+        "@tiptap/extension-highlight",
+        "@tiptap/extension-typography",
+        "@tiptap/core",
+        "@tiptap/pm/state",
+        "@tiptap/pm/view"
       ]
     }
   },

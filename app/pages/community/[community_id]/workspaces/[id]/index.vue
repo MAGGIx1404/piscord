@@ -184,26 +184,24 @@
       @action="handleBubbleAction"
     />
 
-    <!-- Thoughts sidebar -->
-    <Transition
-      enter-active-class="transition-[width,opacity] duration-200 ease-out"
-      enter-from-class="w-0 opacity-0"
-      enter-to-class="w-80 opacity-100"
-      leave-active-class="transition-[width,opacity] duration-150 ease-in"
-      leave-from-class="w-80 opacity-100"
-      leave-to-class="w-0 opacity-0"
-    >
-      <WorkspaceThoughts
-        v-if="showThoughts"
-        :thoughts="thoughts"
-        :ai-loading="aiLoading"
-        @close="showThoughts = false"
-        @add-thought="addThought"
-        @delete-thought="deleteThought"
-        @add-to-document="addToDocument"
-        @ai-action="handleSidebarAIAction"
-      />
-    </Transition>
+    <!-- Thoughts as Sheet overlay from right -->
+    <Sheet v-model:open="showThoughts">
+      <SheetContent side="right" class="max-w-80 p-0 sm:max-w-140">
+        <SheetHeader class="sr-only">
+          <SheetTitle>Thoughts</SheetTitle>
+          <SheetDescription>Capture ideas and notes</SheetDescription>
+        </SheetHeader>
+        <LazyWorkspaceThoughts
+          :thoughts="thoughts"
+          :ai-loading="aiLoading"
+          @close="showThoughts = false"
+          @add-thought="addThought"
+          @delete-thought="deleteThought"
+          @add-to-document="addToDocument"
+          @ai-action="handleSidebarAIAction"
+        />
+      </SheetContent>
+    </Sheet>
   </main>
 </template>
 
@@ -211,17 +209,21 @@
 import { useEditor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
 import { ArrowLeft, Lightbulb, Loader2, AlertCircle, Check } from "lucide-vue-next";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import type { AIAction } from "~/composables/useLocalAI";
 import type { Thought } from "~/components/workspace/Thoughts.vue";
+import type { RemoteCursor } from "~/extensions/remoteCursors";
 
 const route = useRoute();
 const communityId = route.params.community_id as string;
 const workspaceId = route.params.id as string;
+const userStore = useUserStore();
+const currentUserId = computed(() => userStore.user?.id ?? "");
 
 const workspaceName = ref("Untitled Workspace");
 const workspaceEmoji = ref<string | null>(null);
@@ -229,6 +231,19 @@ const showThoughts = ref(false);
 const thoughts = ref<Thought[]>([]);
 const loadingContent = ref(true);
 let skipNextUpdate = false;
+const activeCursors = ref<RemoteCursor[]>([]);
+
+// Lazy-load ProseMirror cursor extension (client-only to avoid SSR issues)
+let RemoteCursors: any = null;
+let getUserColor = (_: string) => "#3b82f6";
+let remoteCursorsPluginKey: any = null;
+
+if (import.meta.client) {
+  const mod = await import("~/extensions/remoteCursors");
+  RemoteCursors = mod.RemoteCursors;
+  getUserColor = mod.getUserColor;
+  remoteCursorsPluginKey = mod.remoteCursorsPluginKey;
+}
 
 const { loading: aiLoading, runAIAction } = useLocalAI();
 
@@ -245,10 +260,10 @@ const editor = useEditor({
   extensions: [
     StarterKit,
     Placeholder.configure({ placeholder: "Start writing something amazing..." }),
-    Underline,
     TextAlign.configure({ types: ["heading", "paragraph"] }),
     Highlight,
-    Typography
+    Typography,
+    ...(RemoteCursors ? [RemoteCursors] : [])
   ],
   editorProps: {
     attributes: {
@@ -319,14 +334,10 @@ async function handleBubbleAction(action: AIAction) {
   if (!selectedText || !editor.value) return;
 
   const result = await runAIAction(selectedText, action);
+  const html = DOMPurify.sanitize(await marked.parse(result.content));
 
   const { from, to } = editor.value.state.selection;
-  editor.value
-    .chain()
-    .focus()
-    .deleteRange({ from, to })
-    .insertContentAt(from, result.content)
-    .run();
+  editor.value.chain().focus().deleteRange({ from, to }).insertContentAt(from, html).run();
 
   bubbleVisible.value = false;
   selectedText = "";
@@ -356,9 +367,10 @@ function deleteThought(id: string) {
   thoughts.value = thoughts.value.filter((t: Thought) => t.id !== id);
 }
 
-function addToDocument(content: string) {
+async function addToDocument(content: string) {
   if (!editor.value) return;
-  editor.value.chain().focus().insertContent(`<p>${content}</p>`).run();
+  const html = DOMPurify.sanitize(await marked.parse(content));
+  editor.value.chain().focus().insertContent(html).run();
 }
 
 // Title save
@@ -436,6 +448,54 @@ collab.onRemoteUpdate((content: any, _userId: string) => {
   const safeTo = Math.min(to, docSize);
   editor.value.commands.setTextSelection({ from: safeFrom, to: safeTo });
 });
+
+// Listen for remote cursor updates
+collab.onRemoteCursor((cursor) => {
+  if (!editor.value || cursor.userId === currentUserId.value) return;
+
+  // Find username from online users
+  const user = collab.onlineUsers.value.find((u) => u.userId === cursor.userId);
+  const username = user?.username ?? "User";
+  const color = getUserColor(cursor.userId);
+
+  // Update cursor in map
+  const idx = activeCursors.value.findIndex((c) => c.userId === cursor.userId);
+  const remoteCursor: RemoteCursor = {
+    userId: cursor.userId,
+    username,
+    color,
+    from: cursor.from,
+    to: cursor.to
+  };
+
+  if (idx >= 0) {
+    activeCursors.value[idx] = remoteCursor;
+  } else {
+    activeCursors.value.push(remoteCursor);
+  }
+  activeCursors.value = [...activeCursors.value];
+
+  // Dispatch to ProseMirror plugin
+  if (remoteCursorsPluginKey) {
+    const tr = editor.value.state.tr.setMeta(remoteCursorsPluginKey, activeCursors.value);
+    editor.value.view.dispatch(tr);
+  }
+});
+
+// Remove cursors when users go offline
+watch(
+  () => collab.onlineUsers.value,
+  (users) => {
+    if (!editor.value) return;
+    const onlineIds = new Set(users.map((u) => u.userId));
+    const before = activeCursors.value.length;
+    activeCursors.value = activeCursors.value.filter((c) => onlineIds.has(c.userId));
+    if (activeCursors.value.length !== before && remoteCursorsPluginKey) {
+      const tr = editor.value.state.tr.setMeta(remoteCursorsPluginKey, activeCursors.value);
+      editor.value.view.dispatch(tr);
+    }
+  }
+);
 
 onMounted(async () => {
   document.addEventListener("mousedown", handleClickOutside);

@@ -41,6 +41,9 @@ importers:
       '@tanstack/vue-table':
         specifier: ^8.21.3
         version: 8.21.3(vue@3.5.32(typescript@5.9.3))
+      '@tiptap/core':
+        specifier: ^3.22.1
+        version: 3.22.1(@tiptap/pm@3.22.1)
       '@tiptap/extension-highlight':
         specifier: ^3.22.1
         version: 3.22.1(@tiptap/core@3.22.1(@tiptap/pm@3.22.1))
@@ -59,6 +62,9 @@ importers:
       '@tiptap/extension-underline':
         specifier: ^3.22.1
         version: 3.22.1(@tiptap/core@3.22.1(@tiptap/pm@3.22.1))
+      '@tiptap/pm':
+        specifier: ^3.22.1
+        version: 3.22.1
       '@tiptap/starter-kit':
         specifier: ^3.22.1
         version: 3.22.1

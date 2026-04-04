@@ -1,17 +1,12 @@
 <template>
-  <div class="flex h-full w-80 shrink-0 flex-col overflow-hidden border-l border-border/50">
+  <div class="flex h-full flex-col overflow-hidden">
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-border/50 px-4 py-2.5">
-      <div class="flex items-center gap-2">
-        <Lightbulb class="size-3.5 text-amber-500" />
-        <h3 class="text-xs font-semibold">Thoughts</h3>
-        <Badge v-if="thoughts.length" variant="secondary" class="h-4 min-w-4 px-1 text-[9px]">
-          {{ thoughts.length }}
-        </Badge>
-      </div>
-      <Button variant="ghost" size="icon" class="size-6" @click="$emit('close')">
-        <PanelRightClose class="size-3.5" />
-      </Button>
+    <div class="flex items-center gap-2 border-b border-border/50 px-4 py-3 pt-6">
+      <Lightbulb class="size-3.5 text-amber-500" />
+      <h3 class="text-xs font-semibold">Thoughts</h3>
+      <Badge v-if="thoughts.length" variant="secondary" class="h-4 min-w-4 px-1 text-[9px]">
+        {{ thoughts.length }}
+      </Badge>
     </div>
 
     <!-- AI Quick Actions -->
@@ -73,7 +68,10 @@
           :key="thought.id"
           class="group rounded-lg border border-transparent p-2.5 transition-all hover:border-border/30 hover:bg-card/40"
         >
-          <p class="text-xs leading-relaxed text-foreground/80">{{ thought.content }}</p>
+          <div
+            class="prose-xs prose max-w-none text-xs leading-relaxed text-foreground/80 dark:prose-invert"
+            v-html="renderMarkdown(thought.content)"
+          />
           <div class="mt-1.5 flex items-center justify-between">
             <span class="text-[9px] text-muted-foreground/30">{{
               formatTime(thought.createdAt)
@@ -129,13 +127,14 @@ import {
   Lightbulb,
   Plus,
   X,
-  PanelRightClose,
   FileInput,
   RefreshCw,
   Sparkles,
   BookOpen,
   Expand
 } from "lucide-vue-next";
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 
 export interface Thought {
   id: string;
@@ -153,7 +152,6 @@ const emit = defineEmits<{
   deleteThought: [id: string];
   addToDocument: [content: string];
   aiAction: [action: string];
-  close: [];
 }>();
 
 const newThought = ref("");
@@ -180,6 +178,9 @@ function addThought() {
 
 function formatTime(date: Date) {
   return new Date(date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+function renderMarkdown(content: string): string {
+  return DOMPurify.sanitize(marked.parse(content) as string);
 }
 </script>
 
