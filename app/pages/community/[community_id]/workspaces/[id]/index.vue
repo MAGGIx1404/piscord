@@ -48,6 +48,23 @@
       @action="handleBubbleAction"
     />
 
+    <!-- Floating AI thinking overlay -->
+    <Transition
+      enter-active-class="transition-all duration-200 ease-out"
+      enter-from-class="opacity-0 translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition-all duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="aiLoading"
+        class="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-violet-500/20 bg-popover/95 px-4 py-2 shadow-lg shadow-violet-500/5 backdrop-blur-xl"
+      >
+        <AIThinkingLoader label="AI is writing" />
+      </div>
+    </Transition>
+
     <Sheet v-model:open="showThoughts">
       <SheetContent side="right" class="max-w-80 p-0 sm:max-w-140">
         <SheetHeader class="sr-only">
@@ -106,6 +123,7 @@ if (import.meta.client) {
 }
 
 const { loading: aiLoading, runAIAction } = useLocalAI();
+const { typewrite: typewriteEditor } = useTypewriter();
 const collab = useWorkspaceCollab(communityId, workspaceId);
 
 // --- Bubble menu ---
@@ -188,9 +206,16 @@ async function handleBubbleAction(action: AIAction) {
   const html = await markdownToHtml(result.content);
   const { from, to } = editor.value.state.selection;
 
-  editor.value.chain().focus().deleteRange({ from, to }).insertContentAt(from, html).run();
+  // Clear selected text, then typewrite the AI result
+  editor.value.chain().focus().deleteRange({ from, to }).run();
   bubbleVisible.value = false;
   selectedText = "";
+
+  await typewriteEditor(html, 12, (token) => {
+    if (editor.value) {
+      editor.value.chain().focus().insertContent(token, { parseOptions: { preserveWhitespace: false } }).run();
+    }
+  });
 }
 
 async function handleSidebarAIAction(action: string) {
@@ -199,12 +224,13 @@ async function handleSidebarAIAction(action: string) {
   if (!docText.trim()) return;
 
   const result = await runAIAction(docText, action as AIAction);
-  addThought(result.content);
+  // Add thought with typewriter animation handled by the Thoughts component
+  addThought(result.content, true);
 }
 
 // --- Thoughts ---
-function addThought(content: string) {
-  thoughts.value.unshift({ id: crypto.randomUUID(), content, createdAt: new Date() });
+function addThought(content: string, animate = false) {
+  thoughts.value.unshift({ id: crypto.randomUUID(), content, createdAt: new Date(), animate });
 }
 
 function deleteThought(id: string) {

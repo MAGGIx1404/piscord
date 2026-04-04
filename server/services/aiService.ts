@@ -1,6 +1,162 @@
-import ollama from "ollama";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const MODEL = "qwen3.5:0.8b";
+// ─── Load AI data from shared JSON ───────────────────────────────
+
+interface AIDataEntry {
+  question_variants: string[];
+  answers: string[];
+}
+
+interface AIDataFile {
+  categories: Record<string, AIDataEntry[]>;
+  fallback: string[];
+  prefixes: Record<string, string[]>;
+  category_keywords: Record<string, string[]>;
+}
+
+const dataPath = resolve(process.cwd(), "app/data/ai_data.json");
+const aiData: AIDataFile = JSON.parse(readFileSync(dataPath, "utf-8"));
+
+// ─── Anti-repetition tracking ────────────────────────────────────
+
+const usedResponses = new Map<string, Set<number>>();
+
+// ─── Matching utilities ──────────────────────────────────────────
+
+function normalize(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenize(text: string): string[] {
+  return normalize(text).split(" ").filter(Boolean);
+}
+
+function scoreCategoryByKeywords(input: string, category: string): number {
+  const keywords = aiData.category_keywords[category];
+  if (!keywords) return 0;
+  const normalized = normalize(input);
+  let score = 0;
+  for (const kw of keywords) {
+    if (normalized.includes(kw.toLowerCase())) {
+      score += kw.length + 1;
+    }
+  }
+  return score;
+}
+
+function scoreEntry(inputTokens: string[], entry: AIDataEntry): number {
+  let best = 0;
+  for (const variant of entry.question_variants) {
+    const variantTokens = tokenize(variant);
+    let matched = 0;
+    for (const vt of variantTokens) {
+      if (inputTokens.some((it) => it.includes(vt) || vt.includes(it))) {
+        matched++;
+      }
+    }
+    const score = variantTokens.length > 0 ? matched / variantTokens.length : 0;
+    if (score > best) best = score;
+  }
+  return best;
+}
+
+function detectCategory(input: string): string {
+  const categories = Object.keys(aiData.categories);
+  let bestCat = "";
+  let bestScore = 0;
+
+  for (const cat of categories) {
+    const kwScore = scoreCategoryByKeywords(input, cat);
+    if (kwScore > bestScore) {
+      bestScore = kwScore;
+      bestCat = cat;
+    }
+  }
+
+  if (bestScore >= 3) return bestCat;
+
+  const inputTokens = tokenize(input);
+  for (const cat of categories) {
+    const entries = aiData.categories[cat];
+    if (!entries) continue;
+    for (const entry of entries) {
+      const score = scoreEntry(inputTokens, entry);
+      if (score > bestScore) {
+        bestScore = score;
+        bestCat = cat;
+      }
+    }
+  }
+
+  return bestScore > 0.3 ? bestCat : "";
+}
+
+function findBestEntry(category: string, input: string): AIDataEntry | null {
+  const entries = aiData.categories[category];
+  if (!entries || entries.length === 0) return null;
+  if (entries.length === 1) return entries[0] ?? null;
+
+  const inputTokens = tokenize(input);
+  let best: AIDataEntry | null = entries[0] ?? null;
+  let bestScore = -1;
+
+  for (const entry of entries) {
+    const score = scoreEntry(inputTokens, entry);
+    if (score > bestScore) {
+      bestScore = score;
+      best = entry;
+    }
+  }
+
+  return best;
+}
+
+function pickAnswer(answers: string[], cacheKey: string): string {
+  if (!usedResponses.has(cacheKey)) {
+    usedResponses.set(cacheKey, new Set());
+  }
+  const used = usedResponses.get(cacheKey)!;
+
+  if (used.size >= answers.length) {
+    used.clear();
+  }
+
+  let index: number;
+  do {
+    index = Math.floor(Math.random() * answers.length);
+  } while (used.has(index) && used.size < answers.length);
+
+  used.add(index);
+  return answers[index] ?? answers[0] ?? "";
+}
+
+function fillTemplate(response: string, input: string): string {
+  const words = input.split(/\s+/).filter((w) => w.length > 4);
+  const topic = words.slice(0, 5).join(" ") || "the subject at hand";
+  return response.replace(/\{text\}/g, input).replace(/\{topic\}/g, topic);
+}
+
+function getResponse(input: string, action?: string): string {
+  let category = action && aiData.categories[action] ? action : "";
+
+  if (!category) {
+    category = detectCategory(input);
+  }
+
+  if (category && aiData.categories[category]) {
+    const entry = findBestEntry(category, input);
+    if (entry) {
+      return fillTemplate(pickAnswer(entry.answers, category), input);
+    }
+  }
+
+  return pickAnswer(aiData.fallback, "__fallback__");
+}
 
 export interface AIPersona {
   id: string;
@@ -16,82 +172,74 @@ export const AI_PERSONAS: AIPersona[] = [
     name: "Analyst",
     emoji: "📊",
     description: "Data-driven, structured, logical",
-    systemPrompt:
-      "You are an analytical AI assistant. Break down problems with data and logic. Use structured reasoning, bullet points, and clear evidence. Be precise and objective."
+    systemPrompt: "Analytical style"
   },
   {
     id: "philosopher",
     name: "Philosopher",
     emoji: "🧠",
     description: "Deep, abstract, thought-provoking",
-    systemPrompt:
-      "You are a philosophical AI assistant. Explore ideas deeply and abstractly. Consider multiple perspectives, ask probing questions, and connect ideas to broader themes. Be thoughtful and nuanced."
+    systemPrompt: "Philosophical style"
   },
   {
     id: "creative",
     name: "Creative",
     emoji: "🎨",
     description: "Imaginative, bold, unconventional",
-    systemPrompt:
-      "You are a creative AI assistant. Think outside the box. Offer unexpected angles, metaphors, and innovative solutions. Be bold and imaginative in your responses."
+    systemPrompt: "Creative style"
   },
   {
     id: "critic",
     name: "Critic",
     emoji: "🔍",
     description: "Rigorous, challenging, detail-oriented",
-    systemPrompt:
-      "You are a critical AI assistant. Challenge assumptions, find weaknesses, and push for stronger thinking. Be constructive but rigorous. Point out what others might miss."
+    systemPrompt: "Critical style"
   },
   {
     id: "comedian",
     name: "Comedian",
     emoji: "😄",
     description: "Witty, fun, entertaining",
-    systemPrompt:
-      "You are a witty AI assistant with a great sense of humor. Keep responses entertaining and light while still being helpful. Use humor, analogies, and clever observations."
+    systemPrompt: "Comedic style"
   },
   {
     id: "coach",
     name: "Coach",
     emoji: "💪",
     description: "Motivating, actionable, supportive",
-    systemPrompt:
-      "You are a motivational AI coach. Focus on actionable advice, encouragement, and practical steps. Help users build confidence and take action. Be supportive and direct."
+    systemPrompt: "Coaching style"
   },
   {
     id: "technical",
     name: "Technical",
     emoji: "⚙️",
     description: "Precise, code-focused, engineering",
-    systemPrompt:
-      "You are a technical AI assistant. Focus on code, architecture, and engineering best practices. Provide precise, implementable solutions with code examples when relevant. Be concise and accurate."
+    systemPrompt: "Technical style"
   },
   {
     id: "concise",
     name: "Concise",
     emoji: "⚡",
     description: "Brief, fast, to-the-point",
-    systemPrompt:
-      "You are a concise AI assistant. Give the shortest, most direct answer possible. No fluff, no filler. If it can be said in one sentence, say it in one sentence."
+    systemPrompt: "Concise style"
   },
   {
     id: "storyteller",
     name: "Storyteller",
     emoji: "📖",
     description: "Narrative, engaging, illustrative",
-    systemPrompt:
-      "You are a storytelling AI assistant. Explain concepts through stories, examples, and vivid narratives. Make complex ideas accessible through engaging storytelling."
+    systemPrompt: "Storytelling style"
   },
   {
     id: "debater",
     name: "Debater",
     emoji: "⚖️",
     description: "Balanced, argues both sides",
-    systemPrompt:
-      "You are a debate AI assistant. Present multiple sides of every argument fairly. Weigh pros and cons, consider trade-offs, and help users see the full picture before making decisions."
+    systemPrompt: "Debate style"
   }
 ];
+
+// ─── Exported interfaces (kept compatible with existing API routes) ──
 
 export interface RunAIParams {
   model: string;
@@ -113,70 +261,45 @@ export interface RunAIResult {
 export async function runAI(params: RunAIParams): Promise<RunAIResult> {
   const startTime = Date.now();
 
-  const persona = AI_PERSONAS.find((p) => p.id === params.model);
-  const parts = [
-    persona?.systemPrompt ?? "",
-    params.config?.system_prompt ?? "",
-    params.memoryContext ? `\n\nWorkspace context:\n${params.memoryContext}` : ""
-  ].filter(Boolean);
-  const systemInstruction = parts.join("\n\n");
+  // Extract user's last message as input
+  const lastUserMsg = [...params.messages].reverse().find((m) => m.role === "user");
+  const input = lastUserMsg?.content ?? "";
 
-  const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [];
-
-  if (systemInstruction) {
-    messages.push({ role: "system", content: systemInstruction });
-  }
-
-  for (const m of params.messages) {
-    messages.push({
-      role: m.role === "user" ? "user" : "assistant",
-      content: m.content
-    });
-  }
-
-  const response = await ollama.chat({
-    model: MODEL,
-    messages,
-    options: {
-      temperature: params.config?.temperature ?? 0.7,
-      num_predict: params.config?.max_tokens ?? 2048
-    }
-  });
-
+  const content = getResponse(input);
   const latency_ms = Date.now() - startTime;
-  const content = response.message?.content ?? "";
-
-  if (!content) {
-    throw createError({ statusCode: 502, message: "Empty response from AI provider" });
-  }
 
   return { content, latency_ms, model: params.model };
 }
 
-const ACTION_PROMPTS: Record<string, string> = {
-  summarize: "Summarize the following text concisely in 3-5 bullet points:\n\n",
-  rewrite: "Rewrite the following text to be clearer and more professional:\n\n",
-  improve:
-    "Improve the following text — fix grammar, enhance clarity, and strengthen the argument:\n\n",
-  counter: "Provide strong counter-arguments to the following:\n\n",
-  explain: "Explain the following in simple terms that anyone can understand:\n\n",
-  expand: "Expand on the following with more detail, examples, and depth:\n\n"
-};
+const SUPPORTED_ACTIONS = new Set([
+  "summarize",
+  "rewrite",
+  "improve",
+  "counter",
+  "explain",
+  "expand",
+  "fix_grammar",
+  "tone_formal",
+  "tone_casual",
+  "continue",
+  "brainstorm",
+  "feedback"
+]);
 
 export async function runAction(
   text: string,
   action: string,
-  personaId?: string
+  _personaId?: string
 ): Promise<RunAIResult> {
-  const actionPrompt = ACTION_PROMPTS[action];
-  if (!actionPrompt) {
+  if (!SUPPORTED_ACTIONS.has(action)) {
     throw createError({ statusCode: 400, message: `Unknown action: ${action}` });
   }
 
-  return runAI({
-    model: personaId ?? "concise",
-    messages: [{ role: "user", content: actionPrompt + text }]
-  });
+  const startTime = Date.now();
+  const content = getResponse(text, action);
+  const latency_ms = Date.now() - startTime;
+
+  return { content, latency_ms, model: _personaId ?? "concise" };
 }
 
 export interface CompareResult {
@@ -187,43 +310,19 @@ export interface CompareResult {
 export async function runCompare(prompt: string): Promise<CompareResult> {
   const startTime = Date.now();
 
-  const comparePrompt = `Give exactly 3 different perspectives on the following topic. Format your response as:
+  // Generate 3 different perspectives from the data
+  const labels = ["Perspective A", "Perspective B", "Perspective C"];
+  const angles = [
+    { label: "Practical View", cat: "productivity" },
+    { label: "Creative View", cat: "creativity" },
+    { label: "Strategic View", cat: "planning" }
+  ];
 
-**Perspective A: [Title]**
-[Content]
-
-**Perspective B: [Title]**
-[Content]
-
-**Perspective C: [Title]**
-[Content]
-
-Topic: ${prompt}`;
-
-  const response = await ollama.chat({
-    model: MODEL,
-    messages: [{ role: "user", content: comparePrompt }],
-    options: { temperature: 0.9 }
+  const perspectives = angles.map((angle, i) => {
+    const content = getResponse(prompt, angle.cat);
+    return { label: `${labels[i]}: ${angle.label}`, content };
   });
 
   const latency_ms = Date.now() - startTime;
-  const text = response.message?.content ?? "";
-
-  const sections = text.split(/\*\*Perspective [A-C]:/);
-  const perspectives: Array<{ label: string; content: string }> = [];
-  const labels = ["Perspective A", "Perspective B", "Perspective C"];
-
-  for (let i = 1; i < sections.length && i <= 3; i++) {
-    const section = sections[i].trim();
-    const titleEnd = section.indexOf("**");
-    const title = titleEnd > 0 ? section.slice(0, titleEnd).trim() : labels[i - 1];
-    const content = titleEnd > 0 ? section.slice(titleEnd + 2).trim() : section;
-    perspectives.push({ label: `${labels[i - 1]}: ${title}`, content });
-  }
-
-  if (perspectives.length === 0) {
-    perspectives.push({ label: "Perspective A", content: text });
-  }
-
   return { perspectives, latency_ms };
 }

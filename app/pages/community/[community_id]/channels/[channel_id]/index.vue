@@ -149,11 +149,11 @@
       </div>
 
       <div v-if="typingUsernames.length || aiProcessing" class="px-4 py-1">
-        <span class="text-xs text-muted-foreground italic">
-          <template v-if="aiProcessing"> {{ aiAgent?.name || "AI" }} is thinking... </template>
-          <template v-else>
-            {{ typingLabel }}
-          </template>
+        <template v-if="aiProcessing">
+          <AIThinkingLoader :label="`${aiAgent?.name || 'AI'} is thinking`" />
+        </template>
+        <span v-else class="text-xs text-muted-foreground italic">
+          {{ typingLabel }}
         </span>
       </div>
 

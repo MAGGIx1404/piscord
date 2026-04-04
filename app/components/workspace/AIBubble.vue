@@ -33,12 +33,29 @@
       </TooltipProvider>
 
       <!-- Loading indicator -->
-      <div v-if="loading" class="flex items-center gap-1.5 px-2 py-1.5">
-        <div class="flex gap-0.5">
-          <span class="size-1 animate-bounce rounded-full bg-primary/60 [animation-delay:0ms]" />
-          <span class="size-1 animate-bounce rounded-full bg-primary/60 [animation-delay:150ms]" />
-          <span class="size-1 animate-bounce rounded-full bg-primary/60 [animation-delay:300ms]" />
+      <div v-if="loading" class="flex items-center gap-2 px-2.5 py-1.5">
+        <div class="relative flex size-4 items-center justify-center">
+          <div
+            class="absolute inset-0 animate-spin rounded-full border border-transparent border-t-violet-500/60"
+            style="animation-duration: 1s"
+          />
+          <Sparkles class="size-2.5 animate-pulse text-violet-400" />
         </div>
+        <span class="text-[10px] font-medium text-violet-400/80">Writing</span>
+        <span class="flex gap-0.5">
+          <span
+            class="size-1 animate-bounce rounded-full bg-violet-400/60"
+            style="animation-delay: 0ms; animation-duration: 0.8s"
+          />
+          <span
+            class="size-1 animate-bounce rounded-full bg-violet-400/60"
+            style="animation-delay: 150ms; animation-duration: 0.8s"
+          />
+          <span
+            class="size-1 animate-bounce rounded-full bg-violet-400/60"
+            style="animation-delay: 300ms; animation-duration: 0.8s"
+          />
+        </span>
       </div>
     </div>
   </Transition>

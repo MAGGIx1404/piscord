@@ -62,13 +62,31 @@
 
     <!-- Thoughts list -->
     <div class="flex-1 overflow-y-auto">
+      <!-- AI thinking indicator -->
+      <div v-if="aiLoading" class="border-b border-violet-500/10 px-3 py-1">
+        <AIThinkingLoader label="Generating thought" />
+      </div>
+
       <TransitionGroup name="thought" tag="div" class="space-y-0 p-2">
         <div
           v-for="thought in thoughts"
           :key="thought.id"
           class="group rounded-lg border border-transparent p-2.5 transition-all hover:border-border/30 hover:bg-card/40"
+          :class="{
+            'border-violet-500/20 bg-violet-500/5': thought.animate && typingId === thought.id
+          }"
         >
+          <!-- Typewriter display for AI-generated thoughts -->
           <div
+            v-if="thought.animate && typingId === thought.id"
+            class="prose-xs prose max-w-none text-xs leading-relaxed text-foreground/80 dark:prose-invert"
+          >
+            <span v-html="renderMarkdown(typedContent)" />
+            <span class="inline-block h-3 w-0.5 animate-pulse bg-violet-400" />
+          </div>
+          <!-- Static display for regular thoughts -->
+          <div
+            v-else
             class="prose-xs prose max-w-none text-xs leading-relaxed text-foreground/80 dark:prose-invert"
             v-html="renderMarkdown(thought.content)"
           />
@@ -140,9 +158,10 @@ export interface Thought {
   id: string;
   content: string;
   createdAt: Date;
+  animate?: boolean;
 }
 
-defineProps<{
+const props = defineProps<{
   thoughts: Thought[];
   aiLoading: boolean;
 }>();
@@ -156,6 +175,34 @@ const emit = defineEmits<{
 
 const newThought = ref("");
 const inputRef = ref<HTMLTextAreaElement | null>(null);
+
+// Typewriter state for AI-generated thoughts
+const typingId = ref<string | null>(null);
+const typedContent = ref("");
+
+watch(
+  () => props.thoughts,
+  (newThoughts) => {
+    const animatable = newThoughts.find((t) => t.animate && t.id !== typingId.value);
+    if (animatable) {
+      startTypewriter(animatable);
+    }
+  },
+  { deep: true }
+);
+
+async function startTypewriter(thought: Thought) {
+  typingId.value = thought.id;
+  typedContent.value = "";
+  const chars = thought.content;
+  for (let i = 0; i < chars.length; i++) {
+    typedContent.value += chars[i];
+    await new Promise((r) => setTimeout(r, 14));
+  }
+  // Mark done — remove animate flag
+  thought.animate = false;
+  typingId.value = null;
+}
 
 const aiActions = [
   {
