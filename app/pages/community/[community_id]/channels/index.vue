@@ -249,7 +249,11 @@ function openCreateDialog(type?: string) {
 }
 
 function handleSelect(channel: ChannelCardItem) {
-  router.push(`/community/${communityId}/channels/${channel.id}`);
+  if (channel.type === "voice") {
+    router.push(`/community/${communityId}/channels/${channel.id}/voice`);
+  } else {
+    router.push(`/community/${communityId}/channels/${channel.id}`);
+  }
 }
 
 const communityStore = useCommunityStore();

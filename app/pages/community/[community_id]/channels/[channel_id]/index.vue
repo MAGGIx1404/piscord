@@ -377,6 +377,13 @@ watch(
 
 onMounted(async () => {
   await fetchChannelInfo();
+
+  // Redirect voice channels to their dedicated page
+  if (channelType.value === "voice") {
+    router.replace(`/community/${communityId.value}/channels/${channelId.value}/voice`);
+    return;
+  }
+
   await init();
   await nextTick();
   scrollToBottom();

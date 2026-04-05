@@ -35,6 +35,25 @@ const userPeers = new Map<string, Set<Peer>>();
 const workspacePeers = new Map<string, Set<Peer>>();
 const typingUsers = new Map<string, Set<string>>();
 
+// Voice channel state: channelId → set of userIds currently in voice
+const voiceParticipants = new Map<string, Set<string>>();
+
+function getVoiceParticipants(channelId: string): string[] {
+  return [...(voiceParticipants.get(channelId) ?? [])];
+}
+
+function sendToPeerByUserId(channelId: string, targetUserId: string, data: unknown) {
+  const peers = channelPeers.get(channelId);
+  if (!peers) return;
+  const payload = JSON.stringify(data);
+  for (const peer of peers) {
+    const auth = peerAuth.get(peer);
+    if (auth && auth.userId === targetUserId && auth.scope === "channel") {
+      peer.send(payload);
+    }
+  }
+}
+
 function broadcastToChannel(channelId: string, data: unknown, excludePeer?: Peer) {
   const peers = channelPeers.get(channelId);
   if (!peers) return;
@@ -295,6 +314,96 @@ export default defineWebSocketHandler({
         );
         return;
       }
+
+      // ── Voice channel signaling ──
+
+      if (type === "voice:join") {
+        if (!voiceParticipants.has(auth.channelId)) {
+          voiceParticipants.set(auth.channelId, new Set());
+        }
+        voiceParticipants.get(auth.channelId)!.add(auth.userId);
+
+        // Tell the joiner who's already in the call
+        peer.send(
+          JSON.stringify({
+            type: "voice:participants",
+            participants: getVoiceParticipants(auth.channelId)
+          })
+        );
+
+        // Tell everyone else that this user joined
+        broadcastToChannel(
+          auth.channelId,
+          {
+            type: "voice:user-joined",
+            userId: auth.userId,
+            participants: getVoiceParticipants(auth.channelId)
+          },
+          peer
+        );
+        return;
+      }
+
+      if (type === "voice:leave") {
+        voiceParticipants.get(auth.channelId)?.delete(auth.userId);
+        if (voiceParticipants.get(auth.channelId)?.size === 0) {
+          voiceParticipants.delete(auth.channelId);
+        }
+        broadcastToChannel(auth.channelId, {
+          type: "voice:user-left",
+          userId: auth.userId,
+          participants: getVoiceParticipants(auth.channelId)
+        });
+        return;
+      }
+
+      if (type === "voice:offer") {
+        const targetUserId = data.targetUserId as string;
+        if (targetUserId) {
+          sendToPeerByUserId(auth.channelId, targetUserId, {
+            type: "voice:offer",
+            fromUserId: auth.userId,
+            offer: data.offer
+          });
+        }
+        return;
+      }
+
+      if (type === "voice:answer") {
+        const targetUserId = data.targetUserId as string;
+        if (targetUserId) {
+          sendToPeerByUserId(auth.channelId, targetUserId, {
+            type: "voice:answer",
+            fromUserId: auth.userId,
+            answer: data.answer
+          });
+        }
+        return;
+      }
+
+      if (type === "voice:ice-candidate") {
+        const targetUserId = data.targetUserId as string;
+        if (targetUserId) {
+          sendToPeerByUserId(auth.channelId, targetUserId, {
+            type: "voice:ice-candidate",
+            fromUserId: auth.userId,
+            candidate: data.candidate
+          });
+        }
+        return;
+      }
+
+      if (type === "voice:reaction") {
+        const emoji = data.emoji as string;
+        if (emoji) {
+          broadcastToChannel(auth.channelId, {
+            type: "voice:reaction",
+            userId: auth.userId,
+            emoji
+          });
+        }
+        return;
+      }
     }
 
     if (auth.scope === "workspace") {
@@ -382,6 +491,19 @@ export default defineWebSocketHandler({
 
         typingUsers.get(auth.channelId)?.delete(auth.userId);
 
+        // Clean up voice participation on disconnect
+        if (voiceParticipants.get(auth.channelId)?.has(auth.userId)) {
+          voiceParticipants.get(auth.channelId)!.delete(auth.userId);
+          if (voiceParticipants.get(auth.channelId)?.size === 0) {
+            voiceParticipants.delete(auth.channelId);
+          }
+          broadcastToChannel(auth.channelId, {
+            type: "voice:user-left",
+            userId: auth.userId,
+            participants: getVoiceParticipants(auth.channelId)
+          });
+        }
+
         broadcastToChannel(auth.channelId, {
           type: "presence:leave",
           userId: auth.userId,
@@ -427,6 +549,7 @@ export default defineWebSocketHandler({
       if (auth.scope === "channel") {
         channelPeers.get(auth.channelId)?.delete(peer);
         typingUsers.get(auth.channelId)?.delete(auth.userId);
+        voiceParticipants.get(auth.channelId)?.delete(auth.userId);
       } else if (auth.scope === "community") {
         communityPeers.get(auth.communityId)?.delete(peer);
       } else if (auth.scope === "user") {
