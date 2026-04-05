@@ -3,8 +3,6 @@ import { verifyAccessToken } from "../utils/jwt";
 import { parse as parseCookies } from "cookie-es";
 import { getFriendIds } from "../services/friendService";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 interface ChannelPeer {
   userId: string;
   scope: "channel";
@@ -22,22 +20,39 @@ interface UserPeer {
   scope: "user";
 }
 
-type AuthenticatedPeer = ChannelPeer | CommunityPeer | UserPeer;
+interface WorkspacePeer {
+  userId: string;
+  scope: "workspace";
+  workspaceId: string;
+}
 
-// ─── State ──────────────────────────────────────────────────────────────────
+type AuthenticatedPeer = ChannelPeer | CommunityPeer | UserPeer | WorkspacePeer;
 
-// Map of peer → auth info
 const peerAuth = new Map<Peer, AuthenticatedPeer>();
-// Map of channelId → Set of peers
 const channelPeers = new Map<string, Set<Peer>>();
-// Map of communityId → Set of peers watching the community overview
 const communityPeers = new Map<string, Set<Peer>>();
-// Map of userId → Set of peers (user can have multiple tabs)
 const userPeers = new Map<string, Set<Peer>>();
-// Map of channelId → Set of userIds currently typing
+const workspacePeers = new Map<string, Set<Peer>>();
 const typingUsers = new Map<string, Set<string>>();
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// Voice channel state: channelId → set of userIds currently in voice
+const voiceParticipants = new Map<string, Set<string>>();
+
+function getVoiceParticipants(channelId: string): string[] {
+  return [...(voiceParticipants.get(channelId) ?? [])];
+}
+
+function sendToPeerByUserId(channelId: string, targetUserId: string, data: unknown) {
+  const peers = channelPeers.get(channelId);
+  if (!peers) return;
+  const payload = JSON.stringify(data);
+  for (const peer of peers) {
+    const auth = peerAuth.get(peer);
+    if (auth && auth.userId === targetUserId && auth.scope === "channel") {
+      peer.send(payload);
+    }
+  }
+}
 
 function broadcastToChannel(channelId: string, data: unknown, excludePeer?: Peer) {
   const peers = channelPeers.get(channelId);
@@ -87,26 +102,49 @@ function isUserOnline(userId: string): boolean {
   return (userPeers.get(userId)?.size ?? 0) > 0;
 }
 
-// ─── Export for use by API routes ───────────────────────────────────────────
+function broadcastToWorkspace(workspaceId: string, data: unknown, excludePeer?: Peer) {
+  const peers = workspacePeers.get(workspaceId);
+  if (!peers) return;
+  const payload = JSON.stringify(data);
+  for (const peer of peers) {
+    if (peer !== excludePeer) {
+      peer.send(payload);
+    }
+  }
+}
+
+function getWorkspaceOnlineUsers(workspaceId: string): { userId: string }[] {
+  const peers = workspacePeers.get(workspaceId);
+  if (!peers) return [];
+  const seen = new Set<string>();
+  const result: { userId: string }[] = [];
+  for (const peer of peers) {
+    const auth = peerAuth.get(peer);
+    if (auth && !seen.has(auth.userId)) {
+      seen.add(auth.userId);
+      result.push({ userId: auth.userId });
+    }
+  }
+  return result;
+}
 
 export {
   broadcastToChannel,
   broadcastToCommunity,
   broadcastToUser,
+  broadcastToWorkspace,
   getOnlineUsers,
+  getWorkspaceOnlineUsers,
   isUserOnline,
   channelPeers,
   communityPeers,
   userPeers,
+  workspacePeers,
   peerAuth
 };
 
-// ─── WebSocket Handler ─────────────────────────────────────────────────────
-
 export default defineWebSocketHandler({
-  open(peer) {
-    // Client must authenticate via first message
-  },
+  open(_peer) {},
 
   message(peer, msg) {
     let data: Record<string, unknown>;
@@ -119,14 +157,11 @@ export default defineWebSocketHandler({
 
     const { type } = data;
 
-    // ── Auth ─────────────────────────────────────────────────────────────
     if (type === "auth") {
       const channelId = data.channelId as string | undefined;
       const communityId = data.communityId as string | undefined;
       const scope = data.scope as string | undefined;
 
-      // Token can come from the message payload or from the httpOnly cookie
-      // (cookie is sent with the WebSocket upgrade request)
       let token = data.token as string | undefined;
 
       if (!token) {
@@ -138,7 +173,7 @@ export default defineWebSocketHandler({
         }
       }
 
-      if (!token || (!channelId && !communityId && scope !== "user")) {
+      if (!token || (!channelId && !communityId && scope !== "user" && scope !== "workspace")) {
         peer.send(
           JSON.stringify({
             type: "error",
@@ -151,8 +186,40 @@ export default defineWebSocketHandler({
       try {
         const payload = verifyAccessToken(token);
 
-        if (channelId) {
-          // Channel subscription
+        if (scope === "workspace") {
+          const workspaceId = data.workspaceId as string | undefined;
+          if (!workspaceId) {
+            peer.send(JSON.stringify({ type: "error", message: "Missing workspaceId" }));
+            return;
+          }
+
+          peerAuth.set(peer, { userId: payload.userId, scope: "workspace", workspaceId });
+
+          if (!workspacePeers.has(workspaceId)) {
+            workspacePeers.set(workspaceId, new Set());
+          }
+          workspacePeers.get(workspaceId)!.add(peer);
+
+          const onlineUsers = getWorkspaceOnlineUsers(workspaceId);
+
+          peer.send(
+            JSON.stringify({
+              type: "auth:success",
+              userId: payload.userId,
+              onlineUsers
+            })
+          );
+
+          broadcastToWorkspace(
+            workspaceId,
+            {
+              type: "workspace:presence:join",
+              userId: payload.userId,
+              onlineUsers
+            },
+            peer
+          );
+        } else if (channelId) {
           peerAuth.set(peer, { userId: payload.userId, scope: "channel", channelId });
 
           if (!channelPeers.has(channelId)) {
@@ -178,7 +245,6 @@ export default defineWebSocketHandler({
             peer
           );
         } else if (communityId) {
-          // Community subscription
           peerAuth.set(peer, { userId: payload.userId, scope: "community", communityId });
 
           if (!communityPeers.has(communityId)) {
@@ -188,7 +254,6 @@ export default defineWebSocketHandler({
 
           peer.send(JSON.stringify({ type: "auth:success", userId: payload.userId }));
         } else if (scope === "user") {
-          // User-level subscription (for DMs and friend events)
           peerAuth.set(peer, { userId: payload.userId, scope: "user" });
 
           const wasOnline = (userPeers.get(payload.userId)?.size ?? 0) > 0;
@@ -200,7 +265,6 @@ export default defineWebSocketHandler({
 
           peer.send(JSON.stringify({ type: "auth:success", userId: payload.userId }));
 
-          // Broadcast online status to friends (only if user just came online)
           if (!wasOnline) {
             getFriendIds(payload.userId).then((friendIds) => {
               for (const fid of friendIds) {
@@ -215,14 +279,12 @@ export default defineWebSocketHandler({
       return;
     }
 
-    // All subsequent messages require auth
     const auth = peerAuth.get(peer);
     if (!auth) {
       peer.send(JSON.stringify({ type: "error", message: "Not authenticated" }));
       return;
     }
 
-    // ── Channel typing ──────────────────────────────────────────────────
     if (auth.scope === "channel") {
       if (type === "typing:start") {
         if (!typingUsers.has(auth.channelId)) {
@@ -252,9 +314,141 @@ export default defineWebSocketHandler({
         );
         return;
       }
+
+      // ── Voice channel signaling ──
+
+      if (type === "voice:join") {
+        if (!voiceParticipants.has(auth.channelId)) {
+          voiceParticipants.set(auth.channelId, new Set());
+        }
+        voiceParticipants.get(auth.channelId)!.add(auth.userId);
+
+        // Tell the joiner who's already in the call
+        peer.send(
+          JSON.stringify({
+            type: "voice:participants",
+            participants: getVoiceParticipants(auth.channelId)
+          })
+        );
+
+        // Tell everyone else that this user joined
+        broadcastToChannel(
+          auth.channelId,
+          {
+            type: "voice:user-joined",
+            userId: auth.userId,
+            participants: getVoiceParticipants(auth.channelId)
+          },
+          peer
+        );
+        return;
+      }
+
+      if (type === "voice:leave") {
+        voiceParticipants.get(auth.channelId)?.delete(auth.userId);
+        if (voiceParticipants.get(auth.channelId)?.size === 0) {
+          voiceParticipants.delete(auth.channelId);
+        }
+        broadcastToChannel(auth.channelId, {
+          type: "voice:user-left",
+          userId: auth.userId,
+          participants: getVoiceParticipants(auth.channelId)
+        });
+        return;
+      }
+
+      if (type === "voice:offer") {
+        const targetUserId = data.targetUserId as string;
+        if (targetUserId) {
+          sendToPeerByUserId(auth.channelId, targetUserId, {
+            type: "voice:offer",
+            fromUserId: auth.userId,
+            offer: data.offer
+          });
+        }
+        return;
+      }
+
+      if (type === "voice:answer") {
+        const targetUserId = data.targetUserId as string;
+        if (targetUserId) {
+          sendToPeerByUserId(auth.channelId, targetUserId, {
+            type: "voice:answer",
+            fromUserId: auth.userId,
+            answer: data.answer
+          });
+        }
+        return;
+      }
+
+      if (type === "voice:ice-candidate") {
+        const targetUserId = data.targetUserId as string;
+        if (targetUserId) {
+          sendToPeerByUserId(auth.channelId, targetUserId, {
+            type: "voice:ice-candidate",
+            fromUserId: auth.userId,
+            candidate: data.candidate
+          });
+        }
+        return;
+      }
+
+      if (type === "voice:reaction") {
+        const emoji = data.emoji as string;
+        if (emoji) {
+          broadcastToChannel(auth.channelId, {
+            type: "voice:reaction",
+            userId: auth.userId,
+            emoji
+          });
+        }
+        return;
+      }
     }
 
-    // ── DM typing (user scope) ──────────────────────────────────────────
+    if (auth.scope === "workspace") {
+      if (type === "workspace:update") {
+        // Broadcast document update to all other peers in this workspace
+        broadcastToWorkspace(
+          auth.workspaceId,
+          {
+            type: "workspace:update",
+            userId: auth.userId,
+            content: data.content,
+            version: data.version
+          },
+          peer
+        );
+        return;
+      }
+
+      if (type === "workspace:cursor") {
+        broadcastToWorkspace(
+          auth.workspaceId,
+          {
+            type: "workspace:cursor",
+            userId: auth.userId,
+            cursor: data.cursor
+          },
+          peer
+        );
+        return;
+      }
+
+      if (type === "workspace:saved") {
+        broadcastToWorkspace(
+          auth.workspaceId,
+          {
+            type: "workspace:saved",
+            userId: auth.userId,
+            version: data.version
+          },
+          peer
+        );
+        return;
+      }
+    }
+
     if (auth.scope === "user") {
       if (type === "dm:typing:start") {
         const recipientId = data.recipientId as string;
@@ -297,6 +491,19 @@ export default defineWebSocketHandler({
 
         typingUsers.get(auth.channelId)?.delete(auth.userId);
 
+        // Clean up voice participation on disconnect
+        if (voiceParticipants.get(auth.channelId)?.has(auth.userId)) {
+          voiceParticipants.get(auth.channelId)!.delete(auth.userId);
+          if (voiceParticipants.get(auth.channelId)?.size === 0) {
+            voiceParticipants.delete(auth.channelId);
+          }
+          broadcastToChannel(auth.channelId, {
+            type: "voice:user-left",
+            userId: auth.userId,
+            participants: getVoiceParticipants(auth.channelId)
+          });
+        }
+
         broadcastToChannel(auth.channelId, {
           type: "presence:leave",
           userId: auth.userId,
@@ -312,13 +519,23 @@ export default defineWebSocketHandler({
         if (userPeers.get(auth.userId)?.size === 0) {
           userPeers.delete(auth.userId);
 
-          // Broadcast offline status to friends
           getFriendIds(auth.userId).then((friendIds) => {
             for (const fid of friendIds) {
               broadcastToUser(fid, { type: "friend:offline", userId: auth.userId });
             }
           });
         }
+      } else if (auth.scope === "workspace") {
+        workspacePeers.get(auth.workspaceId)?.delete(peer);
+        if (workspacePeers.get(auth.workspaceId)?.size === 0) {
+          workspacePeers.delete(auth.workspaceId);
+        }
+
+        broadcastToWorkspace(auth.workspaceId, {
+          type: "workspace:presence:leave",
+          userId: auth.userId,
+          onlineUsers: getWorkspaceOnlineUsers(auth.workspaceId)
+        });
       }
 
       peerAuth.delete(peer);
@@ -332,12 +549,18 @@ export default defineWebSocketHandler({
       if (auth.scope === "channel") {
         channelPeers.get(auth.channelId)?.delete(peer);
         typingUsers.get(auth.channelId)?.delete(auth.userId);
+        voiceParticipants.get(auth.channelId)?.delete(auth.userId);
       } else if (auth.scope === "community") {
         communityPeers.get(auth.communityId)?.delete(peer);
       } else if (auth.scope === "user") {
         userPeers.get(auth.userId)?.delete(peer);
         if (userPeers.get(auth.userId)?.size === 0) {
           userPeers.delete(auth.userId);
+        }
+      } else if (auth.scope === "workspace") {
+        workspacePeers.get(auth.workspaceId)?.delete(peer);
+        if (workspacePeers.get(auth.workspaceId)?.size === 0) {
+          workspacePeers.delete(auth.workspaceId);
         }
       }
       peerAuth.delete(peer);

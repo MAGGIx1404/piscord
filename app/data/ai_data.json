@@ -1,0 +1,1030 @@
+{
+  "categories": {
+    "writing": [
+      {
+        "question_variants": [
+          "how to improve writing",
+          "how to write better",
+          "improve my content",
+          "writing tips",
+          "make my writing good",
+          "better writing skills",
+          "write professionally"
+        ],
+        "answers": [
+          "Focus on clarity and keep sentences concise. Cut every word that doesn't earn its place.",
+          "Practice writing regularly and review your work with fresh eyes the next day.",
+          "Use simple language — the best writing feels effortless to read.",
+          "Structure your content: strong opening, clear body, memorable close.",
+          "Read your work aloud. If you stumble, your reader will too."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to start writing",
+          "writing for beginners",
+          "I don't know how to write",
+          "where to begin writing"
+        ],
+        "answers": [
+          "Start with an outline. Even a rough list of points gives you direction.",
+          "Don't aim for perfect — aim for done. You can always revise later.",
+          "Write the way you talk first, then clean it up. Natural voice matters more than fancy words.",
+          "Set a small daily goal — even 100 words builds momentum over time.",
+          "Pick one idea and explain it as if you're telling a friend. That's writing."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to write headlines",
+          "good title tips",
+          "catchy headlines",
+          "headline writing"
+        ],
+        "answers": [
+          "Use numbers and specifics: '7 Ways to…' outperforms vague titles every time.",
+          "Promise a benefit. The reader should know what they'll gain before clicking.",
+          "Keep it under 10 words. Brevity creates punch.",
+          "Ask a question your audience is already wondering about.",
+          "Use power words: 'essential', 'proven', 'surprising' trigger curiosity."
+        ]
+      }
+    ],
+    "productivity": [
+      {
+        "question_variants": [
+          "how to be more productive",
+          "productivity tips",
+          "get more done",
+          "time management",
+          "work efficiently"
+        ],
+        "answers": [
+          "Block your calendar into 90-minute deep work sessions. Protect them fiercely.",
+          "Use the 2-minute rule: if it takes less than 2 minutes, do it now.",
+          "Single-task. Multitasking is a myth — it just means doing multiple things poorly.",
+          "Start each day by identifying your ONE most important task. Do it first.",
+          "Eliminate before you optimize. Cut unnecessary meetings and tasks entirely."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to focus better",
+          "can't concentrate",
+          "improve focus",
+          "stop getting distracted",
+          "attention span"
+        ],
+        "answers": [
+          "Turn off all notifications during deep work. Every interruption costs 23 minutes to recover.",
+          "Use the Pomodoro technique: 25 minutes focused, 5 minute break, repeat.",
+          "Create a dedicated workspace — your brain associates environment with behavior.",
+          "Write down distracting thoughts instead of acting on them. Review later.",
+          "Start with the hardest task when your energy is highest, usually morning."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to stop procrastinating",
+          "I keep putting things off",
+          "procrastination help",
+          "overcome procrastination"
+        ],
+        "answers": [
+          "Break the task into absurdly small steps. 'Write one sentence' is easier than 'write a chapter'.",
+          "Use the 5-minute rule: commit to just 5 minutes. Starting is the hardest part.",
+          "Identify *why* you're avoiding it — usually it's fear of imperfection or overwhelm.",
+          "Set a deadline and tell someone about it. Accountability creates urgency.",
+          "Pair the boring task with something enjoyable — music, a nice drink, a good environment."
+        ]
+      }
+    ],
+    "coding": [
+      {
+        "question_variants": [
+          "coding tips",
+          "how to code better",
+          "improve programming",
+          "write better code",
+          "coding best practices"
+        ],
+        "answers": [
+          "Write code for humans first, computers second. Readable code is maintainable code.",
+          "Follow the Single Responsibility Principle — each function should do one thing well.",
+          "Name things clearly. `getUserById` beats `getData` every time.",
+          "Write tests before you refactor. They're your safety net.",
+          "Keep functions short. If it scrolls off screen, it probably needs splitting."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to debug",
+          "debugging tips",
+          "fix bugs faster",
+          "debugging strategy"
+        ],
+        "answers": [
+          "Reproduce the bug first. If you can't trigger it reliably, you can't fix it reliably.",
+          "Read the error message carefully — it usually tells you exactly what's wrong.",
+          "Use `console.log` strategically to narrow down where the issue starts.",
+          "Rubber duck debugging works: explain the problem out loud, step by step.",
+          "Check recent changes first. The bug is usually in the code you just touched."
+        ]
+      },
+      {
+        "question_variants": [
+          "learn programming",
+          "how to start coding",
+          "programming for beginners",
+          "which language to learn"
+        ],
+        "answers": [
+          "Pick one language and stick with it for 3 months. JavaScript or Python are great starters.",
+          "Build projects, not tutorials. You learn by doing, not by watching.",
+          "Start small: a to-do app, a calculator, a personal website. Grow from there.",
+          "Read other people's code on GitHub. It's like learning to write by reading books.",
+          "Don't try to learn everything at once. Master the basics before chasing frameworks."
+        ]
+      },
+      {
+        "question_variants": [
+          "explain API",
+          "what is an API",
+          "how do APIs work",
+          "REST API basics"
+        ],
+        "answers": [
+          "An API is a contract between two systems. You send a request, you get a response — like ordering at a restaurant.",
+          "REST APIs use HTTP methods: GET (read), POST (create), PUT (update), DELETE (remove). Simple and predictable.",
+          "Think of an API as a waiter: you don't go to the kitchen, you tell the waiter what you want and they bring it.",
+          "APIs let different applications talk to each other. Your frontend asks the API, the API asks the database.",
+          "Start by using APIs before building them. Call a public API like a weather service to see how it works."
+        ]
+      }
+    ],
+    "design": [
+      {
+        "question_variants": [
+          "design tips",
+          "how to design better",
+          "improve UI design",
+          "make better UI",
+          "UI/UX tips"
+        ],
+        "answers": [
+          "Use whitespace generously. Cramped designs feel overwhelming — space creates breathing room.",
+          "Limit your color palette to 2-3 colors. Consistency beats variety in design.",
+          "Align everything to a grid. Even small misalignments feel 'off' subconsciously.",
+          "Use typography hierarchy: clear headings, readable body text, consistent sizing.",
+          "Copy designs you admire, then modify. It's the fastest way to develop taste."
+        ]
+      },
+      {
+        "question_variants": [
+          "color scheme",
+          "choose colors",
+          "color palette tips",
+          "what colors to use"
+        ],
+        "answers": [
+          "Start with one primary color, then add a neutral (gray/white/black) and one accent.",
+          "Use 60-30-10 rule: 60% dominant color, 30% secondary, 10% accent.",
+          "Tools like Coolors.co or Adobe Color generate harmonious palettes instantly.",
+          "Ensure sufficient contrast for accessibility — dark text on light bg, or vice versa.",
+          "When in doubt, go with blue. It's universally trusted and works for almost any brand."
+        ]
+      },
+      {
+        "question_variants": [
+          "what is UX",
+          "user experience basics",
+          "improve user experience",
+          "UX design principles"
+        ],
+        "answers": [
+          "UX is about making things easy and pleasant to use. If the user has to think too hard, something's wrong.",
+          "The best UX is invisible — users accomplish their goals without noticing the design.",
+          "Test with real users early and often. Your assumptions about how people use things are usually wrong.",
+          "Follow established patterns. Users expect certain behaviors — don't reinvent the wheel for navigation.",
+          "Reduce steps. Every extra click, field, or page is a chance for the user to leave."
+        ]
+      }
+    ],
+    "business": [
+      {
+        "question_variants": [
+          "startup tips",
+          "how to start a business",
+          "entrepreneurship advice",
+          "launch a startup"
+        ],
+        "answers": [
+          "Start by solving a real problem. The best businesses come from genuine pain points.",
+          "Talk to potential customers before building anything. Validation saves months of wasted work.",
+          "Launch early and ugly. A working product in users' hands beats a perfect product on your laptop.",
+          "Focus on 10 users who love you before 10,000 who kind of like you.",
+          "Keep costs minimal in the beginning. Resourcefulness matters more than resources."
+        ]
+      },
+      {
+        "question_variants": [
+          "marketing tips",
+          "how to market",
+          "promote my product",
+          "digital marketing"
+        ],
+        "answers": [
+          "Create content that helps your audience. Teaching builds trust faster than selling.",
+          "Focus on one channel and master it before expanding. Twitter, blog, YouTube — pick one.",
+          "Email marketing still has the highest ROI. Build your list from day one.",
+          "Tell stories, not features. People connect with narratives, not spec sheets.",
+          "Consistency beats virality. Show up regularly and the audience will come."
+        ]
+      },
+      {
+        "question_variants": [
+          "pricing strategy",
+          "how to price",
+          "what should I charge",
+          "pricing advice"
+        ],
+        "answers": [
+          "Price based on value delivered, not hours spent. What's the result worth to them?",
+          "Start higher than you think. It's easier to lower prices than raise them.",
+          "Offer 3 tiers: a cheap option, a popular middle, and a premium. Most pick the middle.",
+          "Test different prices. Small changes can dramatically affect conversion and revenue.",
+          "Don't compete on price — compete on value. The cheapest option attracts the worst customers."
+        ]
+      }
+    ],
+    "communication": [
+      {
+        "question_variants": [
+          "how to communicate better",
+          "communication tips",
+          "improve communication skills",
+          "be a better communicator"
+        ],
+        "answers": [
+          "Listen more than you speak. Understanding the other person's perspective is half the conversation.",
+          "Be specific. 'I need the report by Friday 3pm' beats 'I need it soon'.",
+          "Mirror the other person's communication style. Match their energy and formality level.",
+          "Ask questions instead of making assumptions. Curiosity prevents most misunderstandings.",
+          "Lead with the main point. Don't bury it under context — state it, then support it."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to write emails",
+          "email writing tips",
+          "professional email",
+          "better emails"
+        ],
+        "answers": [
+          "Put the action item in the first line. People scan, they don't read.",
+          "Keep emails under 5 sentences when possible. Respect the reader's time.",
+          "Use a clear subject line that tells the reader exactly what the email is about.",
+          "End with a specific ask: 'Can you review by Thursday?' not 'Let me know what you think.'",
+          "Re-read before sending. Remove anything that doesn't add value."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to present",
+          "presentation tips",
+          "public speaking",
+          "giving presentations"
+        ],
+        "answers": [
+          "Start with a story or surprising fact. Hook the audience in the first 30 seconds.",
+          "One idea per slide. If your slide needs a paragraph, it needs a redesign.",
+          "Practice out loud at least 3 times. Rehearsal is where confidence comes from.",
+          "Make eye contact with different parts of the room. It creates connection.",
+          "End with a clear call to action. The audience should know what to do next."
+        ]
+      }
+    ],
+    "learning": [
+      {
+        "question_variants": [
+          "how to learn faster",
+          "study tips",
+          "learn more effectively",
+          "improve learning",
+          "study better"
+        ],
+        "answers": [
+          "Teach what you learn. Explaining concepts to others reveals gaps in your understanding.",
+          "Use spaced repetition. Review material at increasing intervals for long-term retention.",
+          "Active recall beats re-reading. Close the book and try to explain the concept from memory.",
+          "Connect new information to things you already know. Analogies are a learning superpower.",
+          "Learn in short, focused bursts. Your brain retains more in 30-minute sessions than 3-hour marathons."
+        ]
+      },
+      {
+        "question_variants": ["how to read more", "reading tips", "read faster", "reading habits"],
+        "answers": [
+          "Set a minimum of 20 pages per day. Small consistent habits compound.",
+          "Keep a book with you everywhere. Fill dead time with reading instead of scrolling.",
+          "Don't finish books you're not enjoying. Life's too short for boring reads.",
+          "Take brief notes after each chapter. Writing reinforces comprehension.",
+          "Read across genres. Fiction builds empathy, non-fiction builds knowledge."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to take notes",
+          "note-taking tips",
+          "best note method",
+          "note taking strategies"
+        ],
+        "answers": [
+          "Use your own words, not verbatim quotes. Paraphrasing forces understanding.",
+          "Try the Cornell method: divide the page into notes, cues, and summary sections.",
+          "Link ideas together. Your notes should form a web, not a list.",
+          "Review notes within 24 hours. This single habit doubles retention.",
+          "Keep notes searchable. Whether digital or paper, organization is key."
+        ]
+      }
+    ],
+    "health": [
+      {
+        "question_variants": [
+          "how to be healthy",
+          "health tips",
+          "wellness advice",
+          "stay healthy",
+          "improve health"
+        ],
+        "answers": [
+          "Move your body daily. Even a 20-minute walk makes a measurable difference in mood and health.",
+          "Sleep 7-8 hours consistently. It affects everything: focus, mood, creativity, and immunity.",
+          "Drink water before you feel thirsty. Most people are mildly dehydrated without knowing it.",
+          "Eat real food. If your great-grandmother wouldn't recognize it as food, think twice.",
+          "Take regular breaks from screens. The 20-20-20 rule: every 20 min, look 20 feet away for 20 seconds."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to sleep better",
+          "sleep tips",
+          "improve sleep",
+          "can't sleep",
+          "insomnia help"
+        ],
+        "answers": [
+          "Keep a consistent sleep schedule — same time every day, even weekends.",
+          "No screens 1 hour before bed. Blue light suppresses melatonin production.",
+          "Keep your room cool, dark, and quiet. Your environment matters more than you think.",
+          "Avoid caffeine after 2pm. Its half-life is 5-6 hours.",
+          "Create a wind-down routine: reading, stretching, or journaling signal your brain it's time to rest."
+        ]
+      },
+      {
+        "question_variants": [
+          "manage stress",
+          "stress relief",
+          "how to destress",
+          "reduce anxiety",
+          "stress management"
+        ],
+        "answers": [
+          "Deep breathing: 4 seconds in, 7 seconds hold, 8 seconds out. Instant calm.",
+          "Write down what's stressing you. Getting it out of your head reduces its power.",
+          "Exercise is the most effective anti-anxiety treatment that doesn't require a prescription.",
+          "Focus on what you can control. Let go of what you can't — it's wasted energy.",
+          "Talk to someone. Stress shared is stress halved."
+        ]
+      }
+    ],
+    "career": [
+      {
+        "question_variants": [
+          "career advice",
+          "career tips",
+          "advance career",
+          "grow professionally",
+          "career development"
+        ],
+        "answers": [
+          "Focus on building skills, not collecting job titles. Skills are portable, titles aren't.",
+          "Network before you need to. The best opportunities come from relationships, not job boards.",
+          "Document your wins. You'll need them for reviews, promotions, and your next job.",
+          "Say yes to projects that scare you. Growth lives outside your comfort zone.",
+          "Find a mentor who's 2-3 steps ahead of you. Their hindsight becomes your foresight."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to get a job",
+          "job search tips",
+          "find a job",
+          "land a job",
+          "job hunting"
+        ],
+        "answers": [
+          "Tailor your resume for each job. Generic resumes get generic responses: silence.",
+          "LinkedIn is underrated. Engage with content, connect with people, and your profile works 24/7.",
+          "Apply to fewer jobs but invest more time in each application. Quality over quantity.",
+          "Prepare for interviews by studying the company, not just your own resume.",
+          "Follow up after interviews. A thoughtful thank-you email keeps you top of mind."
+        ]
+      },
+      {
+        "question_variants": [
+          "negotiate salary",
+          "salary negotiation",
+          "ask for a raise",
+          "how to negotiate pay"
+        ],
+        "answers": [
+          "Never give a number first. Ask for their range, then negotiate from the top.",
+          "Research market rates on levels.fyi, Glassdoor, or Payscale before the conversation.",
+          "Frame it as value: 'Based on my impact on X project, I'd like to discuss…'",
+          "Silence is power. After stating your number, stop talking. Let them respond.",
+          "Negotiate the whole package: salary, equity, remote flexibility, learning budget, PTO."
+        ]
+      }
+    ],
+    "creativity": [
+      {
+        "question_variants": [
+          "how to be creative",
+          "boost creativity",
+          "creative ideas",
+          "think creatively",
+          "get inspired"
+        ],
+        "answers": [
+          "Creativity is connecting dots. Expose yourself to diverse ideas — read, travel, listen, explore.",
+          "Set constraints. Unlimited freedom paralyzes — limits force innovation.",
+          "Keep a capture habit: note every interesting idea, quote, or observation throughout the day.",
+          "Take walks. Research shows walking increases creative output by 60%.",
+          "Steal like an artist. Study work you admire, combine influences, make it yours."
+        ]
+      },
+      {
+        "question_variants": [
+          "overcome creative block",
+          "writer's block",
+          "stuck creatively",
+          "no ideas",
+          "can't create"
+        ],
+        "answers": [
+          "Lower the bar. Create something bad on purpose. Perfection is the enemy of progress.",
+          "Change your environment. Work from a café, park, or different room.",
+          "Consume before you create. Input fuels output — read, watch, listen.",
+          "Set a timer for 10 minutes and create without stopping. Don't edit, just produce.",
+          "Revisit old unfinished work. Fresh eyes often see new possibilities."
+        ]
+      }
+    ],
+    "teamwork": [
+      {
+        "question_variants": [
+          "work in a team",
+          "team collaboration",
+          "teamwork tips",
+          "collaborate better",
+          "improve teamwork"
+        ],
+        "answers": [
+          "Over-communicate. Most team failures come from assumptions, not disagreements.",
+          "Define roles and responsibilities upfront. Ambiguity breeds conflict.",
+          "Give feedback early and directly. Waiting makes small issues become big problems.",
+          "Celebrate wins together. Recognition strengthens team bonds.",
+          "Use async communication for updates, sync for decisions. Not everything needs a meeting."
+        ]
+      },
+      {
+        "question_variants": [
+          "how to lead",
+          "leadership tips",
+          "be a good leader",
+          "team management",
+          "manage people"
+        ],
+        "answers": [
+          "Lead by example. Your team watches what you do, not what you say.",
+          "Remove blockers. Your job as a leader is to make your team's job easier.",
+          "Give autonomy. Hire smart people, set clear goals, then get out of the way.",
+          "Regular 1:1s are non-negotiable. That's where trust and alignment happen.",
+          "Admit mistakes openly. Vulnerability builds trust faster than pretending to have all the answers."
+        ]
+      }
+    ],
+    "rewrite": [
+      {
+        "question_variants": [
+          "rewrite this",
+          "rephrase",
+          "reword",
+          "make it better",
+          "clean this up",
+          "improve writing"
+        ],
+        "answers": [
+          "Here's a refined version that maintains your original meaning while enhancing clarity and flow:\n\n{text}\n\n**Changes:** Stronger verb choices, tighter sentences, and more precise language throughout.",
+          "I've restructured for better readability and impact:\n\n{text}\n\n**What changed:** Breaking complex sentences, removing filler words, and improving transitions.",
+          "Here's a polished version:\n\n{text}\n\n**Key improvements:** Active voice, concise phrasing, and a clearer logical flow.",
+          "A cleaner take on your text:\n\n{text}\n\n**Focus areas:** Eliminating redundancy, strengthening word choice, and preserving your voice.",
+          "Rewritten for maximum clarity:\n\n{text}\n\n**Improvements:** Directness, professional tone, and better sentence rhythm."
+        ]
+      }
+    ],
+    "summarize": [
+      {
+        "question_variants": [
+          "summarize this",
+          "give me a summary",
+          "TLDR",
+          "condense this",
+          "shorten this",
+          "brief version"
+        ],
+        "answers": [
+          "**Key Points:**\n• The main argument centers on {topic}\n• Supporting evidence suggests significant impact\n• The conclusion emphasizes actionable next steps",
+          "**Summary:**\nThe text discusses {topic}, highlighting the current state, challenges, and proposed solutions. The core message: thoughtful action drives results.",
+          "**TL;DR:**\nThis covers {topic} with focus on practical implications. The takeaway: strategic planning + execution = best outcomes.",
+          "**In Brief:**\n• Core theme: {topic}\n• Main insight: structured approaches yield better results\n• Action: focus on implementation over theory",
+          "**Quick Summary:**\nThe content addresses {topic}, making a case for systematic improvement. Three themes emerge: clarity, consistency, and measurable impact."
+        ]
+      }
+    ],
+    "expand": [
+      {
+        "question_variants": [
+          "expand this",
+          "elaborate",
+          "add more detail",
+          "make longer",
+          "extend this",
+          "more depth"
+        ],
+        "answers": [
+          "Here's an expanded version with additional depth:\n\n{text}\n\nTo strengthen this further, consider adding specific examples, real-world case studies, and exploring potential counterarguments.",
+          "Building on your original:\n\n{text}\n\nThis deserves deeper exploration — the historical context, stakeholders involved, and ripple effects of different approaches all add richness.",
+          "Expanded with supporting details:\n\n{text}\n\nWe can examine underlying causes, relevant trends, and project future developments. Expert perspectives would further solidify the arguments.",
+          "Here's your text with more depth:\n\n{text}\n\nThe expanded version benefits from concrete examples, statistical context, and a broader examination of implications.",
+          "A deeper exploration:\n\n{text}\n\nAdding background information, edge cases, and connections to broader themes creates a more authoritative reading experience."
+        ]
+      }
+    ],
+    "improve": [
+      {
+        "question_variants": [
+          "improve this",
+          "make it better",
+          "enhance",
+          "polish this",
+          "refine this text"
+        ],
+        "answers": [
+          "**Improved version:**\n\n{text}\n\n**Changes made:**\n• Fixed grammatical inconsistencies\n• Strengthened transitions\n• Improved paragraph flow\n• Enhanced vocabulary precision",
+          "**Polished version:**\n\n{text}\n\n**Enhancements:**\n• Corrected sentence structure\n• Added stronger topic sentences\n• Improved logical flow\n• Tightened language for impact",
+          "**Refined version:**\n\n{text}\n\n**Key improvements:**\n• Eliminated passive voice\n• Fixed punctuation and grammar\n• Improved word choice\n• Strengthened opening and closing",
+          "**Enhanced text:**\n\n{text}\n\n**What changed:**\n• Smoother transitions\n• More precise language\n• Better sentence variety\n• Stronger conclusion",
+          "**Upgraded version:**\n\n{text}\n\n**Improvements:**\n• Clearer thesis\n• More effective use of evidence\n• Tighter prose\n• Professional tone maintained"
+        ]
+      }
+    ],
+    "fix_grammar": [
+      {
+        "question_variants": [
+          "fix grammar",
+          "correct grammar",
+          "proofread",
+          "check spelling",
+          "fix errors",
+          "grammar check"
+        ],
+        "answers": [
+          "**Proofread version:**\n\n{text}\n\n**Corrections:** Fixed subject-verb agreement, corrected punctuation, resolved spelling errors, improved sentence clarity.",
+          "**Grammar-checked:**\n\n{text}\n\n**Issues fixed:** Corrected run-on sentences, fixed misplaced modifiers, standardized punctuation, resolved inconsistencies.",
+          "**Corrected text:**\n\n{text}\n\n**Changes:** Fixed tense consistency, corrected comma usage, resolved pronoun references, fixed capitalization.",
+          "**Clean version:**\n\n{text}\n\n**Fixed:** Spelling errors, grammatical inconsistencies, punctuation issues, and awkward phrasing.",
+          "**Edited version:**\n\n{text}\n\n**Corrections applied:** Subject-verb agreement, proper comma placement, consistent tense, and clear pronoun references."
+        ]
+      }
+    ],
+    "tone_formal": [
+      {
+        "question_variants": [
+          "make formal",
+          "formal tone",
+          "professional tone",
+          "business style",
+          "corporate writing"
+        ],
+        "answers": [
+          "Here's the formal version:\n\n{text}\n\nThe tone has been adjusted for professional communication with appropriate formality and structure.",
+          "Professional redraft:\n\n{text}\n\nThe register has been elevated while maintaining the core message, suitable for business correspondence.",
+          "Formalized version:\n\n{text}\n\nReplaced colloquialisms with formal equivalents, restructured for logical progression, adopted an objective tone."
+        ]
+      }
+    ],
+    "tone_casual": [
+      {
+        "question_variants": [
+          "make casual",
+          "casual tone",
+          "friendly tone",
+          "conversational",
+          "less formal"
+        ],
+        "answers": [
+          "Here's a more casual take:\n\n{text}\n\nFriendlier and more approachable — perfect for blog posts or informal communication.",
+          "Relaxed version:\n\n{text}\n\nLoosened up the language to feel more like a conversation. Still clear, just less stiff.",
+          "Conversational rewrite:\n\n{text}\n\nNow it reads like you're explaining it to a friend over coffee."
+        ]
+      }
+    ],
+    "continue": [
+      {
+        "question_variants": [
+          "continue writing",
+          "keep going",
+          "write more",
+          "finish this",
+          "what comes next"
+        ],
+        "answers": [
+          "Continuing from where you left off:\n\nFurthermore, this approach opens up several interesting possibilities. When we consider the broader implications, it becomes clear that the potential for growth is substantial. The next logical step is to examine specific use cases and evaluate feasibility.",
+          "Building on that thought:\n\nThis naturally leads to an important consideration — how do we balance ambition with practicality? The answer lies in iterative progress. By taking measured steps and learning from each one, we can build something truly remarkable.",
+          "Taking this further:\n\nWhat makes this particularly compelling is the intersection of theory and practice. While the concept is powerful on its own, its real value emerges through implementation. Let's explore how this translates into concrete actions.",
+          "Following that thread:\n\nThe implications extend beyond the immediate scope. When we zoom out, patterns connect to broader trends in the field. These connections suggest that what we're building here could have lasting impact."
+        ]
+      }
+    ],
+    "brainstorm": [
+      {
+        "question_variants": [
+          "brainstorm",
+          "give me ideas",
+          "creative ideas",
+          "think of something",
+          "suggest ideas",
+          "ideate"
+        ],
+        "answers": [
+          "Here are some creative directions:\n\n1. **The Contrarian Angle** — What if the opposite of conventional wisdom is true?\n2. **The Human Story** — Center the narrative around real people and their experiences\n3. **The Future Vision** — Paint a picture of what success looks like in 5 years\n4. **The Problem-First** — Start with the pain point and build the solution around it\n5. **The Data Play** — Let numbers tell the story with compelling visualizations",
+          "Ideas to explore:\n\n1. **Start with a question** — Hook the reader with something they can't help but answer\n2. **Use an analogy** — Compare your topic to something unexpected but relatable\n3. **Tell a micro-story** — A 3-sentence narrative illustrating the key point\n4. **Flip the script** — Challenge an assumption your audience holds\n5. **Show, don't tell** — Replace abstract claims with concrete examples",
+          "Brainstorm dump:\n\n• Open with a bold, controversial statement\n• Use a before/after format to show transformation\n• A numbered list of myths vs. facts\n• Personal anecdotes for authenticity\n• A visual metaphor that ties everything together"
+        ]
+      }
+    ],
+    "explain": [
+      {
+        "question_variants": [
+          "explain this",
+          "what does this mean",
+          "help me understand",
+          "break this down",
+          "explain like I'm five"
+        ],
+        "answers": [
+          "Let me break this down simply:\n\nThe core idea behind {topic} is straightforward — it's about creating a system where inputs lead to predictable, useful outputs. Think of it like a recipe: specific ingredients, specific steps, reliable results.",
+          "Here's a clear explanation:\n\n{topic} works like this: you start with a foundation, build layers of functionality on top, and each layer depends on the one below it. It's modular, meaning you can change parts without breaking the whole thing.",
+          "In simple terms:\n\n{topic} is essentially a way to organize complexity. Instead of dealing with everything at once, you break it into smaller, manageable pieces that each do one job well. Together, they create something powerful.",
+          "Think of it this way:\n\n{topic} is like building with LEGO. Each piece is simple on its own, but combined thoughtfully, they create structures far greater than the sum of their parts. The key is knowing which pieces to use where.",
+          "Breaking it down:\n\n{topic} has three main components:\n1. **Input** — what goes in\n2. **Process** — what happens to it\n3. **Output** — what comes out\n\nEach step is designed to be clear and predictable."
+        ]
+      }
+    ],
+    "compare": [
+      {
+        "question_variants": [
+          "compare these",
+          "what's the difference",
+          "pros and cons",
+          "versus",
+          "which is better",
+          "A vs B"
+        ],
+        "answers": [
+          "Here's a balanced comparison:\n\n**Option A:**\n• Strengths: Faster, simpler, lower cost\n• Weaknesses: Less flexible, harder to scale\n\n**Option B:**\n• Strengths: More powerful, highly extensible\n• Weaknesses: Steeper learning curve, higher overhead\n\n**Verdict:** It depends on your priorities — speed vs. flexibility.",
+          "Let me weigh both sides:\n\n**For:** The main advantages include simplicity, speed of implementation, and lower barrier to entry. It's great for quick wins.\n\n**Against:** The trade-offs are limited scalability, potential technical debt, and fewer customization options.\n\n**Bottom line:** Good for now, but plan for growth.",
+          "A fair comparison:\n\n| Aspect | First Option | Second Option |\n|--------|------------|---------------|\n| Speed | Faster | Moderate |\n| Flexibility | Limited | High |\n| Learning curve | Easy | Steep |\n| Long-term value | Medium | High |\n\nChoose based on your timeline and goals."
+        ]
+      }
+    ],
+    "motivation": [
+      {
+        "question_variants": [
+          "motivate me",
+          "I feel stuck",
+          "need motivation",
+          "feeling unmotivated",
+          "inspire me",
+          "I want to give up"
+        ],
+        "answers": [
+          "Remember: every expert was once a beginner. The fact that you're here, working on this, puts you ahead of everyone who didn't start.",
+          "Progress isn't always visible. Seeds grow underground before they break through. Keep watering.",
+          "You don't need to see the whole staircase. Just take the next step. Then the next. That's how everything gets built.",
+          "The gap between where you are and where you want to be is filled with work. Not talent. Not luck. Work. And you're already doing it.",
+          "Motivation follows action, not the other way around. Start doing something — even tiny — and watch motivation catch up."
+        ]
+      }
+    ],
+    "planning": [
+      {
+        "question_variants": [
+          "how to plan",
+          "create a plan",
+          "project planning",
+          "plan a project",
+          "roadmap",
+          "strategy"
+        ],
+        "answers": [
+          "Start with the end goal, then work backwards:\n\n1. **Define success** — What does 'done' look like?\n2. **Break it down** — Major milestones and phases\n3. **Identify dependencies** — What blocks what?\n4. **Set deadlines** — Realistic timelines with buffer\n5. **Review weekly** — Adjust as you learn",
+          "A solid plan needs three things:\n\n1. **Clear objective** — One sentence describing what you're building\n2. **Prioritized tasks** — What matters most, ordered ruthlessly\n3. **Regular checkpoints** — Weekly reviews to stay on track\n\nDon't over-plan. The plan will change — that's normal.",
+          "Use this framework:\n\n• **Now (this week):** 2-3 concrete actions\n• **Next (this month):** Key milestones to hit\n• **Later (this quarter):** General direction and goals\n\nKeep it light. Heavy plans don't survive contact with reality."
+        ]
+      }
+    ],
+    "general": [
+      {
+        "question_variants": [
+          "help me",
+          "can you help",
+          "I need help",
+          "what can you do",
+          "assist me"
+        ],
+        "answers": [
+          "I can help with writing, coding, design, productivity, planning, and more. What would you like to work on?",
+          "I'm here to assist! I can rewrite text, brainstorm ideas, explain concepts, give feedback, and more. What do you need?",
+          "Happy to help. I work best with specific tasks: 'rewrite this paragraph', 'explain APIs', 'give me feedback on X'. What are you working on?",
+          "I can assist with a wide range of topics. For best results, be specific about what you need — and I'll give you a focused, useful answer.",
+          "Let me know what you need. I can help with writing, coding, design, productivity, career advice, learning strategies, and more."
+        ]
+      },
+      {
+        "question_variants": ["hello", "hi", "hey", "good morning", "what's up", "sup"],
+        "answers": [
+          "Hey! What are you working on today? I'm ready to help.",
+          "Hello! How can I assist you? Feel free to ask anything.",
+          "Hi there! What can I help you with?",
+          "Hey! What do you need? I can help with writing, coding, ideas, and more.",
+          "Hello! Ready to help. What's on your mind?"
+        ]
+      },
+      {
+        "question_variants": ["thank you", "thanks", "great", "awesome", "perfect", "nice"],
+        "answers": [
+          "Glad I could help! Let me know if you need anything else.",
+          "You're welcome! Happy to assist anytime.",
+          "Awesome — glad that was useful. Don't hesitate to ask more.",
+          "Anytime! I'm here whenever you need me.",
+          "Happy to help! Just drop a message if something else comes up."
+        ]
+      },
+      {
+        "question_variants": [
+          "who are you",
+          "what are you",
+          "are you AI",
+          "what is this",
+          "tell me about yourself"
+        ],
+        "answers": [
+          "I'm the Piscord AI assistant. I help with writing, coding, brainstorming, and answering questions — all instantly, right here in the app.",
+          "I'm a built-in AI helper for Piscord. I can rewrite text, answer questions, brainstorm ideas, and more. Try me!",
+          "I'm your AI assistant within Piscord. I work locally and instantly — no waiting for external services. Ask me anything!",
+          "I'm the AI assistant built into this platform. I help with content, ideas, coding questions, and more. What would you like to do?",
+          "I'm Piscord's AI. I help with writing, coding, design, productivity, and general questions. All responses are instant."
+        ]
+      }
+    ],
+    "feedback": [
+      {
+        "question_variants": [
+          "give feedback",
+          "review this",
+          "critique",
+          "what do you think",
+          "rate this",
+          "is this good"
+        ],
+        "answers": [
+          "Here's my honest assessment:\n\n**What works well:**\n• Clear main idea\n• Good structure\n• Engaging opening\n\n**What could improve:**\n• Tighten the middle section\n• Add more specific examples\n• Strengthen the conclusion\n\nOverall: solid foundation with room to polish.",
+          "Feedback on your work:\n\n**Strengths:** The core message is clear and the tone is appropriate. You've made good points.\n\n**Areas to improve:** Consider adding more evidence, varying sentence length for rhythm, and ending with a stronger call to action.\n\n**Rating: 7/10** — Good, with clear paths to great.",
+          "My take:\n\n**What I like:** Original perspective, logical flow, and clean language.\n\n**Suggestions:**\n1. The opening could be punchier\n2. Some points need concrete examples\n3. The conclusion feels rushed\n\nTweak those and it's very strong."
+        ]
+      }
+    ],
+    "mindset": [
+      {
+        "question_variants": [
+          "growth mindset",
+          "how to think better",
+          "change mindset",
+          "positive thinking",
+          "mental models"
+        ],
+        "answers": [
+          "The most powerful mindset shift: treat failures as data points, not verdicts. Every setback teaches you something if you pay attention.",
+          "Three mental models that change everything:\n1. **First principles** — Break problems down to fundamentals\n2. **Inversion** — Instead of how to succeed, ask how to avoid failure\n3. **80/20 rule** — Focus on the 20% of effort that drives 80% of results",
+          "Growth mindset in practice: replace 'I can't do this' with 'I can't do this *yet*'. That single word changes everything.",
+          "The best thinkers question their assumptions regularly. What do you believe that might not be true? Start there.",
+          "Reframe problems as puzzles. Problems feel heavy; puzzles feel interesting. Same challenge, different energy."
+        ]
+      }
+    ]
+  },
+  "fallback": [
+    "I'm not sure I understood that. Could you try rephrasing or be more specific?",
+    "That's outside my expertise right now. Try asking about writing, coding, productivity, or design!",
+    "I didn't quite catch that. Try asking me to rewrite, summarize, or explain something specific.",
+    "Hmm, I'm not sure what to do with that. Use action buttons like Rewrite, Summarize, or Improve for best results.",
+    "Could you give me more context? I work best with specific tasks like 'summarize this' or 'how to improve my writing'.",
+    "I'd love to help — try being more specific. For example: 'explain APIs' or 'give me productivity tips'.",
+    "I'm not confident in my answer here. Try using the action buttons or rephrasing your question!",
+    "Not sure about that one. I can help with writing, coding, design, productivity, career, learning, and more — just ask specifically!"
+  ],
+  "prefixes": {
+    "editor": [
+      "Here's what I've got for you:",
+      "You can try this approach:",
+      "Here's my suggestion:",
+      "Let me help with that:"
+    ],
+    "chat": [
+      "Great question! ",
+      "Here's what I think: ",
+      "Good one — ",
+      "Let me share my thoughts: "
+    ]
+  },
+  "category_keywords": {
+    "writing": [
+      "write",
+      "writing",
+      "content",
+      "blog",
+      "article",
+      "essay",
+      "paragraph",
+      "sentence",
+      "headline",
+      "title",
+      "draft",
+      "copy",
+      "prose"
+    ],
+    "productivity": [
+      "productive",
+      "productivity",
+      "focus",
+      "time",
+      "efficient",
+      "procrastinate",
+      "distract",
+      "organize",
+      "schedule",
+      "prioritize",
+      "manage time"
+    ],
+    "coding": [
+      "code",
+      "coding",
+      "program",
+      "debug",
+      "javascript",
+      "python",
+      "api",
+      "function",
+      "variable",
+      "frontend",
+      "backend",
+      "deploy",
+      "git",
+      "algorithm",
+      "data structure"
+    ],
+    "design": [
+      "design",
+      "ui",
+      "ux",
+      "color",
+      "layout",
+      "typography",
+      "font",
+      "visual",
+      "interface",
+      "wireframe",
+      "prototype",
+      "figma"
+    ],
+    "business": [
+      "business",
+      "startup",
+      "market",
+      "customer",
+      "revenue",
+      "pricing",
+      "launch",
+      "brand",
+      "strategy",
+      "entrepreneur",
+      "profit",
+      "sales"
+    ],
+    "communication": [
+      "communicate",
+      "email",
+      "present",
+      "speak",
+      "meeting",
+      "persuade",
+      "negotiate",
+      "conversation",
+      "team",
+      "message"
+    ],
+    "learning": [
+      "learn",
+      "study",
+      "read",
+      "book",
+      "course",
+      "note",
+      "memory",
+      "retain",
+      "education",
+      "skill",
+      "teach",
+      "understand"
+    ],
+    "health": [
+      "health",
+      "sleep",
+      "exercise",
+      "stress",
+      "anxious",
+      "wellness",
+      "water",
+      "energy",
+      "break",
+      "rest",
+      "meditate",
+      "nutrition"
+    ],
+    "career": [
+      "career",
+      "job",
+      "interview",
+      "resume",
+      "hire",
+      "salary",
+      "negotiate",
+      "promote",
+      "linkedin",
+      "portfolio",
+      "mentor"
+    ],
+    "creativity": [
+      "creative",
+      "creativity",
+      "inspire",
+      "imagination",
+      "artist",
+      "block",
+      "idea",
+      "innovation",
+      "brainstorm",
+      "originality"
+    ],
+    "teamwork": [
+      "team",
+      "collaborate",
+      "lead",
+      "manage",
+      "delegate",
+      "feedback",
+      "conflict",
+      "culture",
+      "remote",
+      "hire"
+    ],
+    "rewrite": ["rewrite", "rephrase", "reword", "clean up", "make better"],
+    "summarize": ["summarize", "summary", "tldr", "condense", "shorten", "brief"],
+    "expand": ["expand", "elaborate", "detail", "extend", "longer", "depth", "more detail"],
+    "improve": ["improve", "enhance", "polish", "refine", "upgrade"],
+    "fix_grammar": ["grammar", "spelling", "typo", "correct", "proofread", "punctuation"],
+    "tone_formal": ["formal", "professional", "business tone", "corporate"],
+    "tone_casual": ["casual", "friendly", "conversational", "relaxed", "informal"],
+    "continue": ["continue", "keep going", "next", "finish", "more"],
+    "brainstorm": ["brainstorm", "ideas", "suggest", "ideate", "think of"],
+    "explain": ["explain", "what is", "what does", "how does", "break down", "eli5", "define"],
+    "compare": ["compare", "versus", "difference", "pros cons", "better", "which one"],
+    "motivation": ["motivate", "stuck", "give up", "inspire", "unmotivated", "lost"],
+    "planning": ["plan", "roadmap", "strategy", "project", "milestone", "goal", "timeline"],
+    "feedback": ["feedback", "review", "critique", "opinion", "rate", "assess"],
+    "mindset": ["mindset", "mental model", "think better", "perspective", "belief", "attitude"],
+    "general": ["help", "hello", "hi", "hey", "thanks", "who are you", "what can you do"]
+  }
+}

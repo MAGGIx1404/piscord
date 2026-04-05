@@ -150,8 +150,6 @@ watch(open, async (val) => {
 const requests = computed(() => data.value?.requests ?? []);
 const unreadCount = computed(() => data.value?.unreadCount ?? 0);
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 const statusMessage = (status: JoinRequest["status"]) => {
   switch (status) {
     case "pending":
@@ -178,8 +176,6 @@ const formatDate = (iso: string) => {
   if (days < 7) return `${days}d ago`;
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
-
-// ─── Status pill ──────────────────────────────────────────────────────────────
 
 const StatusBadge = defineComponent({
   props: { status: { type: String, required: true } },

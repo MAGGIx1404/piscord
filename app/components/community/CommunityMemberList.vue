@@ -97,7 +97,6 @@
     </div>
   </div>
 
-  <!-- ── All Members Modal ──────────────────────────────────────────────────── -->
   <Dialog v-model:open="modalOpen">
     <DialogContent class="flex max-h-[80vh] max-w-lg flex-col gap-0 overflow-hidden p-0">
       <!-- Modal header -->
@@ -211,8 +210,6 @@ defineEmits<{
   selectMember: [member: Member];
 }>();
 
-// ─── State ────────────────────────────────────────────────────────────────────
-
 const selectedRole = ref("all");
 const modalRole = ref("all");
 const modalOpen = ref(false);
@@ -220,8 +217,6 @@ const modalOpen = ref(false);
 watch(modalOpen, (open) => {
   if (open) modalRole.value = selectedRole.value;
 });
-
-// ─── Roles (use prop or derive from members) ──────────────────────────────────
 
 const allRoles = computed<Role[]>(() => {
   if (props.roles?.length) return props.roles;
@@ -238,8 +233,6 @@ const allRoles = computed<Role[]>(() => {
   ];
 });
 
-// ─── Filtered lists ───────────────────────────────────────────────────────────
-
 const filterByRole = (list: Member[], roleId: string) =>
   roleId === "all"
     ? list
@@ -251,8 +244,6 @@ const filterByRole = (list: Member[], roleId: string) =>
 const filteredMembers = computed(() => filterByRole(props.members, selectedRole.value));
 const pagedMembers = computed(() => filteredMembers.value.slice(0, 10));
 const modalFilteredMembers = computed(() => filterByRole(props.members, modalRole.value));
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function displayRole(memberId: string | number, role: string) {
   if (props.ownerId && memberId === props.ownerId) return "Owner";

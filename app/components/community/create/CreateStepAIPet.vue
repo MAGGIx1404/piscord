@@ -235,9 +235,6 @@ import {
   Sparkles,
   Zap,
   Brain,
-  MessageCircle,
-  Shield,
-  HelpCircle,
   Wand2
 } from "lucide-vue-next";
 
@@ -247,13 +244,6 @@ interface AIModel {
   description: string;
   icon: any;
   iconColor: string;
-}
-
-interface Capability {
-  id: string;
-  label: string;
-  description: string;
-  icon: any;
 }
 
 const enabled = defineModel<boolean>("enabled", { required: true });
