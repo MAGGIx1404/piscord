@@ -167,7 +167,8 @@
   </Dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { ComponentPublicInstance } from "vue";
 import { ShieldCheck, ArrowRight, ArrowLeft, Loader2, Copy, Check } from "lucide-vue-next";
 
 const { isOpen, close } = use2FASetup();
@@ -181,7 +182,7 @@ const secret = ref("");
 const copied = ref(false);
 
 const digits = ref(Array(6).fill(""));
-const inputRefs = [];
+const inputRefs: HTMLInputElement[] = [];
 const verifying = ref(false);
 const codeError = ref("");
 
@@ -218,7 +219,7 @@ async function startSetup() {
   }
 }
 
-function onOpenChange(val) {
+function onOpenChange(val: boolean) {
   if (!val) close();
 }
 
@@ -228,31 +229,31 @@ async function copySecret() {
   setTimeout(() => (copied.value = false), 2000);
 }
 
-function setInputRef(el, i) {
-  if (el) inputRefs[i] = el;
+function setInputRef(el: Element | ComponentPublicInstance | null, i: number) {
+  if (el) inputRefs[i] = (el as { $el?: HTMLInputElement }).$el ?? (el as HTMLInputElement);
 }
 
-function focusAt(i) {
-  inputRefs[i]?.$el?.focus?.() ?? inputRefs[i]?.focus?.();
+function focusAt(i: number) {
+  inputRefs[i]?.focus?.();
 }
 
-function onDigitInput(i, event) {
-  const val = event.target.value.replace(/\D/g, "").slice(-1);
+function onDigitInput(i: number, event: Event) {
+  const val = (event.target as HTMLInputElement).value.replace(/\D/g, "").slice(-1);
   digits.value[i] = val;
   codeError.value = "";
   if (val && i < 5) focusAt(i + 1);
 }
 
-function onDigitKeydown(i, event) {
+function onDigitKeydown(i: number, event: KeyboardEvent) {
   if (event.key === "Backspace" && !digits.value[i] && i > 0) focusAt(i - 1);
   if (event.key === "ArrowLeft" && i > 0) focusAt(i - 1);
   if (event.key === "ArrowRight" && i < 5) focusAt(i + 1);
 }
 
-function onPaste(event) {
-  const text = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+function onPaste(event: ClipboardEvent) {
+  const text = event.clipboardData?.getData("text").replace(/\D/g, "").slice(0, 6);
   if (!text) return;
-  text.split("").forEach((char, i) => {
+  text.split("").forEach((char: string, i: number) => {
     digits.value[i] = char;
   });
   focusAt(Math.min(text.length, 5));
@@ -264,12 +265,13 @@ async function onVerify() {
   codeError.value = "";
 
   try {
-    await verify2FA(userStore.user.id, code.value);
+    await verify2FA(userStore.user!.id, code.value);
     // Update the store so the modal won't re-prompt
-    userStore.setUser({ ...userStore.user, is_2fa_enabled: true });
+    userStore.setUser({ ...userStore.user!, is_2fa_enabled: true });
     step.value = "success";
-  } catch (err) {
-    const status = err?.statusCode ?? err?.status;
+  } catch (err: unknown) {
+    const e = err as Record<string, number | undefined>;
+    const status = e?.statusCode ?? e?.status;
     codeError.value = status === 401 ? "Invalid code. Please try again." : "Verification failed.";
     digits.value = Array(6).fill("");
     nextTick(() => focusAt(0));

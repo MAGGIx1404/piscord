@@ -250,34 +250,3 @@ const handleCancel = () => {
   router.back();
 };
 </script>
-
-<style scoped>
-@keyframes float-slow {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(30px, -30px) scale(1.1);
-  }
-}
-
-@keyframes float-delayed {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-20px, 20px) scale(1.05);
-  }
-}
-
-.animate-float-slow {
-  animation: float-slow 20s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float-delayed 25s ease-in-out infinite;
-  animation-delay: 5s;
-}
-</style>

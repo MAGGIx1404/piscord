@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   ChartContainer,
   ChartCrosshair,
-  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
   componentToString
@@ -158,7 +157,7 @@ const currentSvgDefs = computed(() => {
 
 <template>
   <Card class="pt-0">
-    <CardHeader class="flex items-center gap-2 border-b pt-6 px-2 sm:flex-row">
+    <CardHeader class="flex items-center gap-2 border-b px-2 pt-6 sm:flex-row">
       <div class="grid flex-1 gap-1">
         <CardTitle>{{ title }}</CardTitle>
         <CardDescription>{{ description }}</CardDescription>
@@ -192,19 +191,19 @@ const currentSvgDefs = computed(() => {
       </div>
     </CardHeader>
 
-    <CardContent class="px-2 pt-4 sm:pt-6 pb-4 space-y-6">
+    <CardContent class="space-y-6 px-2 pt-4 pb-4 sm:pt-6">
       <!-- Stats Cards Row -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div
           v-for="stat in stats"
           :key="stat.label"
-          class="p-4 rounded-xl border bg-card/50 hover:bg-accent/50 transition-colors cursor-pointer"
+          class="cursor-pointer rounded-xl border bg-card/50 p-4 transition-colors hover:bg-accent/50"
           :class="{
             'ring-2 ring-primary': selectedMetric === stat.label.toLowerCase().replace(' ', '')
           }"
         >
-          <div class="flex items-center gap-3 mb-2">
-            <div class="size-10 rounded-lg flex items-center justify-center" :class="stat.bgColor">
+          <div class="mb-2 flex items-center gap-3">
+            <div class="flex size-10 items-center justify-center rounded-lg" :class="stat.bgColor">
               <component :is="stat.icon" class="size-5" :class="stat.color" />
             </div>
             <div
@@ -243,10 +242,12 @@ const currentSvgDefs = computed(() => {
             :domain-line="false"
             :grid-line="false"
             :num-ticks="6"
-            :tick-format="(d: number) => {
-              const date = new Date(d);
-              return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }"
+            :tick-format="
+              (d: number) => {
+                const date = new Date(d);
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              }
+            "
           />
           <VisAxis type="y" :num-ticks="3" :tick-line="false" :domain-line="false" />
           <ChartTooltip />

@@ -124,13 +124,6 @@ const props = withDefaults(defineProps<Props>(), {
   stacked: false
 });
 
-defineEmits<{
-  reply: [message: Message];
-  copy: [message: Message];
-  regenerate: [message: Message];
-  feedback: [type: "positive" | "negative"];
-}>();
-
 const formattedTime = computed(() => {
   return new Date(props.message.createdAt).toLocaleTimeString([], {
     hour: "2-digit",

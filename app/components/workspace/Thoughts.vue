@@ -171,6 +171,7 @@ const emit = defineEmits<{
   deleteThought: [id: string];
   addToDocument: [content: string];
   aiAction: [action: string];
+  thoughtAnimated: [id: string];
 }>();
 
 const newThought = ref("");
@@ -199,8 +200,8 @@ async function startTypewriter(thought: Thought) {
     typedContent.value += chars[i];
     await new Promise((r) => setTimeout(r, 14));
   }
-  // Mark done — remove animate flag
-  thought.animate = false;
+  // Notify parent the typewriter finished
+  emit("thoughtAnimated", thought.id);
   typingId.value = null;
 }
 

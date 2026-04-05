@@ -95,7 +95,7 @@
               </div>
             </div>
 
-            <ChannelEmptyState
+            <LazyChannelEmptyState
               v-else-if="!searchQuery"
               :can-manage="canManage"
               @create="openCreateDialog()"

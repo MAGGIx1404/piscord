@@ -61,7 +61,7 @@
         v-if="aiLoading"
         class="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-violet-500/20 bg-popover/95 px-4 py-2 shadow-lg shadow-violet-500/5 backdrop-blur-xl"
       >
-        <AIThinkingLoader label="AI is writing" />
+        <LazyAIThinkingLoader label="AI is writing" />
       </div>
     </Transition>
 
@@ -78,6 +78,7 @@
           @delete-thought="deleteThought"
           @add-to-document="addToDocument"
           @ai-action="handleSidebarAIAction"
+          @thought-animated="onThoughtAnimated"
         />
       </SheetContent>
     </Sheet>
@@ -213,7 +214,11 @@ async function handleBubbleAction(action: AIAction) {
 
   await typewriteEditor(html, 12, (token) => {
     if (editor.value) {
-      editor.value.chain().focus().insertContent(token, { parseOptions: { preserveWhitespace: false } }).run();
+      editor.value
+        .chain()
+        .focus()
+        .insertContent(token, { parseOptions: { preserveWhitespace: false } })
+        .run();
     }
   });
 }
@@ -235,6 +240,11 @@ function addThought(content: string, animate = false) {
 
 function deleteThought(id: string) {
   thoughts.value = thoughts.value.filter((t) => t.id !== id);
+}
+
+function onThoughtAnimated(id: string) {
+  const t = thoughts.value.find((th) => th.id === id);
+  if (t) t.animate = false;
 }
 
 async function addToDocument(content: string) {

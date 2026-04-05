@@ -14,7 +14,6 @@
     "create-migration": "npx tsx ./scripts/create-migration.ts"
   },
   "dependencies": {
-    "@faker-js/faker": "^10.3.0",
     "@nuxt/eslint": "^1.10.0",
     "@nuxt/fonts": "^0.12.1",
     "@nuxt/hints": "^1.0.0-alpha.2",
@@ -48,12 +47,9 @@
     "clsx": "^2.1.1",
     "dompurify": "^3.3.3",
     "dotenv": "^17.2.3",
-    "embla-carousel-vue": "^8.6.0",
-    "eslint": "^9.39.1",
     "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.3",
     "kysely": "^0.28.11",
-    "lowlight": "^3.3.0",
     "lucide-vue-next": "^0.554.0",
     "marked": "^17.0.4",
     "nuxt": "^4.2.1",
@@ -76,6 +72,7 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@tailwindcss/typography": "^0.5.19",
     "@types/bcrypt": "^6.0.0",
     "@types/dompurify": "^3.0.5",
@@ -83,6 +80,7 @@
     "@types/node": "^24.10.1",
     "@types/pg": "^8.18.0",
     "@types/qrcode": "^1.5.6",
+    "eslint": "^9.39.1",
     "eslint-plugin-tailwindcss": "^3.18.2",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",

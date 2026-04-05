@@ -8,8 +8,6 @@ export function useAIAgent() {
     userMessage: ChatMessage,
     aiAgent: AIAgent,
     channelId: string,
-    _communityId: string,
-    _canManage: boolean,
     addMessage: (msg: ChatMessage) => void
   ) {
     if (processing.value) return;
@@ -37,8 +35,7 @@ export function useAIAgent() {
       );
 
       addMessage(result.message);
-    } catch (error) {
-      console.error("[AI Agent Error]", error);
+    } catch {
       try {
         const msg = await postAIMessage(
           channelId,

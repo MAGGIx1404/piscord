@@ -149,10 +149,6 @@ export function useChannelChat(channelId: Ref<string>) {
       case "presence:leave":
         onlineUsers.value = data.onlineUsers as string[];
         break;
-
-      case "error":
-        console.error("[WS Error]", data.message);
-        break;
     }
   }
 

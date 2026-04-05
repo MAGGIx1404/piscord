@@ -91,147 +91,17 @@
     </div>
 
     <div class="px-6 py-6">
-      <div v-if="activeTab === 'communities'">
-        <div v-if="communityPending" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <div v-for="n in 6" :key="n" class="h-20 animate-pulse rounded-xl bg-muted/40" />
-        </div>
-        <div
-          v-else-if="!communities.length"
-          class="flex flex-col items-center gap-3 py-16 text-center"
-        >
-          <div class="flex size-16 items-center justify-center rounded-2xl bg-muted/40">
-            <Users class="size-7 text-muted-foreground" />
-          </div>
-          <p class="font-medium">No communities yet</p>
-          <p class="text-sm text-muted-foreground">
-            Discover and join communities to see them here.
-          </p>
-          <Button size="sm" class="mt-1" as-child>
-            <NuxtLink to="/discover">Browse Communities</NuxtLink>
-          </Button>
-        </div>
-        <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <NuxtLink
-            v-for="c in communities"
-            :key="c.id"
-            :to="`/community/${c.id}`"
-            class="group flex items-center gap-3 rounded-xl border border-border/60 bg-card p-3.5 transition-all hover:border-border hover:bg-accent/30 hover:shadow-sm"
-          >
-            <Avatar class="size-11 shrink-0 rounded-xl">
-              <AvatarImage :src="c.icon_url ?? ''" />
-              <AvatarFallback class="rounded-xl font-semibold">{{
-                c.name.charAt(0)
-              }}</AvatarFallback>
-            </Avatar>
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-1.5">
-                <p class="truncate text-sm font-semibold">{{ c.name }}</p>
-                <Crown v-if="c.is_owner" class="size-3 shrink-0 text-yellow-500" />
-              </div>
-              <p class="text-xs text-muted-foreground">
-                {{ formatNumber(c.member_count) }} members
-              </p>
-            </div>
-            <ArrowUpRight
-              class="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
-            />
-          </NuxtLink>
-        </div>
-      </div>
-
-      <div v-else-if="activeTab === 'requests'">
-        <div v-if="notifPending" class="space-y-2">
-          <div v-for="n in 4" :key="n" class="h-16 animate-pulse rounded-xl bg-muted/40" />
-        </div>
-        <div
-          v-else-if="!joinRequests.length"
-          class="flex flex-col items-center gap-3 py-16 text-center"
-        >
-          <div class="flex size-16 items-center justify-center rounded-2xl bg-muted/40">
-            <Inbox class="size-7 text-muted-foreground" />
-          </div>
-          <p class="font-medium">No join requests</p>
-          <p class="text-sm text-muted-foreground">
-            Requests you send to private communities appear here.
-          </p>
-        </div>
-        <div v-else class="space-y-2">
-          <div
-            v-for="req in joinRequests"
-            :key="req.id"
-            class="flex items-center gap-3.5 rounded-xl border border-border/60 bg-card px-4 py-3"
-          >
-            <Avatar class="size-10 shrink-0 rounded-lg">
-              <AvatarImage :src="req.community_icon ?? ''" />
-              <AvatarFallback class="rounded-lg">{{ req.community_name.charAt(0) }}</AvatarFallback>
-            </Avatar>
-            <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium">{{ req.community_name }}</p>
-              <p class="text-xs text-muted-foreground">{{ relativeDate(req.updated_at) }}</p>
-            </div>
-            <span
-              class="shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-medium capitalize"
-              :class="statusClass(req.status)"
-            >
-              {{ req.status }}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div v-else-if="activeTab === 'account'" class="max-w-lg space-y-4">
-        <div class="space-y-3 rounded-xl border border-border/60 bg-card p-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-semibold">Username</p>
-              <p class="text-xs text-muted-foreground">Your unique handle on the platform</p>
-            </div>
-            <Button variant="ghost" size="sm" class="text-xs" @click="editOpen = true">
-              <Pencil class="mr-1.5 size-3" /> Edit
-            </Button>
-          </div>
-          <div class="flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2">
-            <AtSign class="size-3.5 shrink-0 text-muted-foreground" />
-            <span class="font-mono text-sm">{{ user?.username }}</span>
-          </div>
-        </div>
-
-        <div class="space-y-3 rounded-xl border border-border/60 bg-card p-4">
-          <div>
-            <p class="text-sm font-semibold">Email</p>
-            <p class="text-xs text-muted-foreground">Your account email address</p>
-          </div>
-          <div class="flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2">
-            <Mail class="size-3.5 shrink-0 text-muted-foreground" />
-            <span class="text-sm">{{ user?.email }}</span>
-          </div>
-        </div>
-
-        <div class="rounded-xl border border-border/60 bg-card p-4">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm font-semibold">Two-Factor Auth</p>
-              <p class="text-xs text-muted-foreground">Extra security on your account</p>
-            </div>
-            <span
-              class="rounded-full border px-2.5 py-0.5 text-[11px] font-medium"
-              :class="
-                user?.is_2fa_enabled
-                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'border-border bg-muted/40 text-muted-foreground'
-              "
-            >
-              {{ user?.is_2fa_enabled ? "Enabled" : "Disabled" }}
-            </span>
-          </div>
-        </div>
-
-        <div class="space-y-2 rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-          <p class="text-sm font-semibold text-destructive">Danger Zone</p>
-          <p class="text-xs text-muted-foreground">Permanently delete your account and all data.</p>
-          <Button variant="destructive" size="sm" class="text-xs" disabled> Delete Account </Button>
-        </div>
-      </div>
+      <ProfileCommunitiesTab
+        v-if="activeTab === 'communities'"
+        :communities="communities"
+        :pending="communityPending"
+      />
+      <ProfileJoinRequestsTab
+        v-else-if="activeTab === 'requests'"
+        :requests="joinRequests"
+        :pending="notifPending"
+      />
+      <ProfileAccountTab v-else-if="activeTab === 'account'" :user="user" @edit="editOpen = true" />
     </div>
 
     <Dialog v-model:open="editOpen">
@@ -263,18 +133,7 @@
 </template>
 
 <script setup lang="ts">
-import {
-  Pencil,
-  Share2,
-  ShieldCheck,
-  Users,
-  Crown,
-  ArrowUpRight,
-  Inbox,
-  AtSign,
-  Mail,
-  Loader2
-} from "lucide-vue-next";
+import { Pencil, Share2, ShieldCheck, Loader2 } from "lucide-vue-next";
 import { toast } from "vue-sonner";
 
 const api = useApi();
@@ -371,35 +230,6 @@ async function saveProfile() {
   } finally {
     saving.value = false;
   }
-}
-
-function formatNumber(n: number) {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
-  return String(n);
-}
-
-function relativeDate(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  const hours = Math.floor(diff / 3_600_000);
-  const days = Math.floor(diff / 86_400_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function statusClass(status: string) {
-  return (
-    {
-      pending: "border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-      approved: "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-      rejected: "border-red-500/40 bg-red-500/10 text-red-500",
-      cancelled: "border-border bg-muted/40 text-muted-foreground"
-    }[status] ?? "border-border bg-muted/40 text-muted-foreground"
-  );
 }
 
 function copyLink() {
