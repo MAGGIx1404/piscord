@@ -12,8 +12,8 @@
 import "dotenv/config";
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { Kysely, PostgresDialect, Migrator, FileMigrationProvider } from "kysely";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { Kysely, PostgresDialect, Migrator, type Migration } from "kysely";
 import { Pool } from "pg";
 import type { Database } from "../server/db/tables/index.js";
 
@@ -52,13 +52,49 @@ const db = new Kysely<Database>({
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.resolve(__dirname, "../migrations");
 
+class WindowsSafeFileMigrationProvider {
+  async getMigrations(): Promise<Record<string, Migration>> {
+    const migrations: Record<string, Migration> = {};
+    const files = await fs.readdir(migrationsDir);
+
+    for (const fileName of files) {
+      if (
+        !fileName.endsWith(".js") &&
+        !(fileName.endsWith(".ts") && !fileName.endsWith(".d.ts")) &&
+        !fileName.endsWith(".mjs") &&
+        !(fileName.endsWith(".mts") && !fileName.endsWith(".d.mts"))
+      ) {
+        continue;
+      }
+
+      const fullPath = path.join(migrationsDir, fileName);
+      const migrationModule = await import(pathToFileURL(fullPath).href);
+      const migrationKey = fileName.substring(0, fileName.lastIndexOf("."));
+
+      if (isMigration(migrationModule?.default)) {
+        migrations[migrationKey] = migrationModule.default;
+      } else if (isMigration(migrationModule)) {
+        migrations[migrationKey] = migrationModule;
+      }
+    }
+
+    return migrations;
+  }
+}
+
+/**
+ * Determine whether a value is a `Migration` by checking for the migration shape.
+ *
+ * @param value - The value to test for the `Migration` shape
+ * @returns `true` if `value` has the properties required of a `Migration` (e.g., an `up` field), `false` otherwise.
+ */
+function isMigration(value: unknown): value is Migration {
+  return typeof value === "object" && value !== null && "up" in value;
+}
+
 const migrator = new Migrator({
   db,
-  provider: new FileMigrationProvider({
-    fs,
-    path,
-    migrationFolder: migrationsDir
-  })
+  provider: new WindowsSafeFileMigrationProvider()
 });
 
 // ─── Run ──────────────────────────────────────────────────────────────────────
