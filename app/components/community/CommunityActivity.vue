@@ -55,7 +55,6 @@
     </div>
 
     <template v-else>
-      <!-- ─── Activity tab ──────────────────────────────────────────────────── -->
       <div v-if="activeTab === 'activity'">
         <div
           v-if="!recentActivity.length"
@@ -86,7 +85,7 @@
                 <span class="text-muted-foreground"> joined the community</span>
               </p>
               <p class="text-[11px] text-muted-foreground/60">
-                {{ formatDate(item.joined_at) }}
+                {{ relativeDate(item.joined_at) }}
               </p>
             </div>
             <div
@@ -98,7 +97,6 @@
         </div>
       </div>
 
-      <!-- ─── Requests tab (owner only) ────────────────────────────────────── -->
       <div v-else-if="activeTab === 'requests' && isOwner">
         <div
           v-if="!joinRequests.length"
@@ -131,7 +129,7 @@
                 <div class="flex items-center justify-between gap-2">
                   <p class="truncate text-sm font-medium">{{ req.username }}</p>
                   <p class="shrink-0 text-[11px] text-muted-foreground/60">
-                    {{ formatDate(req.created_at) }}
+                    {{ relativeDate(req.created_at) }}
                   </p>
                 </div>
 
@@ -221,8 +219,6 @@ const activeTab = ref<"activity" | "requests">("activity");
 const reviewing = ref<string | null>(null);
 const reviewAction = ref<"approve" | "reject" | null>(null);
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 interface ActivityItem {
   id: string;
   user_id: string;
@@ -248,8 +244,6 @@ interface ApiResponse {
   requireApproval: boolean;
 }
 
-// ─── Fetch ────────────────────────────────────────────────────────────────────
-
 const { data, pending, refresh } = await useAsyncData<ApiResponse>(
   `community-activity-${props.communityId}`,
   () => api<ApiResponse>(`/api/communities/${props.communityId}/activity`)
@@ -260,15 +254,6 @@ const joinRequests = computed(() => data.value?.joinRequests ?? []);
 const isOwner = computed(() => data.value?.isOwner ?? false);
 const requireApproval = computed(() => data.value?.requireApproval ?? false);
 const pendingCount = computed(() => joinRequests.value.length);
-
-// Auto-switch to requests tab if owner has pending items and no tab chosen yet
-watch(data, (val) => {
-  if (val?.isOwner && val?.joinRequests?.length && activeTab.value === "activity") {
-    // Don't auto-switch — let the badge draw attention instead
-  }
-});
-
-// ─── Real-time updates ───────────────────────────────────────────────────────
 
 const { connected, connect } = useCommunityLive(
   computed(() => props.communityId),
@@ -304,8 +289,6 @@ watch(
   { immediate: true }
 );
 
-// ─── Review action ────────────────────────────────────────────────────────────
-
 async function reviewRequest(requestId: string, action: "approve" | "reject") {
   reviewing.value = requestId;
   reviewAction.value = action;
@@ -327,23 +310,7 @@ async function reviewRequest(requestId: string, action: "approve" | "reject") {
   }
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function handleRefresh() {
   void refresh();
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  const now = new Date();
-  const diff = now.getTime() - d.getTime();
-  const mins = Math.floor(diff / 60_000);
-  const hours = Math.floor(diff / 3_600_000);
-  const days = Math.floor(diff / 86_400_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 </script>

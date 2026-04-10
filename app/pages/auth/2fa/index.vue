@@ -72,8 +72,6 @@ if (!userId.value) {
   router.replace("/auth/login");
 }
 
-// ─── OTP state ────────────────────────────────────────────────────────────────
-
 const digits = ref(Array(6).fill(""));
 const inputRefs = [];
 const isPending = ref(false);
@@ -115,8 +113,6 @@ function onPaste(event) {
   focusAt(Math.min(text.length, 5));
   if (text.length === 6) onSubmit();
 }
-
-// ─── Submit ───────────────────────────────────────────────────────────────────
 
 async function onSubmit() {
   if (code.value.length < 6 || isPending.value) return;

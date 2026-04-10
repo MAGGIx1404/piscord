@@ -65,8 +65,16 @@
             </span>
           </div>
 
-          <!-- Message (rendered as markdown) -->
-          <div class="ai-prose text-sm leading-relaxed text-foreground" v-html="renderedContent" />
+          <!-- Message (rendered as markdown with typewriter) -->
+          <div v-if="isAnimating" class="ai-prose text-sm leading-relaxed text-foreground">
+            <span v-html="animatedHtml" />
+            <span class="inline-block h-3.5 w-0.5 translate-y-0.5 animate-pulse bg-violet-400" />
+          </div>
+          <div
+            v-else
+            class="ai-prose text-sm leading-relaxed text-foreground"
+            v-html="renderedContent"
+          />
         </div>
       </div>
     </div>
@@ -75,9 +83,12 @@
 
 <script setup lang="ts">
 import { CornerUpRight, Sparkles, Bot } from "lucide-vue-next";
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+
+const isAnimating = ref(false);
+const animatedHtml = ref("");
 
 interface Author {
   id: string;
@@ -113,13 +124,6 @@ const props = withDefaults(defineProps<Props>(), {
   stacked: false
 });
 
-defineEmits<{
-  reply: [message: Message];
-  copy: [message: Message];
-  regenerate: [message: Message];
-  feedback: [type: "positive" | "negative"];
-}>();
-
 const formattedTime = computed(() => {
   return new Date(props.message.createdAt).toLocaleTimeString([], {
     hour: "2-digit",
@@ -132,6 +136,39 @@ const renderedContent = computed(() => {
   const html = marked.parse(props.message.content, { breaks: true, gfm: true }) as string;
   return DOMPurify.sanitize(html);
 });
+
+// Typewriter animation for freshly received AI messages
+onMounted(() => {
+  // Only animate messages received within the last 3 seconds (i.e., new ones)
+  const messageAge = Date.now() - new Date(props.message.createdAt).getTime();
+  if (messageAge < 3000 && props.message.content) {
+    runTypewriter();
+  }
+});
+
+async function runTypewriter() {
+  const fullHtml = renderedContent.value;
+  isAnimating.value = true;
+  animatedHtml.value = "";
+
+  let i = 0;
+  while (i < fullHtml.length) {
+    // Insert full HTML tags instantly
+    if (fullHtml[i] === "<") {
+      const end = fullHtml.indexOf(">", i);
+      if (end !== -1) {
+        animatedHtml.value += fullHtml.slice(i, end + 1);
+        i = end + 1;
+        continue;
+      }
+    }
+    animatedHtml.value += fullHtml[i];
+    i++;
+    await new Promise((r) => setTimeout(r, 14));
+  }
+
+  isAnimating.value = false;
+}
 </script>
 
 <style scoped>

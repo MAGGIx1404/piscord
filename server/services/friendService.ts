@@ -1,7 +1,5 @@
 import { db, generateId } from "../db";
 
-// ─── Search Users ──────────────────────────────────────────────────────────
-
 export async function searchUsers(query: string, currentUserId: string) {
   const rows = await db
     .selectFrom("users as u")
@@ -39,8 +37,6 @@ export async function searchUsers(query: string, currentUserId: string) {
     is_incoming: r.sender_id !== null && r.sender_id !== currentUserId
   }));
 }
-
-// ─── Send Friend Request ───────────────────────────────────────────────────
 
 export async function sendFriendRequest(senderId: string, receiverId: string) {
   if (senderId === receiverId) {
@@ -98,8 +94,6 @@ export async function sendFriendRequest(senderId: string, receiverId: string) {
   return { ...request, sender_username: sender.username, sender_avatar_url: sender.avatar_url };
 }
 
-// ─── Accept Friend Request ─────────────────────────────────────────────────
-
 export async function acceptFriendRequest(requestId: string, userId: string) {
   const request = await db
     .selectFrom("friend_requests")
@@ -148,8 +142,6 @@ export async function acceptFriendRequest(requestId: string, userId: string) {
   return updated;
 }
 
-// ─── Decline Friend Request ────────────────────────────────────────────────
-
 export async function declineFriendRequest(requestId: string, userId: string) {
   const request = await db
     .selectFrom("friend_requests")
@@ -174,8 +166,6 @@ export async function declineFriendRequest(requestId: string, userId: string) {
     .execute();
 }
 
-// ─── Cancel Friend Request ─────────────────────────────────────────────────
-
 export async function cancelFriendRequest(requestId: string, userId: string) {
   const request = await db
     .selectFrom("friend_requests")
@@ -196,8 +186,6 @@ export async function cancelFriendRequest(requestId: string, userId: string) {
   await db.deleteFrom("friend_requests").where("id", "=", requestId).execute();
 }
 
-// ─── Remove Friend ────────────────────────────────────────────────────────
-
 export async function removeFriend(friendId: string, userId: string) {
   const request = await db
     .selectFrom("friend_requests")
@@ -217,8 +205,6 @@ export async function removeFriend(friendId: string, userId: string) {
 
   await db.deleteFrom("friend_requests").where("id", "=", request.id).execute();
 }
-
-// ─── Get Friends ───────────────────────────────────────────────────────────
 
 export async function getFriends(userId: string) {
   // Friends where user is sender
@@ -244,8 +230,6 @@ export async function getFriends(userId: string) {
   );
 }
 
-// ─── Get Pending Requests ──────────────────────────────────────────────────
-
 export async function getPendingRequests(userId: string) {
   const incoming = await db
     .selectFrom("friend_requests as fr")
@@ -268,8 +252,6 @@ export async function getPendingRequests(userId: string) {
   return { incoming, outgoing };
 }
 
-// ─── Get Friend IDs ───────────────────────────────────────────────────────
-
 export async function getFriendIds(userId: string): Promise<string[]> {
   const asSender = await db
     .selectFrom("friend_requests")
@@ -287,8 +269,6 @@ export async function getFriendIds(userId: string): Promise<string[]> {
 
   return [...asSender, ...asReceiver].map((r) => r.friend_id);
 }
-
-// ─── Are Friends ───────────────────────────────────────────────────────────
 
 export async function areFriends(userId1: string, userId2: string): Promise<boolean> {
   const row = await db

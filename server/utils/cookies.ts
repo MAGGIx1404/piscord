@@ -7,7 +7,7 @@ export function setAccessTokenCookie(event: ServerEvent, token: string) {
     httpOnly: true,
     secure: IS_PROD,
     sameSite: "strict",
-    maxAge: 60 * 30, // 30 minutes
+    maxAge: 60 * 60 * 24 * 30, // 30 days
     path: "/"
   });
 }

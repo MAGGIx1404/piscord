@@ -7,7 +7,7 @@ if (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET) {
 
 const ACCESS_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
-const ACCESS_EXPIRES_IN = "15m";
+const ACCESS_EXPIRES_IN = "5m";
 const REFRESH_EXPIRES_IN = "30d";
 
 export function signAccessToken(payload: AccessTokenPayload): string {

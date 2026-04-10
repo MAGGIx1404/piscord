@@ -1,5 +1,17 @@
 <template>
   <div class="sticky bottom-0 left-0 z-10 -mb-4 flex w-full flex-col gap-2 bg-background p-4">
+    <!-- Suggestion chips (no AI needed) -->
+    <div v-if="suggestions.length && text.trim()" class="flex flex-wrap gap-1.5">
+      <button
+        v-for="s in suggestions"
+        :key="s.id"
+        class="rounded-full border border-border/50 bg-card/90 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+        @mousedown.prevent="emit('send', s.prompt)"
+      >
+        {{ s.label }}
+      </button>
+    </div>
+
     <Textarea
       ref="textarea"
       v-model="text"
@@ -73,17 +85,22 @@
 import { Send, Bot, Sparkles } from "lucide-vue-next";
 import { ref, computed, nextTick, onMounted, onUnmounted } from "vue";
 import type { ChannelMember, AIAgent } from "~/composables/useChannelChat";
+import type { Suggestion } from "~/composables/useSuggestions";
 
 interface Props {
   members: ChannelMember[];
   aiAgent: AIAgent | null;
+  suggestions?: Suggestion[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  suggestions: () => []
+});
 
 const emit = defineEmits<{
   send: [content: string];
   typing: [];
+  inputChange: [text: string];
 }>();
 
 const textarea = ref<HTMLTextAreaElement | null>(null);
@@ -121,6 +138,7 @@ const totalItems = computed(() => filteredUsers.value.length + (aiAgentInList.va
 
 function onInput() {
   emit("typing");
+  emit("inputChange", text.value);
   const ta = getTextarea();
   if (!ta) return;
   const cursor = ta.selectionStart;

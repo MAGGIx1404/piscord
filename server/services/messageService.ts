@@ -1,10 +1,7 @@
 import { db, generateId } from "../db";
 import type { MessageType } from "../db/tables";
 
-// ─── Permission bitmask ─────────────────────────────────────────────────────
 const SEND_MESSAGES = 2;
-
-// ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface CreateMessagePayload {
   content: string;
@@ -37,8 +34,6 @@ export interface MessageItem {
   created_at: Date;
   updated_at: Date;
 }
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 async function requireChannelMembership(channelId: string, userId: string) {
   // Get the channel's community
@@ -170,8 +165,6 @@ async function buildMessageItems(
   });
 }
 
-// ─── Get messages by channel ────────────────────────────────────────────────
-
 export async function getMessagesByChannel(
   channelId: string,
   userId: string,
@@ -219,8 +212,6 @@ export async function getMessagesByChannel(
 
   return { messages, has_more: hasMore };
 }
-
-// ─── Create message ─────────────────────────────────────────────────────────
 
 export async function createMessage(
   channelId: string,
@@ -301,8 +292,6 @@ export async function createMessage(
   return messages[0]!;
 }
 
-// ─── Create AI message (no permission check — system-inserted) ──────────────
-
 export async function createAIMessage(
   channelId: string,
   botUserId: string,
@@ -349,8 +338,6 @@ export async function createAIMessage(
 
   return messages[0]!;
 }
-
-// ─── Toggle reaction ────────────────────────────────────────────────────────
 
 export async function toggleReaction(
   messageId: string,
@@ -416,15 +403,11 @@ export async function toggleReaction(
   return { added, reactions: Array.from(groups.values()) };
 }
 
-// ─── Parse @mentions from message content ───────────────────────────────────
-
 export function parseMentions(content: string): string[] {
   const matches = content.match(/@(\w+)/g);
   if (!matches) return [];
   return [...new Set(matches.map((m) => m.slice(1)))];
 }
-
-// ─── Resolve mention usernames to user IDs ──────────────────────────────────
 
 export async function resolveMentionUserIds(
   usernames: string[],
@@ -442,8 +425,6 @@ export async function resolveMentionUserIds(
 
   return rows;
 }
-
-// ─── Get a single message by ID ─────────────────────────────────────────────
 
 export async function getMessageById(
   messageId: string,

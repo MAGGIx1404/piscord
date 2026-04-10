@@ -184,8 +184,6 @@ export type Workspace = Selectable<WorkspacesTable>;
 export type NewWorkspace = Insertable<WorkspacesTable>;
 export type WorkspaceUpdate = Updateable<WorkspacesTable>;
 
-// ─── Messages ──────────────────────────────────────────────────────────────
-
 export type MessageType = "default" | "system" | "ai";
 
 export interface MessagesTable {
@@ -205,8 +203,6 @@ export type Message = Selectable<MessagesTable>;
 export type NewMessage = Insertable<MessagesTable>;
 export type MessageUpdate = Updateable<MessagesTable>;
 
-// ─── Message Attachments ───────────────────────────────────────────────────
-
 export interface MessageAttachmentsTable {
   id: Generated<string>;
   message_id: string;
@@ -220,8 +216,6 @@ export interface MessageAttachmentsTable {
 export type MessageAttachment = Selectable<MessageAttachmentsTable>;
 export type NewMessageAttachment = Insertable<MessageAttachmentsTable>;
 
-// ─── Reactions ─────────────────────────────────────────────────────────────
-
 export interface ReactionsTable {
   id: Generated<string>;
   message_id: string;
@@ -233,8 +227,6 @@ export interface ReactionsTable {
 export type Reaction = Selectable<ReactionsTable>;
 export type NewReaction = Insertable<ReactionsTable>;
 
-// ─── Member Roles ───────────────────────────────────────────────────────────
-
 export interface MemberRolesTable {
   member_id: string;
   role_id: string;
@@ -242,8 +234,6 @@ export interface MemberRolesTable {
 
 export type MemberRole = Selectable<MemberRolesTable>;
 export type NewMemberRole = Insertable<MemberRolesTable>;
-
-// ─── Friend Requests ────────────────────────────────────────────────────────
 
 export type FriendRequestStatus = "pending" | "accepted" | "declined" | "blocked";
 
@@ -260,8 +250,6 @@ export type FriendRequest = Selectable<FriendRequestsTable>;
 export type NewFriendRequest = Insertable<FriendRequestsTable>;
 export type FriendRequestUpdate = Updateable<FriendRequestsTable>;
 
-// ─── DM Conversations ──────────────────────────────────────────────────────
-
 export interface DmConversationsTable {
   id: Generated<string>;
   user1_id: string;
@@ -272,8 +260,6 @@ export interface DmConversationsTable {
 
 export type DmConversation = Selectable<DmConversationsTable>;
 export type NewDmConversation = Insertable<DmConversationsTable>;
-
-// ─── DM Messages ────────────────────────────────────────────────────────────
 
 export interface DmMessagesTable {
   id: Generated<string>;
@@ -288,6 +274,89 @@ export interface DmMessagesTable {
 export type DmMessage = Selectable<DmMessagesTable>;
 export type NewDmMessage = Insertable<DmMessagesTable>;
 export type DmMessageUpdate = Updateable<DmMessagesTable>;
+
+export interface AiNodeConfig {
+  temperature?: number;
+  max_tokens?: number;
+  system_prompt?: string;
+}
+
+export interface AiNodesTable {
+  id: Generated<string>;
+  workspace_id: string;
+  model: string;
+  title: string;
+  position_x: ColumnType<number, number | undefined, number>;
+  position_y: ColumnType<number, number | undefined, number>;
+  config: ColumnType<AiNodeConfig, AiNodeConfig | undefined, AiNodeConfig>;
+  created_at: ColumnType<Date, never, never>;
+  updated_at: ColumnType<Date, never, never>;
+}
+
+export type AiNode = Selectable<AiNodesTable>;
+export type NewAiNode = Insertable<AiNodesTable>;
+export type AiNodeUpdate = Updateable<AiNodesTable>;
+
+export type NodeMessageRole = "user" | "assistant" | "system";
+
+export interface NodeMessagesTable {
+  id: Generated<string>;
+  node_id: string;
+  role: NodeMessageRole;
+  content: string;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type NodeMessage = Selectable<NodeMessagesTable>;
+export type NewNodeMessage = Insertable<NodeMessagesTable>;
+
+export type PromptRunStatus = "pending" | "running" | "completed" | "failed";
+
+export interface PromptRunsTable {
+  id: Generated<string>;
+  workspace_id: string;
+  prompt: string;
+  status: ColumnType<PromptRunStatus, PromptRunStatus | undefined, PromptRunStatus>;
+  created_by: string;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type PromptRun = Selectable<PromptRunsTable>;
+export type NewPromptRun = Insertable<PromptRunsTable>;
+export type PromptRunUpdate = Updateable<PromptRunsTable>;
+
+export type PromptRunResultStatus = "pending" | "running" | "completed" | "failed";
+
+export interface PromptRunResultsTable {
+  id: Generated<string>;
+  prompt_run_id: string;
+  node_id: string;
+  response: string | null;
+  status: ColumnType<
+    PromptRunResultStatus,
+    PromptRunResultStatus | undefined,
+    PromptRunResultStatus
+  >;
+  latency_ms: number | null;
+  error: string | null;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type PromptRunResult = Selectable<PromptRunResultsTable>;
+export type NewPromptRunResult = Insertable<PromptRunResultsTable>;
+export type PromptRunResultUpdate = Updateable<PromptRunResultsTable>;
+
+export interface WorkspaceMemoriesTable {
+  id: Generated<string>;
+  workspace_id: string;
+  content: string;
+  type: string;
+  created_by: string | null;
+  created_at: ColumnType<Date, never, never>;
+}
+
+export type WorkspaceMemory = Selectable<WorkspaceMemoriesTable>;
+export type NewWorkspaceMemory = Insertable<WorkspaceMemoriesTable>;
 
 export interface Database {
   users: UsersTable;
@@ -306,4 +375,9 @@ export interface Database {
   friend_requests: FriendRequestsTable;
   dm_conversations: DmConversationsTable;
   dm_messages: DmMessagesTable;
+  ai_nodes: AiNodesTable;
+  node_messages: NodeMessagesTable;
+  prompt_runs: PromptRunsTable;
+  prompt_run_results: PromptRunResultsTable;
+  workspace_memories: WorkspaceMemoriesTable;
 }

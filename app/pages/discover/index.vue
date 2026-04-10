@@ -1,6 +1,5 @@
 <template>
   <main class="min-h-screen w-full">
-    <!-- Header with Search -->
     <DiscoverHeader
       v-model:search-query="searchQuery"
       v-model:active-filter="activeFilter"
@@ -10,9 +9,7 @@
       :online-now="onlineNow"
     />
 
-    <!-- Main Content -->
     <div class="px-6 py-10">
-      <!-- Loading skeleton (initial load) -->
       <div v-if="pending" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="n in 9"
@@ -21,7 +18,6 @@
         />
       </div>
 
-      <!-- Community Grid -->
       <template v-else-if="communities.length">
         <DiscoverCommunityGrid
           :communities="communities"
@@ -30,7 +26,6 @@
           @card-click="openCommunityModal"
         />
 
-        <!-- Infinite scroll sentinel -->
         <div v-if="hasMore" ref="sentinelRef" class="mt-6 flex items-center justify-center py-4">
           <div v-if="loadingMore" class="flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 class="size-4 animate-spin" />
@@ -38,7 +33,6 @@
           </div>
         </div>
 
-        <!-- End of list -->
         <p
           v-if="!hasMore && communities.length > perPage"
           class="mt-6 text-center text-xs text-muted-foreground"
@@ -47,14 +41,11 @@
         </p>
       </template>
 
-      <!-- Empty State -->
       <DiscoverEmptyState v-else @reset="clearFilters" />
 
-      <!-- Create CTA -->
       <DiscoverCreateCTA />
     </div>
 
-    <!-- Community Detail Modal -->
     <CommunityDetailModal
       v-model="modalOpen"
       :data="modalData"
@@ -95,8 +86,6 @@ const communityFilters = [
   { value: "fun", label: "Fun", icon: UsersIcon }
 ];
 
-// ─── Infinite scroll state ──────────────────────────────────────────────────
-
 const perPage = 12;
 
 interface ApiCommunity {
@@ -125,7 +114,6 @@ const pending = ref(true);
 const loadingMore = ref(false);
 const hasMore = computed(() => offset.value < total.value);
 
-// Track communities where the current user has a pending approval request
 const pendingRequestIds = ref<Set<string>>(new Set());
 
 async function fetchCommunities(reset = false) {
@@ -171,7 +159,6 @@ function loadMore() {
   fetchCommunities(false);
 }
 
-// Map raw API data → Community type for DiscoverCard
 const communities = computed<Community[]>(() =>
   rawCommunities.value.map((c) => ({
     id: c.id,
@@ -188,13 +175,11 @@ const communities = computed<Community[]>(() =>
   }))
 );
 
-// Stats
 const totalMembers = computed(() =>
   rawCommunities.value.reduce((sum, c) => sum + c.member_count, 0)
 );
 const onlineNow = computed(() => Math.floor(totalMembers.value * 0.08));
 
-// Debounced search/filter reset
 watchDebounced(
   [searchQuery, activeFilter],
   () => {
@@ -203,7 +188,6 @@ watchDebounced(
   { debounce: 300 }
 );
 
-// Intersection observer for infinite scroll
 const sentinelRef = ref<HTMLElement | null>(null);
 
 useIntersectionObserver(sentinelRef, ([entry]) => {
@@ -212,12 +196,9 @@ useIntersectionObserver(sentinelRef, ([entry]) => {
   }
 });
 
-// Initial fetch
 onMounted(() => {
   fetchCommunities(true);
 });
-
-// ─── Community detail modal ─────────────────────────────────────────────────
 
 const modalOpen = ref(false);
 const modalData = ref<CommunityOverviewData | null>(null);
@@ -243,8 +224,6 @@ function goToCommunity(id: string) {
   communityStore.setCurrentCommunity(id);
   router.push(`/community/${id}`);
 }
-
-// ─── Join ──────────────────────────────────────────────────────────────────────
 
 interface JoinResult {
   joined: boolean;

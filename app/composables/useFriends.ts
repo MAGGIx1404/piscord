@@ -147,8 +147,6 @@ export function useFriends() {
     }
   }
 
-  // ─── Realtime via global user socket ─────────────────────────────────────
-
   let unsubscribe: (() => void) | null = null;
 
   function listenRealtime() {

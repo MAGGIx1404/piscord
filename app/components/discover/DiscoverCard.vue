@@ -238,12 +238,6 @@ const confirmRequest = () => {
   }, 1500);
 };
 
-const formatNumber = (num: number) => {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
-  if (num >= 1000) return (num / 1000).toFixed(1) + "K";
-  return num.toString();
-};
-
 const getCategoryIcon = (type: string | null) => {
   const icons: Record<string, any> = {
     gaming: Gamepad2,

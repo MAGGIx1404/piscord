@@ -1,6 +1,5 @@
 <template>
   <main class="relative min-h-screen w-full bg-background">
-    <!-- Progress Header -->
     <CreateHeader
       :current-step="currentStep"
       :total-steps="totalSteps"
@@ -8,12 +7,9 @@
       @cancel="handleCancel"
     />
 
-    <!-- Form Content -->
     <div class="relative px-6 py-10">
       <div class="grid gap-8 lg:grid-cols-5">
-        <!-- Left: Form Steps -->
         <div class="lg:col-span-3">
-          <!-- Step 1: Identity -->
           <CreateStepIdentity
             v-show="currentStep === 1"
             v-model:name="form.name"
@@ -27,17 +23,14 @@
             @update:banner-file="form.bannerFile = $event"
           />
 
-          <!-- Step 2: Category & Tags -->
           <CreateStepDiscovery
             v-show="currentStep === 2"
             v-model:category="form.category"
             v-model:tags="form.tags"
           />
 
-          <!-- Step 3: Rules -->
           <CreateStepRules v-show="currentStep === 3" v-model:rules="form.rules" />
 
-          <!-- Step 4: AI Pet -->
           <CreateStepAIPet
             v-show="currentStep === 4"
             v-model:enabled="aiPet.enabled"
@@ -51,14 +44,12 @@
             @update:custom-avatar-file="aiPet.customAvatarFile = $event"
           />
 
-          <!-- Step 5: Privacy -->
           <CreateStepSettings
             v-show="currentStep === 5"
             v-model:visibility="form.visibility"
             v-model:require-approval="form.requireApproval"
           />
 
-          <!-- Navigation Buttons -->
           <CreateNavigation
             :current-step="currentStep"
             :total-steps="totalSteps"
@@ -71,7 +62,6 @@
           />
         </div>
 
-        <!-- Right: Preview -->
         <div class="space-y-6 lg:sticky lg:top-24 lg:col-span-2 lg:self-start">
           <CreatePreview
             :name="form.name"
@@ -110,7 +100,6 @@ definePageMeta({
 const router = useRouter();
 const api = useApi();
 
-// Step management
 const currentStep = ref(1);
 const totalSteps = 5;
 const stepTitles = ["Identity", "Discovery", "Rules", "AI Pet", "Settings"];
@@ -157,7 +146,6 @@ const canProceed = computed(() => {
     case 3:
       return true;
     case 4:
-      // AI Pet step: if enabled, require a name
       if (aiPet.enabled) {
         return aiPet.name.trim().length >= 2;
       }
@@ -178,7 +166,6 @@ const isFormValid = computed(() => {
   );
 });
 
-// Debounced slug availability check (real API)
 let slugCheckTimeout: ReturnType<typeof setTimeout>;
 const checkSlugAvailability = async (slug: string) => {
   if (!slug || slug.length < 2) {
@@ -195,14 +182,13 @@ const checkSlugAvailability = async (slug: string) => {
       });
       slugError.value = res.available ? null : "This URL is already taken.";
     } catch {
-      slugError.value = null; // don't block the user on network errors
+      slugError.value = null;
     } finally {
       isCheckingSlug.value = false;
     }
   }, 400);
 };
 
-// Auto-generate slug from name
 watch(
   () => form.name,
   (newName) => {
@@ -233,7 +219,6 @@ const handleCreate = async () => {
     if (form.iconFile) fd.append("icon", form.iconFile);
     if (form.bannerFile) fd.append("banner", form.bannerFile);
 
-    // AI Agent
     fd.append("isAiPet", String(aiPet.enabled));
     if (aiPet.enabled) {
       fd.append("aiAgentName", aiPet.name);
@@ -265,34 +250,3 @@ const handleCancel = () => {
   router.back();
 };
 </script>
-
-<style scoped>
-@keyframes float-slow {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(30px, -30px) scale(1.1);
-  }
-}
-
-@keyframes float-delayed {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-20px, 20px) scale(1.05);
-  }
-}
-
-.animate-float-slow {
-  animation: float-slow 20s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float-delayed 25s ease-in-out infinite;
-  animation-delay: 5s;
-}
-</style>

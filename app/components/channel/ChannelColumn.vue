@@ -22,7 +22,7 @@
 
     <!-- Channel cards -->
     <div class="flex flex-1 flex-col gap-3">
-      <ChannelCard
+      <LazyChannelCard
         v-for="channel in channels"
         :key="channel.id"
         :channel="channel"

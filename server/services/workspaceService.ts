@@ -155,7 +155,6 @@ export async function createWorkspace(
   };
 }
 
-// ─── Get Single Workspace ─────────────────────────────────────────────────
 
 export async function getWorkspaceById(
   workspaceId: string,
@@ -187,7 +186,6 @@ export async function getWorkspaceById(
   return { ...workspace, is_public: workspace.is_public };
 }
 
-// ─── Workspace Membership Check ──────────────────────────────────────────
 
 export async function requireWorkspaceMembership(
   workspaceId: string,

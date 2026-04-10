@@ -5,6 +5,7 @@
   </div>
 
   <Enable2FAModal />
+  <SessionTimer />
 </template>
 
 <script setup>

@@ -9,8 +9,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Multipart form data required" });
   }
 
-  // ─── Parse fields ──────────────────────────────────────────────────────────
-
   const field = (name: string): string | undefined => {
     const p = parts.find((p) => p.name === name);
     return p?.data ? p.data.toString("utf-8") : undefined;
@@ -72,7 +70,6 @@ export default defineEventHandler(async (event) => {
     aiAgentDescription: field("aiAgentDescription") ?? null
   };
 
-  // ─── File parts ────────────────────────────────────────────────────────────
   const iconPart = parts.find((p) => p.name === "icon") ?? null;
   const bannerPart = parts.find((p) => p.name === "banner") ?? null;
   const aiAgentAvatarPart = parts.find((p) => p.name === "aiAgentAvatarFile") ?? null;
