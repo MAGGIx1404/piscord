@@ -120,15 +120,6 @@
         <TooltipContent side="bottom" :side-offset="4" class="text-xs">Insert Image</TooltipContent>
       </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <WorkspaceToolbarButton title="Embed Video" @click="$emit('openMedia', 'embed')">
-            <Video class="size-3.5" />
-          </WorkspaceToolbarButton>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" :side-offset="4" class="text-xs">Embed Video</TooltipContent>
-      </Tooltip>
-
       <div class="mx-1 h-4 w-px bg-border/30" />
 
       <!-- Text alignment -->
@@ -204,8 +195,7 @@ import {
   AlignRight,
   Undo,
   Redo,
-  ImageIcon,
-  Video
+  ImageIcon
 } from "lucide-vue-next";
 
 const props = defineProps<{
@@ -213,7 +203,7 @@ const props = defineProps<{
 }>();
 
 defineEmits<{
-  openMedia: [tab: "image" | "embed"];
+  openMedia: [tab: "image"];
 }>();
 
 const formattingButtons = computed(() => [

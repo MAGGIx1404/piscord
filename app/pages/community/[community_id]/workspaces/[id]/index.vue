@@ -90,7 +90,6 @@
     <LazyWorkspaceMediaInsertDialog
       v-model:open="showMediaDialog"
       @insert-image="handleInsertImage"
-      @insert-video="handleInsertVideo"
     />
   </main>
 </template>
@@ -103,8 +102,6 @@ import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
 import Image from "@tiptap/extension-image";
-import Youtube from "@tiptap/extension-youtube";
-import { Iframe } from "~/extensions/iframe";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { toast } from "vue-sonner";
@@ -121,7 +118,6 @@ const workspaceName = ref("Untitled Workspace");
 const workspaceEmoji = ref<string | null>(null);
 const showThoughts = ref(false);
 const showMediaDialog = ref(false);
-const mediaDialogTab = ref<"image" | "embed">("image");
 const thoughts = ref<Thought[]>([]);
 const loadingContent = ref(true);
 const activeCursors = ref<RemoteCursor[]>([]);
@@ -171,8 +167,6 @@ const editor = useEditor({
     Highlight,
     Typography,
     Image.configure({ inline: false, allowBase64: true }),
-    Youtube.configure({ inline: false, ccLanguage: "en" }),
-    Iframe,
     ...(RemoteCursors ? [RemoteCursors] : [])
   ],
   editorProps: { attributes: { class: "min-h-full outline-none" } },
@@ -330,22 +324,12 @@ function copyLink() {
 }
 
 // --- Media insert ---
-function openMediaDialog(tab: "image" | "embed") {
-  mediaDialogTab.value = tab;
+function openMediaDialog() {
   showMediaDialog.value = true;
 }
 
 function handleInsertImage(src: string) {
   editor.value?.chain().focus().setImage({ src }).run();
-}
-
-function handleInsertVideo(src: string, embedSrc: string, platform: string) {
-  if (!editor.value) return;
-  if (platform === "YouTube") {
-    editor.value.chain().focus().setYoutubeVideo({ src, width: 640, height: 360 }).run();
-  } else {
-    editor.value.chain().focus().setIframe({ src: embedSrc, width: 640, height: 360 }).run();
-  }
 }
 
 // --- Title ---
@@ -449,3 +433,15 @@ onBeforeUnmount(() => {
   editor.value?.destroy();
 });
 </script>
+
+<style scoped>
+.editor-area :deep(.ProseMirror) {
+  min-height: 100%;
+  outline: none;
+}
+
+.editor-area :deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground) / 0.3);
+}
+</style>
