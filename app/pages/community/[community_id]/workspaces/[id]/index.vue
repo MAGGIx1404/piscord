@@ -12,7 +12,7 @@
         @save-title="saveTitle"
       />
 
-      <WorkspaceEditorToolbar :editor="editor" />
+      <WorkspaceEditorToolbar :editor="editor" @open-media="openMediaDialog" />
 
       <div class="relative flex-1 overflow-y-auto bg-background/50" @click="focusEditor">
         <div v-if="loadingContent" class="mx-auto max-w-3xl space-y-4 px-12 py-10">
@@ -27,7 +27,7 @@
         <EditorContent
           v-else-if="editor"
           :editor="editor"
-          class="mx-auto prose h-full max-w-3xl px-12 py-8 prose-neutral dark:prose-invert prose-headings:font-semibold prose-p:leading-relaxed prose-a:text-primary [&_.ProseMirror]:min-h-full [&_.ProseMirror]:outline-none [&_.ProseMirror_p.is-editor-empty:first-child::before]:text-muted-foreground/30 [&_.ProseMirror_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)]"
+          class="editor-area mx-auto prose h-full max-w-3xl px-12 py-8 prose-neutral dark:prose-invert prose-headings:font-semibold prose-p:leading-relaxed prose-a:text-primary prose-img:rounded-lg prose-img:shadow-md"
         />
       </div>
 
@@ -38,6 +38,10 @@
         :saving="collab.saving.value"
         :save-error="!!collab.saveError.value"
         :last-saved-at="collab.lastSavedAt.value"
+        @download-pdf="downloadPdf"
+        @download-md="downloadMd"
+        @share-embed="shareEmbed"
+        @copy-link="copyLink"
       />
     </div>
 
@@ -76,12 +80,18 @@
           :ai-loading="aiLoading"
           @add-thought="addThought"
           @delete-thought="deleteThought"
-          @add-to-document="addToDocument"
+          @add-to-document="ejectThought"
           @ai-action="handleSidebarAIAction"
           @thought-animated="onThoughtAnimated"
         />
       </SheetContent>
     </Sheet>
+
+    <LazyWorkspaceMediaInsertDialog
+      v-model:open="showMediaDialog"
+      @insert-image="handleInsertImage"
+      @insert-video="handleInsertVideo"
+    />
   </main>
 </template>
 
@@ -92,8 +102,12 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Typography from "@tiptap/extension-typography";
+import Image from "@tiptap/extension-image";
+import Youtube from "@tiptap/extension-youtube";
+import { Iframe } from "~/extensions/iframe";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import { toast } from "vue-sonner";
 import type { AIAction } from "~/composables/useLocalAI";
 import type { Thought } from "~/components/workspace/Thoughts.vue";
 import type { RemoteCursor } from "~/extensions/remoteCursors";
@@ -106,6 +120,8 @@ const currentUserId = computed(() => useUserStore().user?.id ?? "");
 const workspaceName = ref("Untitled Workspace");
 const workspaceEmoji = ref<string | null>(null);
 const showThoughts = ref(false);
+const showMediaDialog = ref(false);
+const mediaDialogTab = ref<"image" | "embed">("image");
 const thoughts = ref<Thought[]>([]);
 const loadingContent = ref(true);
 const activeCursors = ref<RemoteCursor[]>([]);
@@ -154,6 +170,9 @@ const editor = useEditor({
     TextAlign.configure({ types: ["heading", "paragraph"] }),
     Highlight,
     Typography,
+    Image.configure({ inline: false, allowBase64: true }),
+    Youtube.configure({ inline: false, ccLanguage: "en" }),
+    Iframe,
     ...(RemoteCursors ? [RemoteCursors] : [])
   ],
   editorProps: { attributes: { class: "min-h-full outline-none" } },
@@ -249,11 +268,84 @@ function onThoughtAnimated(id: string) {
 
 async function addToDocument(content: string) {
   if (!editor.value) return;
+  const html = await markdownToHtml(content);
   editor.value
     .chain()
     .focus()
-    .insertContent(await markdownToHtml(content))
+    .insertContent(html, { parseOptions: { preserveWhitespace: false } })
     .run();
+}
+
+async function ejectThought(id: string, content: string) {
+  await addToDocument(content);
+  deleteThought(id);
+}
+
+// --- Document export / share ---
+function downloadPdf() {
+  if (!editor.value) return;
+  const html = editor.value.getHTML();
+  const printWin = window.open("", "_blank");
+  if (!printWin) return;
+  printWin.document.write(`
+    <!DOCTYPE html>
+    <html><head><title>${workspaceName.value}</title>
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; line-height: 1.7; }
+      h1,h2,h3 { margin-top: 1.5em; }
+      ul,ol { padding-left: 1.5em; }
+      code { background: #f3f4f6; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; }
+      pre { background: #f3f4f6; padding: 1em; border-radius: 8px; overflow-x: auto; }
+      blockquote { border-left: 3px solid #d1d5db; margin-left: 0; padding-left: 1em; color: #6b7280; }
+    </style></head><body>${html}</body></html>
+  `);
+  printWin.document.close();
+  printWin.print();
+  toast.success("PDF export ready", { description: "Use the print dialog to save as PDF" });
+}
+
+function downloadMd() {
+  if (!editor.value) return;
+  const text = editor.value.state.doc.textContent;
+  const blob = new Blob([text], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${workspaceName.value || "document"}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success("Markdown downloaded");
+}
+
+function shareEmbed() {
+  const embedUrl = `${window.location.origin}/embed/workspace/${workspaceId}`;
+  const iframe = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0" style="border-radius:12px;border:1px solid #e5e7eb"></iframe>`;
+  navigator.clipboard.writeText(iframe);
+  toast.success("Embed code copied!", { description: "Paste the iframe snippet in any website" });
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href);
+  toast.success("Link copied to clipboard");
+}
+
+// --- Media insert ---
+function openMediaDialog(tab: "image" | "embed") {
+  mediaDialogTab.value = tab;
+  showMediaDialog.value = true;
+}
+
+function handleInsertImage(src: string) {
+  editor.value?.chain().focus().setImage({ src }).run();
+}
+
+function handleInsertVideo(src: string, embedSrc: string, platform: string) {
+  if (!editor.value) return;
+  if (platform === "YouTube") {
+    editor.value.chain().focus().setYoutubeVideo({ src, width: 640, height: 360 }).run();
+  } else {
+    editor.value.chain().focus().setIframe({ src: embedSrc, width: 640, height: 360 }).run();
+  }
 }
 
 // --- Title ---

@@ -100,7 +100,7 @@
                   <TooltipTrigger as-child>
                     <button
                       class="rounded p-1 text-muted-foreground/60 transition-colors hover:bg-primary/10 hover:text-primary"
-                      @click="$emit('addToDocument', thought.content)"
+                      @click="$emit('addToDocument', thought.id, thought.content)"
                     >
                       <FileInput class="size-3" />
                     </button>
@@ -169,7 +169,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   addThought: [content: string];
   deleteThought: [id: string];
-  addToDocument: [content: string];
+  addToDocument: [id: string, content: string];
   aiAction: [action: string];
   thoughtAnimated: [id: string];
 }>();
