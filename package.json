@@ -10,6 +10,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "db:migrate": "npx tsx ./scripts/run-migration.ts",
+    "db:reset": "npx tsx ./scripts/reset-db.ts",
     "db:seed": "npx tsx ./scripts/seed.ts",
     "create-migration": "npx tsx ./scripts/create-migration.ts"
   },
